@@ -1,0 +1,6 @@
+# https://medium.com/@ahmed.nafies/tutorial-fastapi-sqlalchemy-postgresql-alembic-and-docker-part-2-asynchronous-version-8a339ce97e6d
+make migrations
+    docker-compose run web alembic revision --autogenerate -m "message"
+
+migrate
+    docker-compose run web alembic upgrade head
