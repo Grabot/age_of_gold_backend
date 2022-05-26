@@ -1,4 +1,3 @@
-# M0N3YMaker
+# Age of GOLD
 
-This is the backend of the M0NYMaker project.
-Here I will start jobs to scalp multiple markets and automatically make trade while keeping track of the total value of the account.
+This is the backend of the Age of GOLD project. Here we will store the hexagonal map information.

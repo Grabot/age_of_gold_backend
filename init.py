@@ -1,6 +1,4 @@
 from fastapi.middleware.cors import CORSMiddleware
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-import atexit
 from app import app
 
 
