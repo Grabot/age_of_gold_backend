@@ -1,15 +1,9 @@
-from db import db
-from fastapi import FastAPI
+from app import create_app
+from app import socks
+
+app = create_app()
 
 
-app = FastAPI(title="Async FastAPI")
+if __name__ == "__main__":
+    socks.run(app, host="0.0.0.0", debug=True)
 
-
-@app.on_event("startup")
-async def startup():
-    await db.connect()
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    await db.disconnect()

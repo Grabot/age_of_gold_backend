@@ -1,17 +1,8 @@
-# Pull base image
-FROM python:3.7
+FROM python:3.9.10
 
-# Set environment varibles
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-WORKDIR /code/
-
-# Install dependencies
-RUN pip install pipenv
-COPY Pipfile Pipfile.lock /code/
-RUN pipenv install --system --dev
-
-COPY . /code/
-
-EXPOSE 8000
+COPY . /app
+WORKDIR /app
+RUN pip install -r requirements.txt
+EXPOSE 5000
+ENTRYPOINT ["python"]
+CMD ["app.py"]

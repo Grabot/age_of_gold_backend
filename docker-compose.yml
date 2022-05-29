@@ -1,21 +1,24 @@
-version: "3"
+version: '3.6'
 
 services:
-  db:
-    image: postgres:11
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test_db
-  web:
+  api:
+    container_name: api
     build: .
-    command: bash -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
-    volumes:
-      - .:/code
+    networks:
+      - default
     ports:
-      - "8000:8000"
-    depends_on:
+      - 5000:5000
+    volumes: ['./:/app']
+    restart: always
+    links:
       - db
 
+  db:
+    container_name: db
+    env_file: .env
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5432:5432
+    restart: always
