@@ -37,6 +37,7 @@ class HexagonRest(Resource):
                 db.session.add(hexagon)
                 db.session.commit()
                 for x in range(0, 61):
+                    # TODO: make sure the q, r, s are correct
                     tile = Tile(hexagon_id=hexagon.id, type=0)
                     db.session.add(tile)
                 db.session.commit()
