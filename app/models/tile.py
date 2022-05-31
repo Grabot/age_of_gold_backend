@@ -8,6 +8,9 @@ class Tile(db.Model):
     __tablename__ = 'Tile'
     id = db.Column(db.Integer, primary_key=True)
     hexagon_id = db.Column(db.Integer, db.ForeignKey('Hexagon.id'))
+    q = db.Column(db.Integer)
+    r = db.Column(db.Integer)
+    s = db.Column(db.Integer)
     type = db.Column(db.Integer)
 
     @property
@@ -15,5 +18,8 @@ class Tile(db.Model):
         """Return object data in easily serializable format"""
         return {
             'id': self.id,
+            'q': self.q,
+            'r': self.r,
+            's': self.s,
             'type': self.type
         }

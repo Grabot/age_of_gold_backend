@@ -27,9 +27,18 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_join(self, data):
         user_id = data["userId"]
-        print("joined: %s" % user_id)
-        join_room(user_id)
-        emit("message_event", 'User has entered room %s' % user_id, room=user_id)
+        room = "room_%s" % user_id
+        print("joined room: %s" % room)
+        join_room(room)
+        emit("message_event", 'User has entered room %s' % room, room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_leave(self, data):
+        user_id = data["userId"]
+        room = "room_%s" % user_id
+        leave_room(room)
+        print("left room %s" % room)
+        emit("message_event", 'User has left room %s' % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
@@ -38,32 +47,16 @@ class NamespaceSock(Namespace):
         r = data["r"]
         s = data["s"]
         user_id = data["userId"]
+        room = "room_%s" % user_id
         print("hexagon %s %s %s with user %s" % (q, r, s, user_id))
         if q is not None and r is not None and s is not None:
             hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
             if hexagon is None:
-                emit("send_hexagon_fail", 'hexagon getting failed', room=user_id)
+                emit("send_hexagon_fail", 'hexagon getting failed', room=room)
             else:
-                emit("send_hexagon_success", hexagon.serialize, room=user_id)
+                emit("send_hexagon_success", hexagon.serialize, room=room)
         else:
-            emit("send_hexagon_fail", 'hexagon getting failed', room=user_id)
-
-    # noinspection PyMethodMayBeStatic
-    def on_join_solo(self, data):
-        join_room(request.sid)
-        emit("message_event", 'User has entered room %s' % request.sid, room=request.sid)
-
-    # noinspection PyMethodMayBeStatic
-    def on_leave(self, data):
-        room = data["room"]
-        leave_room(room)
-        emit("message_event", 'User has left room %s' % room, room=request.sid)
-
-    # noinspection PyMethodMayBeStatic
-    def on_leave_solo(self, data):
-        room = request.sid
-        leave_room(room)
-        emit("message_event", 'User has left room %s' % room, room=request.sid)
+            emit("send_hexagon_fail", 'hexagon getting failed', room=room)
 
     # # noinspection PyMethodMayBeStatic
     # def on_message(self, data):
