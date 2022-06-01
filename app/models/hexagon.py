@@ -16,6 +16,7 @@ class Hexagon(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
+        # We don't send the `s` because it can be deduced from q and r
         tiles_info = []
         for tile in self.tiles:
             tiles_info.append(tile.serialize)
@@ -23,6 +24,5 @@ class Hexagon(db.Model):
             'id': self.id,
             'tiles': tiles_info,
             'q': self.q,
-            'r': self.r,
-            's': self.s
+            'r': self.r
         }

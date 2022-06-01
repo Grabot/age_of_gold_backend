@@ -16,10 +16,10 @@ class Tile(db.Model):
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
+        # We don't send the `s` because it can be deduced from q and r
         return {
             'id': self.id,
             'q': self.q,
             'r': self.r,
-            's': self.s,
             'type': self.type
         }
