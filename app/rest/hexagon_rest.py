@@ -8,79 +8,127 @@ from app.rest import app_api
 from app import db
 
 
-def create_tile(hexagon_id, q, r, s):
-    combined = q + r + s
+radius = 4
+# a hex section with radius r is Cube(2 * r+1, -r, -r-1)
+# with 6 rotations
+# [q, r, s]
+# [-r, -s, -q]
+# [s, q, r]
+# [-s, -q, -r]
+# [r, s, q]
+# [-q, -r, -s]
+# So if the center hex is 0, 0, 0
+# on of the side hexagons with the radius of 4 would be 9, -4, -5
+
+# {
+#     "q": 0,
+#     "r": 0,
+#     "s": 0
+# }
+# {
+#     "q": 9,
+#     "r": -4,
+#     "s": -5
+# }
+# {
+#     "q": 4,
+#     "r": 5,
+#     "s": -9
+# }
+# {
+#     "q": -5,
+#     "r": 9,
+#     "s": -4
+# }
+# {
+#     "q": 5,
+#     "r": -9,
+#     "s": 4
+# }
+# {
+#     "q": -4,
+#     "r": -5,
+#     "s": 9
+# }
+# {
+#     "q": -9,
+#     "r": 4,
+#     "s": 5
+# }
+
+def create_tile(hexagon_id, _q, _r, _s):
+    combined = _q + _r + _s
     if combined != 0:
         print("BIG ERROR!!!!")
-        print("q: %s, r: %s, s: %s" % (q, r, s))
+        print("q: %s, r: %s, s: %s" % (_q, _r, _s))
         exit()
-    return Tile(q=q, r=r, s=s, hexagon_id=hexagon_id, type=0)
+    return Tile(q=_q, r=_r, s=_s, hexagon_id=hexagon_id, type=0)
 
 
-def get_tiles(hexagon_id):
+def get_tiles(hexagon_id, _q, _r, _s):
     # For now, we will define each of the tiles in the hexagon separate
     tiles = []
-    tiles.append(create_tile(hexagon_id, -4, 0, 4))
-    tiles.append(create_tile(hexagon_id, -3, -1, 4))
-    tiles.append(create_tile(hexagon_id, -2, -2, 4))
-    tiles.append(create_tile(hexagon_id, -1, -3, 4))
-    tiles.append(create_tile(hexagon_id, 0, -4, 4))
-    tiles.append(create_tile(hexagon_id, -4, 1, 3))
-    tiles.append(create_tile(hexagon_id, -3, 0, 3))
-    tiles.append(create_tile(hexagon_id, -2, -1, 3))
-    tiles.append(create_tile(hexagon_id, -1, -2, 3))
-    tiles.append(create_tile(hexagon_id, 0, -3, 3))
-    tiles.append(create_tile(hexagon_id, 1, -4, 3))
-    tiles.append(create_tile(hexagon_id, -4, 2, 2))
-    tiles.append(create_tile(hexagon_id, -3, 1, 2))
-    tiles.append(create_tile(hexagon_id, -2, 0, 2))
-    tiles.append(create_tile(hexagon_id, -1, -1, 2))
-    tiles.append(create_tile(hexagon_id, 0, -2, 2))
-    tiles.append(create_tile(hexagon_id, 1, -3, 2))
-    tiles.append(create_tile(hexagon_id, 2, -4, 2))
-    tiles.append(create_tile(hexagon_id, -4, 3, 1))
-    tiles.append(create_tile(hexagon_id, -3, 2, 1))
-    tiles.append(create_tile(hexagon_id, -2, 1, 1))
-    tiles.append(create_tile(hexagon_id, -1, 0, 1))
-    tiles.append(create_tile(hexagon_id, 0, -1, 1))
-    tiles.append(create_tile(hexagon_id, 1, -2, 1))
-    tiles.append(create_tile(hexagon_id, 2, -3, 1))
-    tiles.append(create_tile(hexagon_id, 3, -4, 1))
-    tiles.append(create_tile(hexagon_id, -4, 4, 0))
-    tiles.append(create_tile(hexagon_id, -3, 3, 0))
-    tiles.append(create_tile(hexagon_id, -2, 2, 0))
-    tiles.append(create_tile(hexagon_id, -1, 1, 0))
-    tiles.append(create_tile(hexagon_id, -0, 0, 0))
-    tiles.append(create_tile(hexagon_id, 1, -1, 0))
-    tiles.append(create_tile(hexagon_id, 2, -2, 0))
-    tiles.append(create_tile(hexagon_id, 3, -3, 0))
-    tiles.append(create_tile(hexagon_id, 4, -4, 0))
-    tiles.append(create_tile(hexagon_id, -3, 4, -1))
-    tiles.append(create_tile(hexagon_id, -2, 3, -1))
-    tiles.append(create_tile(hexagon_id, -1, 2, -1))
-    tiles.append(create_tile(hexagon_id, 0, 1, -1))
-    tiles.append(create_tile(hexagon_id, 1, 0, -1))
-    tiles.append(create_tile(hexagon_id, 2, -1, -1))
-    tiles.append(create_tile(hexagon_id, 3, -2, -1))
-    tiles.append(create_tile(hexagon_id, 4, -3, -1))
-    tiles.append(create_tile(hexagon_id, -2, 4, -2))
-    tiles.append(create_tile(hexagon_id, -1, 3, -2))
-    tiles.append(create_tile(hexagon_id, 0, 2, -2))
-    tiles.append(create_tile(hexagon_id, 1, 1, -2))
-    tiles.append(create_tile(hexagon_id, 2, 0, -2))
-    tiles.append(create_tile(hexagon_id, 3, -1, -2))
-    tiles.append(create_tile(hexagon_id, 4, -2, -2))
-    tiles.append(create_tile(hexagon_id, -1, 4, -3))
-    tiles.append(create_tile(hexagon_id, 0, 3, -3))
-    tiles.append(create_tile(hexagon_id, 1, 2, -3))
-    tiles.append(create_tile(hexagon_id, 2, 1, -3))
-    tiles.append(create_tile(hexagon_id, 3, 0, -3))
-    tiles.append(create_tile(hexagon_id, 4, -1, -3))
-    tiles.append(create_tile(hexagon_id, 0, 4, -4))
-    tiles.append(create_tile(hexagon_id, 1, 3, -4))
-    tiles.append(create_tile(hexagon_id, 2, 2, -4))
-    tiles.append(create_tile(hexagon_id, 3, 1, -4))
-    tiles.append(create_tile(hexagon_id, 4, 0, -4))
+    tiles.append(create_tile(hexagon_id, _q - 4, _r + 0, _s + 4))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r - 1, _s + 4))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r - 2, _s + 4))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r - 3, _s + 4))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r - 4, _s + 4))
+    tiles.append(create_tile(hexagon_id, _q - 4, _r + 1, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r + 0, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r - 1, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r - 2, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r - 3, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r - 4, _s + 3))
+    tiles.append(create_tile(hexagon_id, _q - 4, _r + 2, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r + 1, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r + 0, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r - 1, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r - 2, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r - 3, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r - 4, _s + 2))
+    tiles.append(create_tile(hexagon_id, _q - 4, _r + 3, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r + 2, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r + 1, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r + 0, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r - 1, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r - 2, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r - 3, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r - 4, _s + 1))
+    tiles.append(create_tile(hexagon_id, _q - 4, _r + 4, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r + 3, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r + 2, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r + 1, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q - 0, _r + 0, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r - 1, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r - 2, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r - 3, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q + 4, _r - 4, _s + 0))
+    tiles.append(create_tile(hexagon_id, _q - 3, _r + 4, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r + 3, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r + 2, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r + 1, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r + 0, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r - 1, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r - 2, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q + 4, _r - 3, _s - 1))
+    tiles.append(create_tile(hexagon_id, _q - 2, _r + 4, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r + 3, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r + 2, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r + 1, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r + 0, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r - 1, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q + 4, _r - 2, _s - 2))
+    tiles.append(create_tile(hexagon_id, _q - 1, _r + 4, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r + 3, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r + 2, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r + 1, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r + 0, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 4, _r - 1, _s - 3))
+    tiles.append(create_tile(hexagon_id, _q + 0, _r + 4, _s - 4))
+    tiles.append(create_tile(hexagon_id, _q + 1, _r + 3, _s - 4))
+    tiles.append(create_tile(hexagon_id, _q + 2, _r + 2, _s - 4))
+    tiles.append(create_tile(hexagon_id, _q + 3, _r + 1, _s - 4))
+    tiles.append(create_tile(hexagon_id, _q + 4, _r + 0, _s - 4))
     return tiles
 
 
@@ -112,7 +160,8 @@ class HexagonRest(Resource):
                 hexagon = Hexagon(q=q, r=r, s=s)
                 db.session.add(hexagon)
                 db.session.commit()
-                tiles = get_tiles(hexagon.id)
+
+                tiles = get_tiles(hexagon.id, q, r, s)
                 for tile in tiles:
                     db.session.add(tile)
                 db.session.commit()
