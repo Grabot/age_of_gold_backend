@@ -152,7 +152,6 @@ def go_right_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     db.session.add(hexagon)
     db.session.commit()
     print("created hexagon (right up) with q: %s r: %s s: %s and id: %s" % (q, r, s, hexagon.id))
-    # Go right up for tiles, so q += 4 r += 5 and s -= 9
     q_for_tiles += 4
     r_for_tiles += 5
     s_for_tiles -= 9
@@ -174,7 +173,6 @@ def go_left_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     db.session.add(hexagon)
     db.session.commit()
     print("created hexagon (left up) with q: %s r: %s s: %s and id: %s" % (q, r, s, hexagon.id))
-    # go left up for tiles, so q -= 5 r += 9 and s -= 4
     q_for_tiles -= 5
     r_for_tiles += 9
     s_for_tiles -= 4
@@ -189,14 +187,13 @@ def go_left_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     # q = -4
     # r = -5
     # s = 9
-    # Go right up so q -= 1 and r += 1
+    # Go left down so q -= 1 and r += 1
     q -= 1
     r += 1
     hexagon = Hexagon(q=q, r=r, s=s)
     db.session.add(hexagon)
     db.session.commit()
     print("created hexagon (left down) with q: %s r: %s s: %s and id: %s" % (q, r, s, hexagon.id))
-    # Go left down for tiles, so q -= 4 r -= 5 and s += 9
     q_for_tiles -= 4
     r_for_tiles -= 5
     s_for_tiles += 9
@@ -218,7 +215,6 @@ def go_right_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     db.session.add(hexagon)
     db.session.commit()
     print("created hexagon (right down) with q: %s r: %s s: %s and id: %s" % (q, r, s, hexagon.id))
-    # Go right down for tiles, so q += 5 r -= 9 and s += 4
     q_for_tiles += 5
     r_for_tiles -= 9
     s_for_tiles += 4
@@ -249,29 +245,7 @@ class MapRest(Resource):
         hexagon = Hexagon.query.filter_by(q=0, r=0, s=0).first()
 
         if hexagon is None:
-            # for x in range(1, 5):
-            #     q = x
-            #     r = 0
-            #     s = -x
-            #     go_right(q, r, s, x)
-            #     print("make hexagon %s of 5" % x)
-            # for x in range(1, 5):
-            #     q = -x
-            #     r = 0
-            #     s = x
-            #     go_left(q, r, s, x)
-            #     print("make hexagon %s of 5" % x)
-            # for x in range(-3, 3):
-            #     q = x
-            #     r = -x
-            #     s = 0
-            #     go_right_up(q, r, s, x)
-            # for x in range(-3, 3):
-            #     q = 0
-            #     r = -x
-            #     s = x
-            #     go_left_up(q, r, s, x)
-            #     print("make hexagon %s" % x)
+            map_size = 100
             q = 0
             r = 0
             s = 0
@@ -286,20 +260,20 @@ class MapRest(Resource):
             for tile in tiles:
                 db.session.add(tile)
             db.session.commit()
-            [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
-            [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
+            [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+            [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
 
             # going up
-            for x in range(0, 100):
+            for x in range(0, map_size):
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_right_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
 
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_left_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
             # going down, we reset back to the center for this.
             q = 0
             r = 0
@@ -307,16 +281,16 @@ class MapRest(Resource):
             q_for_tiles = 0
             r_for_tiles = 0
             s_for_tiles = 0
-            for x in range(0, 100):
+            for x in range(0, map_size):
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_left_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
 
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_right_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, 100)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
 
         else:
             return {
