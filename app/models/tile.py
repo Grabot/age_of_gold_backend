@@ -18,7 +18,6 @@ class Tile(db.Model):
         """Return object data in easily serializable format"""
         # We don't send the `s` because it can be deduced from q and r
         return {
-            'id': self.id,
             'q': self.q,
             'r': self.r,
             'type': self.type

@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   api:
-    container_name: api
+    container_name: age_of_api
     build: .
     networks:
       - default
@@ -14,7 +14,7 @@ services:
       - db
 
   db:
-    container_name: db
+    container_name: age_of_db
     env_file: .env
     image: postgres:latest
     networks:

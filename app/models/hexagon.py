@@ -21,7 +21,6 @@ class Hexagon(db.Model):
         for tile in self.tiles:
             tiles_info.append(tile.serialize)
         return {
-            'id': self.id,
             'tiles': tiles_info,
             'q': self.q,
             'r': self.r

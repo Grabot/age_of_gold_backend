@@ -45,7 +45,7 @@ class NamespaceSock(Namespace):
         print("trying to get a hexagon")
         q = data["q"]
         r = data["r"]
-        s = data["s"]
+        s = (q + r) * -1
         user_id = data["userId"]
         room = "room_%s" % user_id
         print("hexagon %s %s %s with user %s" % (q, r, s, user_id))
@@ -57,6 +57,30 @@ class NamespaceSock(Namespace):
                 emit("send_hexagon_success", hexagon.serialize, room=room)
         else:
             emit("send_hexagon_fail", 'hexagon getting failed', room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_get_hexagons_q(self, data):
+        print("getting a whole row along Q")
+        print(data)
+        q_begin = data["q_begin"]
+        q_end = data["q_end"]
+        r_row = data["r_row"]
+        print(q_begin)
+        print(q_end)
+        print(r_row)
+        user_id = data["userId"]
+        room = "room_%s" % user_id
+        if q_begin is not None and q_end is not None and r_row is not None:
+            hexagons = Hexagon.query.filter(Hexagon.q.between(q_begin, q_end)).filter(Hexagon.r == r_row).all()
+            return_hexagons = []
+            for hexagon in hexagons:
+                return_hexagons.append(hexagon.serialize)
+            emit("send_hexagons_success", return_hexagons, room=room)
+
+    # noinspection PyMethodMayBeStatic
+    def on_get_hexagons_r(self, data):
+        print("getting a whole row along R")
+        print(data)
 
     # # noinspection PyMethodMayBeStatic
     # def on_message(self, data):
