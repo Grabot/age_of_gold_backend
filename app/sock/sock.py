@@ -42,13 +42,11 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
-        print("trying to get a hexagon")
         q = data["q"]
         r = data["r"]
         s = (q + r) * -1
         user_id = data["userId"]
         room = "room_%s" % user_id
-        print("hexagon %s %s %s with user %s" % (q, r, s, user_id))
         if q is not None and r is not None and s is not None:
             hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
             if hexagon is None:
@@ -60,14 +58,9 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagons_q(self, data):
-        print("getting a whole row along Q")
-        print(data)
         q_begin = data["q_begin"]
         q_end = data["q_end"]
         r_row = data["r_row"]
-        print(q_begin)
-        print(q_end)
-        print(r_row)
         user_id = data["userId"]
         room = "room_%s" % user_id
         if q_begin is not None and q_end is not None and r_row is not None:
@@ -79,8 +72,17 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagons_r(self, data):
-        print("getting a whole row along R")
-        print(data)
+        r_begin = data["r_begin"]
+        r_end = data["r_end"]
+        q_row = data["q_row"]
+        user_id = data["userId"]
+        room = "room_%s" % user_id
+        if r_begin is not None and r_end is not None and q_row is not None:
+            hexagons = Hexagon.query.filter(Hexagon.r.between(r_begin, r_end)).filter(Hexagon.q == q_row).all()
+            return_hexagons = []
+            for hexagon in hexagons:
+                return_hexagons.append(hexagon.serialize)
+            emit("send_hexagons_success", return_hexagons, room=room)
 
     # # noinspection PyMethodMayBeStatic
     # def on_message(self, data):
