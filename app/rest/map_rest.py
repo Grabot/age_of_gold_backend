@@ -6,6 +6,7 @@ from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.rest import app_api
 from app import db
+from app.util import global_vars
 
 
 radius = 4
@@ -97,12 +98,13 @@ def get_tiles(hexagon_id, q, r, s):
     return tiles
 
 
-def go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, q_max):
+def go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     # q = 9
     # r = -4
     # s = -5
     # Go right so q += 1 and s -= 1
-    while q < q_max:
+    index = 0
+    while index < global_vars.map_size:
         q += 1
         s -= 1
         hexagon = Hexagon(q=q, r=r, s=s)
@@ -116,15 +118,17 @@ def go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, q_max):
         for tile in tiles:
             db.session.add(tile)
         db.session.commit()
+        index += 1
     return [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles]
 
 
-def go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, s_max):
+def go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     # q = -9
     # r = 4
     # s = 5
     # Go left so q -= 1 and s += 1
-    while s < s_max:
+    index = 0
+    while index < global_vars.map_size:
         q -= 1
         s += 1
         hexagon = Hexagon(q=q, r=r, s=s)
@@ -138,6 +142,7 @@ def go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, s_max):
         for tile in tiles:
             db.session.add(tile)
         db.session.commit()
+        index += 1
     return [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles]
 
 
@@ -245,7 +250,7 @@ class MapRest(Resource):
         hexagon = Hexagon.query.filter_by(q=0, r=0, s=0).first()
 
         if hexagon is None:
-            map_size = 100
+            # map_size = global_vars.map_size
             q = 0
             r = 0
             s = 0
@@ -260,20 +265,16 @@ class MapRest(Resource):
             for tile in tiles:
                 db.session.add(tile)
             db.session.commit()
-            [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-            [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+            [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
+            [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
 
             # going up
-            for x in range(0, map_size):
-                [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
-                    = go_right_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-
+            for x in range(0, global_vars.map_size):
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_left_up(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
+
             # going down, we reset back to the center for this.
             q = 0
             r = 0
@@ -281,16 +282,11 @@ class MapRest(Resource):
             q_for_tiles = 0
             r_for_tiles = 0
             s_for_tiles = 0
-            for x in range(0, map_size):
-                [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
-                    = go_left_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-
+            for x in range(0, global_vars.map_size):
                 [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles] \
                     = go_right_down(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
-                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles, map_size)
+                [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
+                [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
 
         else:
             return {

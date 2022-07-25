@@ -183,7 +183,28 @@ class HexagonRest(Resource):
     # noinspection PyMethodMayBeStatic
     def get(self):
         print("get hexagon")
-        return {"Hello": "Hexagon"}
+        hexagons = []
+        all_hexagons = Hexagon.query.all()
+        lowest_hex = [0, 0]
+        highest_hex = [0, 0]
+        for h in all_hexagons:
+            hexagon = h.serialize
+            hexagons.append(hexagon)
+            hex_q = hexagon["q"]
+            hex_r = hexagon["r"]
+            if hex_q < lowest_hex[0]:
+                if hex_r < lowest_hex[1]:
+                    lowest_hex[0] = hex_q
+                    lowest_hex[1] = hex_r
+            if hex_q > highest_hex[0]:
+                if hex_r > highest_hex[1]:
+                    highest_hex[0] = hex_q
+                    highest_hex[1] = hex_r
+        return {
+            "hexagons": hexagons,
+            "lowest_hex": lowest_hex,
+            "highest_hex": highest_hex
+        }
 
     def put(self):
         pass
