@@ -66,11 +66,42 @@ class NamespaceSock(Namespace):
                 }
                 emit("send_hexagon_success", return_hexagon, room=room)
                 return
+            elif q < -map_size and (-4 <= r <= 4):
+                wrap_q = 0
+                while q < -map_size:
+                    q = q + (2 * map_size + 1)
+                    wrap_q -= 1
+                s = (q + r) * -1
+                print("wraparound test 5! q: {} r: {} s: {}   wrap_q: {}".format(q, r, s, wrap_q))
+                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
+                # We will add a wraparound indicator
+                return_hexagon = hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": wrap_q,
+                    "r": 0
+                }
+                emit("send_hexagon_success", return_hexagon, room=room)
+                return
             elif (-4 <= q <= 4) and r > map_size:
                 wrap_r = 0
                 while r > map_size:
                     r = r - (2 * map_size + 1)
                     wrap_r += 1
+                s = (q + r) * -1
+                print("wraparound test 2! q: {} r: {} s: {}   wrap r: {}".format(q, r, s, wrap_r))
+                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
+                return_hexagon = hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": 0,
+                    "r": wrap_r
+                }
+                emit("send_hexagon_success", return_hexagon, room=room)
+                return
+            elif (-4 <= q <= 4) and r < -map_size:
+                wrap_r = 0
+                while r < -map_size:
+                    r = r + (2 * map_size + 1)
+                    wrap_r -= 1
                 s = (q + r) * -1
                 print("wraparound test 2! q: {} r: {} s: {}   wrap r: {}".format(q, r, s, wrap_r))
                 hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
@@ -90,6 +121,63 @@ class NamespaceSock(Namespace):
                 while r > map_size:
                     r = r - (2 * map_size + 1)
                     wrap_r += 1
+                s = (q + r) * -1
+                print("wraparound test 3! q: {} r: {} s: {}  wrap_q: {}   wrap_r: {}".format(q, r, s, wrap_q, wrap_r))
+                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
+                return_hexagon = hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": wrap_q,
+                    "r": wrap_r
+                }
+                emit("send_hexagon_success", return_hexagon, room=room)
+                return
+            elif q > map_size and r < -map_size:
+                wrap_q = 0
+                while q > map_size:
+                    q = q - (2 * map_size + 1)
+                    wrap_q += 1
+                wrap_r = 0
+                while r < -map_size:
+                    r = r + (2 * map_size + 1)
+                    wrap_r -= 1
+                s = (q + r) * -1
+                print("wraparound test 3! q: {} r: {} s: {}  wrap_q: {}   wrap_r: {}".format(q, r, s, wrap_q, wrap_r))
+                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
+                return_hexagon = hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": wrap_q,
+                    "r": wrap_r
+                }
+                emit("send_hexagon_success", return_hexagon, room=room)
+                return
+            elif q < -map_size and r > map_size:
+                wrap_q = 0
+                while q < -map_size:
+                    q = q + (2 * map_size + 1)
+                    wrap_q -= 1
+                wrap_r = 0
+                while r > map_size:
+                    r = r - (2 * map_size + 1)
+                    wrap_r += 1
+                s = (q + r) * -1
+                print("wraparound test 3! q: {} r: {} s: {}  wrap_q: {}   wrap_r: {}".format(q, r, s, wrap_q, wrap_r))
+                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
+                return_hexagon = hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": wrap_q,
+                    "r": wrap_r
+                }
+                emit("send_hexagon_success", return_hexagon, room=room)
+                return
+            elif q < -map_size and r < -map_size:
+                wrap_q = 0
+                while q < -map_size:
+                    q = q + (2 * map_size + 1)
+                    wrap_q -= 1
+                wrap_r = 0
+                while r < -map_size:
+                    r = r + (2 * map_size + 1)
+                    wrap_r -= 1
                 s = (q + r) * -1
                 print("wraparound test 3! q: {} r: {} s: {}  wrap_q: {}   wrap_r: {}".format(q, r, s, wrap_q, wrap_r))
                 hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
