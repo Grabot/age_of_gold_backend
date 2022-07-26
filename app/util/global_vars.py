@@ -1,1 +1,1 @@
-map_size = 4
+map_size = 2

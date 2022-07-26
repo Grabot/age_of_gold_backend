@@ -67,7 +67,7 @@ class NamespaceSock(Namespace):
                     wrap_r -= 1
 
                 s = (q + r) * -1
-                print("wraparound test! q: {} r: {} s: {}   wrap_q: {}".format(q, r, s, wrap_q))
+                print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
                 hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
                 # We will add a wraparound indicator
                 return_hexagon = hexagon.serialize
