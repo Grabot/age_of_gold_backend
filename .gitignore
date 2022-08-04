@@ -131,3 +131,6 @@ dmypy.json
 .idea/
 
 .help_file
+
+kubernetes/flask_secret_production.yaml
+kubernetes/age_of_gold.yaml

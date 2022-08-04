@@ -3,15 +3,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_socketio import SocketIO
-from rq import Queue
 from redis import Redis
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 socks = SocketIO(cors_allowed_origins="*")
-r = Redis(host='redis', port=6379)
-q = Queue(connection=r)
+r = Redis(host=DevelopmentConfig.REDIS_URL, port=DevelopmentConfig.REDIS_PORT)
 
 
 def create_app():
