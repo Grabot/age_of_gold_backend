@@ -4,12 +4,10 @@ metadata:
   name: redis-service
   namespace: golden-age
 spec:
-  type: ClusterIP
   ports:
     - port: 6379
-      targetPort: 6379
   selector:
-    app: redis-api
+    app: redis
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -32,3 +30,10 @@ spec:
           image: redis
           ports:
             - containerPort: 6379
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "5Gi"
+            limits:
+              cpu: "1"
+              memory: "10Gi"

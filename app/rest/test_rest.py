@@ -1,7 +1,6 @@
 from flask_restful import Api
 from flask_restful import Resource
 from app.rest import app_api
-from app import r
 
 
 class TestRest(Resource):

@@ -6,18 +6,6 @@ from flask import request
 from app import socks
 from app.models.hexagon import Hexagon
 from app.util.global_vars import map_size
-from app import r
-
-
-def redis_queue(user_id):
-    print("this is the queue: %s" % user_id)
-    publish = r.pubsub()
-    publish.subscribe("messages")
-    room = "room_%s" % user_id
-    for message in publish.listen():
-        print("this is another queue test: %s" % user_id)
-        print(f"there is a message in r.listen() {message}")
-        socks.emit("send_message_success", 'User TEST', room=room, namespace='/api/v1.0/sock')
 
 
 class NamespaceSock(Namespace):
@@ -44,7 +32,6 @@ class NamespaceSock(Namespace):
         print("joined room: %s" % room)
         join_room(room)
         emit("message_event", 'User has entered room %s' % room, room=room, namespace='/api/v1.0/sock')
-        socks.start_background_task(redis_queue, 0)
 
     # noinspection PyMethodMayBeStatic
     def on_leave(self, data):
