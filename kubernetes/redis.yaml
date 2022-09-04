@@ -18,12 +18,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis-api
+      app: redis
   template:
     metadata:
       namespace: golden-age
       labels:
-        app: redis-api
+        app: redis
     spec:
       containers:
         - name: redis-api

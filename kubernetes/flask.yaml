@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: flaskapi
-          image: grabot/age_of_gold:1.02
+          image: grabot/age_of_gold:1.03
           imagePullPolicy: Always
           ports:
             - containerPort: 5000

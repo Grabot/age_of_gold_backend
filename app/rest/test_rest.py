@@ -7,7 +7,6 @@ class TestRest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
-        r.publish('messages', "quick test")
         return {
             "You have found a ": "test"
         }
@@ -19,7 +18,9 @@ class TestRest(Resource):
         pass
 
     def post(self):
-        pass
+        return {
+            "You have found another ": "test"
+        }
 
 
 api = Api(app_api)
