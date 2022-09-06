@@ -5,8 +5,10 @@ from flask_socketio import emit
 from flask import request
 from app import socks
 from app.models.hexagon import Hexagon
+from app.models.tile import Tile
 from app.util.global_vars import map_size
 from app.util.util import get_wraparounds
+from app import db
 
 
 class NamespaceSock(Namespace):
@@ -38,17 +40,19 @@ class NamespaceSock(Namespace):
     def on_join_hex(self, data):
         q = data["q"]
         r = data["r"]
-        [q, _, r, _] = get_wraparounds(q, r)
+        if q < -map_size or q > map_size or r < -map_size or r > map_size:
+            [q, _, r, _] = get_wraparounds(q, r)
         room = "%s_%s" % (q, r)
         join_room(room)
-        print("joined hex room: %s" % room)
+        # print("joined hex room: %s" % room)
         emit("message_event", 'User is looking at hex %s %s and has entered room %s' % (q, r, room), room=room)
 
     # noinspection PyMethodMayBeStatic
     def on_leave_hex(self, data):
         q = data["q"]
         r = data["r"]
-        [q, _, r, _] = get_wraparounds(q, r)
+        if q < -map_size or q > map_size or r < -map_size or r > map_size:
+            [q, _, r, _] = get_wraparounds(q, r)
         room = "%s_%s" % (q, r)
         leave_room(room)
         # print("left hex room: %s" % room)
@@ -95,11 +99,31 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_send_message(self, data):
-        user_name = data["user_name"]
-        message = data["message"]
-        print("we are going to send a message {} from user {}".format(message, user_name))
-        print("we are going to send a message {} from user {}".format(message, user_name))
         emit("send_message_success", data, broadcast=True)
+
+    # noinspection PyMethodMayBeStatic
+    def on_change_tile_type(self, data):
+        q = data["q"]
+        r = data["r"]
+        s = (q + r) * -1
+        tile_type = data["type"]
+        tile = Tile.query.filter_by(q=q, r=r, s=s).first()
+        if tile:
+            tile.type = tile_type
+            db.session.add(tile)
+            db.session.commit()
+            tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
+            if tile_hexagon:
+                return_hexagon = tile_hexagon.serialize
+                return_hexagon["wraparound"] = {
+                    "q": data["wrap_q"],
+                    "r": data["wrap_r"]
+                }
+                emit("send_hexagon_success", return_hexagon, room=request.sid)
+            else:
+                emit("change_tile_type_failed", room=request.sid)
+        else:
+            emit("change_tile_type_failed", room=request.sid)
 
 
 socks.on_namespace(NamespaceSock('/api/v1.0/sock'))
