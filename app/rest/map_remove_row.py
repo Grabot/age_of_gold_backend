@@ -26,11 +26,23 @@ class TestRest(Resource):
     def post(self):
         json_data = request.get_json(force=True)
         password = json_data["password"]
+        print("called the row remove endpoint")
         if password == DevelopmentConfig.PASSWORD_AGE_OF_GOLD:
-            Tile.query.delete()
-            Hexagon.query.delete()
-            db.session.commit()
-            print("map removed")
+            r = json_data["r"]
+            if r:
+                print("going to remove row %s" % r)
+                hexagons = Hexagon.query.filter_by(r=r)
+                for hexagon in hexagons:
+                    tiles = hexagon.tiles
+                    for tile in tiles:
+                        db.session.delete(tile)
+                db.session.commit()
+                for hexagon in hexagons:
+                    db.session.delete(hexagon)
+                db.session.commit()
+                print("map removed")
+            else:
+                return {"result": "Please provide a row"}
         else:
             print("map NOT removed")
 
@@ -40,4 +52,4 @@ class TestRest(Resource):
 
 
 api = Api(app_api)
-api.add_resource(TestRest, '/api/v1.0/test', endpoint='test')
+api.add_resource(TestRest, '/api/v1.0/map/remove', endpoint='remove_row')
