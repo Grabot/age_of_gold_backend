@@ -21,6 +21,8 @@ class DevelopmentConfig(Config):
     REDIS_URL = os.environ["REDIS_URL"]
     REDIS_PORT = os.environ["REDIS_PORT"]
 
+    PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
+
     DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}'.format(
         user=POSTGRES_USER, pw=POSTGRES_PASSWORD, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
 

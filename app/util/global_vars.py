@@ -1,1 +1,1 @@
-map_size = 20
+map_size = 200
