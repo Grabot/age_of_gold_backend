@@ -7,8 +7,9 @@ from app import socks
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.util.global_vars import map_size
-from app.util.util import get_wraparounds
+from app.util.util import get_wraparounds, cleanup
 from app import db
+import time
 
 
 class NamespaceSock(Namespace):
@@ -68,34 +69,41 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
+        start_time = time.time()
         q = data["q"]
         r = data["r"]
-        s = (q + r) * -1
-        if q is not None and r is not None and s is not None:
-            # If the hex is out of the map bounds we want it to loop around
-            if q < -map_size or q > map_size or r < -map_size or r > map_size:
-                [q, wrap_q, r, wrap_r] = get_wraparounds(q, r)
+        print("%s_%s start with getting hexagons" % (q, r))
+        # s = (q + r) * -1
+        # If the hex is out of the map bounds we want it to loop around
+        if q < -map_size or q > map_size or r < -map_size or r > map_size:
+            [q, wrap_q, r, wrap_r] = get_wraparounds(q, r)
 
-                s = (q + r) * -1
-                print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
-                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
-                # We will add a wraparound indicator
-                return_hexagon = hexagon.serialize
-                return_hexagon["wraparound"] = {
-                    "q": wrap_q,
-                    "r": wrap_r
-                }
-                emit("send_hexagon_success", return_hexagon, room=request.sid)
-                return
-            else:
-                # The hex is within the map bounds so retrieve it
-                hexagon = Hexagon.query.filter_by(q=q, r=r, s=s).first()
-                if hexagon is None:
-                    emit("send_hexagon_fail", 'hexagon getting failed', room=request.sid)
-                else:
-                    emit("send_hexagon_success", hexagon.serialize, room=request.sid)
+            # s = (q + r) * -1
+            # print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
+            hexagon = Hexagon.query.filter_by(q=q, r=r).first()
+            cleanup(db.session)
+            # We will add a wraparound indicator
+            return_hexagon = hexagon.serialize
+            return_hexagon["wraparound"] = {
+                "q": wrap_q,
+                "r": wrap_r
+            }
+            emit("send_hexagon_success", return_hexagon, room=request.sid)
+            return
         else:
-            emit("send_hexagon_fail", 'hexagon getting failed', room=request.sid)
+            # The hex is within the map bounds so retrieve it
+            hexagon = Hexagon.query.filter_by(q=q, r=r).first()
+            if hexagon is None:
+                emit("send_hexagon_fail", 'hexagon getting failed', room=request.sid)
+            else:
+                # end_time = time.time()
+                # total_time = end_time - start_time
+                # print("%s_%s finished with getting BEFORE hexagons %s" % (q, r, total_time))
+                return_thing = hexagon.serialize
+                end_time = time.time()
+                total_time = end_time - start_time
+                print("%s_%s finished with getting AFTER hexagons %s" % (q, r, total_time))
+                emit("send_hexagon_success", return_thing, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_send_message(self, data):
@@ -105,9 +113,9 @@ class NamespaceSock(Namespace):
     def on_change_tile_type(self, data):
         q = data["q"]
         r = data["r"]
-        s = (q + r) * -1
+        # s = (q + r) * -1
         tile_type = data["type"]
-        tile = Tile.query.filter_by(q=q, r=r, s=s).first()
+        tile = Tile.query.filter_by(q=q, r=r).first()
         if tile:
             tile.type = tile_type
             db.session.add(tile)

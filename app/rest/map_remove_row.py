@@ -41,6 +41,7 @@ class TestRest(Resource):
                     db.session.delete(hexagon)
                 db.session.commit()
                 print("map removed")
+                return {"result": "Removed row %s" % r}
             else:
                 return {"result": "Please provide a row"}
         else:
@@ -52,4 +53,4 @@ class TestRest(Resource):
 
 
 api = Api(app_api)
-api.add_resource(TestRest, '/api/v1.0/map/remove', endpoint='remove_row')
+api.add_resource(TestRest, '/api/v1.0/map/remove/row', endpoint='remove_row')

@@ -187,7 +187,7 @@ class MapRest(Resource):
             [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
             return {
                 "result": True,
-                "message": "Row successfully created!"
+                "message": "Row %s successfully created!" % r
             }
         else:
             return {

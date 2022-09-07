@@ -13,6 +13,10 @@ socks = SocketIO(cors_allowed_origins="*")
 def create_app():
     app = Flask(__name__)
     app.config.from_object(DevelopmentConfig)
+    app.config['SQLALCHEMY_MAX_OVERFLOW'] = 0
+    app.config['SQLALCHEMY_POOL_SIZE'] = 1000
+    app.config['SQLALCHEMY_RECORD_QUERIES'] = False
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     socks.init_app(app, message_queue=DevelopmentConfig.REDIS_URL)
     migrate.init_app(app, db)

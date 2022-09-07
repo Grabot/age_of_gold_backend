@@ -31,6 +31,7 @@ class TestRest(Resource):
             Hexagon.query.delete()
             db.session.commit()
             print("map removed")
+            return {"result": "map removed successfully"}
         else:
             print("map NOT removed")
 
