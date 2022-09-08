@@ -39,6 +39,15 @@ spec:
           env:
             - name: POSTGRES_PORT
               value: "5432"
+          args:
+          - -c
+          - max_connections=1000
+          - -c
+          - max_parallel_workers=32
+          - -c
+          - max_parallel_workers_per_gather=8
+          - -c
+          - shared_buffers=1024MB
           volumeMounts:
             - name: data-storage-volume
               mountPath: /var/lib/postgresql/data
