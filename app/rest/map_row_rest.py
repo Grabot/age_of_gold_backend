@@ -103,21 +103,22 @@ def go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles):
     # r = -4
     # s = -5
     # Go right so q += 1 and s -= 1
-    index = 0
+    index = -global_vars.map_size - 1
     while index < global_vars.map_size:
-        q += 1
-        s -= 1
         hexagon = Hexagon(q=q, r=r, s=s)
         db.session.add(hexagon)
         db.session.commit()
         print("created hexagon (right) with q: %s r: %s s: %s and id: %s" % (q, r, s, hexagon.id))
-        q_for_tiles += 9
-        r_for_tiles -= 4
-        s_for_tiles -= 5
+
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles, s_for_tiles)
         for tile in tiles:
             db.session.add(tile)
         db.session.commit()
+        q += 1
+        s -= 1
+        q_for_tiles += 9
+        r_for_tiles -= 4
+        s_for_tiles -= 5
         index += 1
     return [q, r, s, q_for_tiles, r_for_tiles, s_for_tiles]
 
@@ -170,20 +171,17 @@ class MapRest(Resource):
 
         if hexagon is None:
             # map_size = global_vars.map_size
-            q = 0
+            # We go from the leftmost place all the way to the right.
+            q = -global_vars.map_size
             s = (q + r) * -1
+            # First adapt it to the row
             q_for_tiles = (5 * r)
             r_for_tiles = (-9 * r)
-            s_for_tiles = (4 * r)
-            # center tile with left and right hexagons
-            hexagon = Hexagon(q=q, r=r, s=s)
-            db.session.add(hexagon)
-            db.session.commit()
-            tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles, s_for_tiles)
-            for tile in tiles:
-                db.session.add(tile)
-            db.session.commit()
-            [_, _, _, _, _, _] = go_left(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
+            # Then adapt it to the column
+            q_for_tiles += (9 * q)
+            r_for_tiles += (-4 * q)
+            s_for_tiles = (q_for_tiles + r_for_tiles) * -1
+
             [_, _, _, _, _, _] = go_right(q, r, s, q_for_tiles, r_for_tiles, s_for_tiles)
             return {
                 "result": True,

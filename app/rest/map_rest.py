@@ -7,6 +7,7 @@ from app.models.tile import Tile
 from app.rest import app_api
 from app import db
 from app.util import global_vars
+import json
 
 
 radius = 4
@@ -234,7 +235,6 @@ class MapRest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
-        print("get map")
         return {"Hello": "Map"}
 
     def put(self):

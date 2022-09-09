@@ -10,6 +10,7 @@ from app.util.global_vars import map_size
 from app.util.util import get_wraparounds, cleanup
 from app import db
 import time
+import json
 
 
 class NamespaceSock(Namespace):
@@ -81,7 +82,7 @@ class NamespaceSock(Namespace):
             # s = (q + r) * -1
             # print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
             hexagon = Hexagon.query.filter_by(q=q, r=r).first()
-            cleanup(db.session)
+            # cleanup(db.session)
             # We will add a wraparound indicator
             return_hexagon = hexagon.serialize
             return_hexagon["wraparound"] = {
@@ -100,9 +101,9 @@ class NamespaceSock(Namespace):
                 # total_time = end_time - start_time
                 # print("%s_%s finished with getting BEFORE hexagons %s" % (q, r, total_time))
                 return_thing = hexagon.serialize
-                end_time = time.time()
-                total_time = end_time - start_time
-                print("%s_%s finished with getting AFTER hexagons %s" % (q, r, total_time))
+                # end_time = time.time()
+                # total_time = end_time - start_time
+                # print("%s_%s finished with getting AFTER hexagons %s" % (q, r, total_time))
                 emit("send_hexagon_success", return_thing, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
@@ -118,16 +119,23 @@ class NamespaceSock(Namespace):
         tile = Tile.query.filter_by(q=q, r=r).first()
         if tile:
             tile.type = tile_type
-            db.session.add(tile)
-            db.session.commit()
             tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
             if tile_hexagon:
+                tiles = tile_hexagon.tiles
+                tiles_info = []
+                for tile in tiles:
+                    tiles_info.append(tile.serialize)
+                tile_hexagon.tiles_detail = json.dumps(tiles_info)
+                db.session.add(tile)
+                db.session.add(tile_hexagon)
+                db.session.commit()
                 return_hexagon = tile_hexagon.serialize
                 return_hexagon["wraparound"] = {
                     "q": data["wrap_q"],
                     "r": data["wrap_r"]
                 }
-                emit("send_hexagon_success", return_hexagon, room=request.sid)
+                room = "%s_%s" % (q, r)
+                emit("send_hexagon_success", return_hexagon, room=room)
             else:
                 emit("change_tile_type_failed", room=request.sid)
         else:
