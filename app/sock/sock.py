@@ -110,15 +110,19 @@ class NamespaceSock(Namespace):
             tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
             if tile_hexagon:
                 db.session.add(tile)
-                db.session.add(tile_hexagon)
                 room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
+                # We already send the tile back via the socket to the hex room.
                 emit("change_tile_type_success", tile.serialize, room=room)
 
-                tiles = tile_hexagon.tiles
-                tiles_info = []
-                for tile in tiles:
-                    tiles_info.append(tile.serialize)
-                tile_hexagon.tiles_detail = json.dumps(tiles_info)
+                # We can get all the tiles and re-write the tiles_detail
+                # But we will just look for the correct tile in the existing string
+                # and update just that one.
+                prev_details = json.loads(tile_hexagon.tiles_detail)
+                for tile_detail in prev_details:
+                    if tile_detail["q"] == tile.q and tile_detail["r"] == tile.r:
+                        tile_detail["type"] = tile.type
+                tile_hexagon.tiles_detail = json.dumps(prev_details)
+                db.session.add(tile_hexagon)
                 db.session.commit()
                 print("tile type %s change updated" % tile_type)
             else:

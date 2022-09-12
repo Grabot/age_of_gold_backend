@@ -242,14 +242,14 @@ class MapRest(Resource):
             for tile in tiles:
                 db.session.add(tile)
             db.session.commit()
-            [_, _, _, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
-            [_, _, _, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
+            [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
+            [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
 
             # going up
             for x in range(0, global_vars.map_size):
                 [q, r, q_for_tiles, r_for_tiles] = go_left_up(q, r, q_for_tiles, r_for_tiles)
-                [_, _, _, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
-                [_, _, _, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
+                [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
+                [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
 
             # going down, we reset back to the center for this.
             q = 0
