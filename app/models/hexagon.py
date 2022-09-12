@@ -1,5 +1,5 @@
 from app import db
-from sqlalchemy import types
+from sqlalchemy import Index
 
 
 class Hexagon(db.Model):
@@ -11,8 +11,11 @@ class Hexagon(db.Model):
     tiles = db.relationship("Tile", backref="tile")
     q = db.Column(db.Integer)
     r = db.Column(db.Integer)
-    s = db.Column(db.Integer)
+    # We no longer require to actually have the 's' indicator s = (q + r) * -1
+    # s = db.Column(db.Integer)
     tiles_detail = db.Column(db.Text)
+
+    __table_args__ = (Index('hexagon_index', "q", "r", unique=True),)
 
     @property
     def serialize(self):

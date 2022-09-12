@@ -33,6 +33,8 @@ services:
       - "max_parallel_workers=32"
       - "-c"
       - "max_parallel_workers_per_gather=8"
+      - "-c"
+      - "shared_buffers=4096MB"
 
   redis:
     image: redis:latest

@@ -18,17 +18,17 @@ spec:
     spec:
       containers:
         - name: flaskapi
-          image: grabot/age_of_gold:1.07
+          image: grabot/age_of_gold:1.09
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
-          resources:
-            requests:
-              cpu: "250m"
-              memory: "500Mi"
-            limits:
-              cpu: "500m"
-              memory: "1Gi"
+#          resources:
+#            requests:
+#              cpu: "250m"
+#              memory: "500Mi"
+#            limits:
+#              cpu: "500m"
+#              memory: "1Gi"
           envFrom:
             - secretRef:
                 name: flask-secret

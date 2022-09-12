@@ -1,3 +1,5 @@
+from sqlalchemy import Index
+
 from app import db
 
 
@@ -10,8 +12,11 @@ class Tile(db.Model):
     hexagon_id = db.Column(db.Integer, db.ForeignKey('Hexagon.id'))
     q = db.Column(db.Integer)
     r = db.Column(db.Integer)
-    s = db.Column(db.Integer)
+    # We no longer require to actually have the 's' indicator s = (q + r) * -1
+    # s = db.Column(db.Integer)
     type = db.Column(db.Integer)
+
+    __table_args__ = (Index('tile_index', "q", "r", unique=True),)
 
     @property
     def serialize(self):

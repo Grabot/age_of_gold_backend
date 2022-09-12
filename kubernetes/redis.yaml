@@ -30,10 +30,10 @@ spec:
           image: redis
           ports:
             - containerPort: 6379
-          resources:
-            requests:
-              cpu: "500m"
-              memory: "5Gi"
-            limits:
-              cpu: "1"
-              memory: "10Gi"
+#          resources:
+#            requests:
+#              cpu: "500m"
+#              memory: "5Gi"
+#            limits:
+#              cpu: "1"
+#              memory: "10Gi"

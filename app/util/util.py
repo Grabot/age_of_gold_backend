@@ -1,10 +1,6 @@
 from app.util.global_vars import map_size
 
 
-def cleanup(session):
-    session.close()
-
-
 def get_wraparounds(q, r):
     wrap_q = 0
     wrap_r = 0

@@ -7,7 +7,7 @@ from app import socks
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.util.global_vars import map_size
-from app.util.util import get_wraparounds, cleanup
+from app.util.util import get_wraparounds
 from app import db
 import time
 import json
@@ -70,19 +70,14 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
-        start_time = time.time()
         q = data["q"]
         r = data["r"]
-        print("%s_%s start with getting hexagons" % (q, r))
-        # s = (q + r) * -1
         # If the hex is out of the map bounds we want it to loop around
         if q < -map_size or q > map_size or r < -map_size or r > map_size:
             [q, wrap_q, r, wrap_r] = get_wraparounds(q, r)
 
-            # s = (q + r) * -1
             # print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
             hexagon = Hexagon.query.filter_by(q=q, r=r).first()
-            # cleanup(db.session)
             # We will add a wraparound indicator
             return_hexagon = hexagon.serialize
             return_hexagon["wraparound"] = {
@@ -97,13 +92,7 @@ class NamespaceSock(Namespace):
             if hexagon is None:
                 emit("send_hexagon_fail", 'hexagon getting failed', room=request.sid)
             else:
-                # end_time = time.time()
-                # total_time = end_time - start_time
-                # print("%s_%s finished with getting BEFORE hexagons %s" % (q, r, total_time))
                 return_thing = hexagon.serialize
-                # end_time = time.time()
-                # total_time = end_time - start_time
-                # print("%s_%s finished with getting AFTER hexagons %s" % (q, r, total_time))
                 emit("send_hexagon_success", return_thing, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
@@ -114,28 +103,24 @@ class NamespaceSock(Namespace):
     def on_change_tile_type(self, data):
         q = data["q"]
         r = data["r"]
-        # s = (q + r) * -1
         tile_type = data["type"]
         tile = Tile.query.filter_by(q=q, r=r).first()
         if tile:
             tile.type = tile_type
             tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
             if tile_hexagon:
+                db.session.add(tile)
+                db.session.add(tile_hexagon)
+                room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
+                emit("change_tile_type_success", tile.serialize, room=room)
+
                 tiles = tile_hexagon.tiles
                 tiles_info = []
                 for tile in tiles:
                     tiles_info.append(tile.serialize)
                 tile_hexagon.tiles_detail = json.dumps(tiles_info)
-                db.session.add(tile)
-                db.session.add(tile_hexagon)
                 db.session.commit()
-                return_hexagon = tile_hexagon.serialize
-                return_hexagon["wraparound"] = {
-                    "q": data["wrap_q"],
-                    "r": data["wrap_r"]
-                }
-                room = "%s_%s" % (q, r)
-                emit("send_hexagon_success", return_hexagon, room=room)
+                print("tile type %s change updated" % tile_type)
             else:
                 emit("change_tile_type_failed", room=request.sid)
         else:
