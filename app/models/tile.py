@@ -16,7 +16,10 @@ class Tile(db.Model):
     # s = db.Column(db.Integer)
     type = db.Column(db.Integer)
 
-    __table_args__ = (Index('tile_index', "q", "r", unique=True),)
+    __table_args__ = (
+        Index('tile_q_r_index', "q", "r", unique=True),
+        Index('tile_id_index', "id", unique=True),
+    )
 
     @property
     def serialize(self):

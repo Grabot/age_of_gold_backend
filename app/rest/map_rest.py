@@ -20,7 +20,7 @@ radius = 4
 # [r, s, q]
 # [-q, -r, -s]
 # So if the center hex is 0, 0, 0
-# on of the side hexagons with the radius of 4 would be 9, -4, -5
+# one of the side hexagons with the radius of 4 would be 9, -4, -5
 
 
 def create_tile(hexagon_id, _q, _r):
@@ -108,8 +108,12 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
         q_for_tiles += 9
         r_for_tiles -= 4
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+        tiles_info = []
         for tile in tiles:
             db.session.add(tile)
+            tiles_info.append(tile.serialize)
+        hexagon.tiles_detail = json.dumps(tiles_info)
+        db.session.add(hexagon)
         db.session.commit()
         index += 1
     return [q, r, q_for_tiles, r_for_tiles]
@@ -129,8 +133,12 @@ def go_left(q, r, q_for_tiles, r_for_tiles):
         q_for_tiles -= 9
         r_for_tiles += 4
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+        tiles_info = []
         for tile in tiles:
             db.session.add(tile)
+            tiles_info.append(tile.serialize)
+        hexagon.tiles_detail = json.dumps(tiles_info)
+        db.session.add(hexagon)
         db.session.commit()
         index += 1
     return [q, r, q_for_tiles, r_for_tiles]
@@ -149,8 +157,12 @@ def go_right_up(q, r, q_for_tiles, r_for_tiles):
     q_for_tiles += 4
     r_for_tiles += 5
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+    tiles_info = []
     for tile in tiles:
         db.session.add(tile)
+        tiles_info.append(tile.serialize)
+    hexagon.tiles_detail = json.dumps(tiles_info)
+    db.session.add(hexagon)
     db.session.commit()
     return [q, r, q_for_tiles, r_for_tiles]
 
@@ -167,8 +179,12 @@ def go_left_up(q, r, q_for_tiles, r_for_tiles):
     q_for_tiles -= 5
     r_for_tiles += 9
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+    tiles_info = []
     for tile in tiles:
         db.session.add(tile)
+        tiles_info.append(tile.serialize)
+    hexagon.tiles_detail = json.dumps(tiles_info)
+    db.session.add(hexagon)
     db.session.commit()
     return [q, r, q_for_tiles, r_for_tiles]
 
@@ -186,8 +202,12 @@ def go_left_down(q, r, q_for_tiles, r_for_tiles):
     q_for_tiles -= 4
     r_for_tiles -= 5
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+    tiles_info = []
     for tile in tiles:
         db.session.add(tile)
+        tiles_info.append(tile.serialize)
+    hexagon.tiles_detail = json.dumps(tiles_info)
+    db.session.add(hexagon)
     db.session.commit()
     return [q, r, q_for_tiles, r_for_tiles]
 
@@ -204,8 +224,12 @@ def go_right_down(q, r, q_for_tiles, r_for_tiles):
     q_for_tiles += 5
     r_for_tiles -= 9
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+    tiles_info = []
     for tile in tiles:
         db.session.add(tile)
+        tiles_info.append(tile.serialize)
+    hexagon.tiles_detail = json.dumps(tiles_info)
+    db.session.add(hexagon)
     db.session.commit()
     return [q, r, q_for_tiles, r_for_tiles]
 
@@ -239,8 +263,12 @@ class MapRest(Resource):
             db.session.add(hexagon)
             db.session.commit()
             tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
+            tiles_info = []
             for tile in tiles:
                 db.session.add(tile)
+                tiles_info.append(tile.serialize)
+            hexagon.tiles_detail = json.dumps(tiles_info)
+            db.session.add(hexagon)
             db.session.commit()
             [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
             [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
