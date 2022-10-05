@@ -10,8 +10,3 @@ from app.rest import map_remove_row
 from app.rest import map_remove
 from app.rest import add_tile_detail
 
-
-# @app_api.route("/")
-# def home():
-#     return render_template('index.html')
-
