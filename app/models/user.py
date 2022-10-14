@@ -17,10 +17,10 @@ class User(UserMixin, db.Model):
     """
     __tablename__ = 'User'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Text, index=True, unique=False)
+    username = db.Column(db.Text, index=True, unique=True)
     email = db.Column(db.Text, index=True, unique=True)
     password_hash = db.Column(db.Text)
-    about_me = db.Column(db.String(140))
+    about_me = db.Column(db.Text)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
 
     def hash_password(self, password):
