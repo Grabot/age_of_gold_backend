@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from app import login
 from hashlib import md5
 from datetime import datetime
+from app.models.friend import Friend
 
 
 @login.user_loader
@@ -17,6 +18,21 @@ class User(UserMixin, db.Model):
     """
     __tablename__ = 'User'
     id = db.Column(db.Integer, primary_key=True)
+    # friends of the user
+    friends = db.relationship(
+        'Friend',
+        foreign_keys=[Friend.user_id],
+        backref=db.backref('followers', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
+    # other friends that have befriended this user
+    # A friend connection makes 2 'Friend' entries, each of these lists corresponds to the different direction
+    followers = db.relationship(
+        'Friend',
+        foreign_keys=[Friend.friend_id],
+        backref=db.backref('friends', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan')
     username = db.Column(db.Text, index=True, unique=True)
     email = db.Column(db.Text, index=True, unique=True)
     password_hash = db.Column(db.Text)
@@ -33,6 +49,43 @@ class User(UserMixin, db.Model):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
 
+    def befriend(self, user):
+        friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
+        if not friend:
+            friend = Friend(
+                user_id=self.id,
+                friend_id=user.id,
+                last_time_activity=datetime.utcnow(),
+                unread_messages=0,
+                ignored=False,
+                removed=False
+            )
+            db.session.add(friend)
+            return friend
+        else:
+            if friend.is_removed():
+                friend.remove(False)
+                db.session.add(friend)
+                return friend
+            else:
+                return friend
+
+    def unfriend(self, user):
+        if self.is_friend(user):
+            friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
+            if friend:
+                friend.remove(True)
+                db.session.add(friend)
+
+    def is_friend(self, user):
+        if user:
+            friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
+            if friend:
+                return not friend.is_removed()
+            else:
+                return False
+        else:
+            return False
     @property
     def serialize(self):
         """Return object data in easily serializable format"""

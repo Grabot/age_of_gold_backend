@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, request
-from app.routes.forms import LoginForm, RegistrationForm, EditProfileForm
+from app.routes.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm
 from flask_login import current_user, login_user, logout_user
 from datetime import datetime
 
@@ -69,7 +69,8 @@ def set_routes(app):
             {'author': user, 'body': 'Test post #1'},
             {'author': user, 'body': 'Test post #2'}
         ]
-        return render_template('user.html', user=user, posts=posts)
+        form = EmptyForm()
+        return render_template('user.html', user=user, posts=posts, form=form)
 
     @app.before_request
     def before_request():
@@ -100,4 +101,44 @@ def set_routes(app):
     def internal_error(error):
         db.session.rollback()
         return render_template('500.html'), 500
+
+    @app.route('/follow/<username>', methods=['POST'])
+    @login_required
+    def follow(username):
+        form = EmptyForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(username=username).first()
+            if user is None:
+                flash('User {} not found.'.format(username))
+                return redirect('/index')
+            if user == current_user:
+                flash('You cannot follow yourself!')
+                return redirect('/user/%s' % username)
+            current_user.befriend(user)
+            user.befriend(current_user)
+            db.session.commit()
+            flash('You are following {}!'.format(username))
+            return redirect('/user/%s' % username)
+        else:
+            return redirect('/index')
+
+    @app.route('/unfollow/<username>', methods=['POST'])
+    @login_required
+    def unfollow(username):
+        form = EmptyForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(username=username).first()
+            if user is None:
+                flash('User {} not found.'.format(username))
+                return redirect('/index')
+            if user == current_user:
+                flash('You cannot unfollow yourself!')
+                return redirect('/user/%s' % username)
+            # unfriending is only one way. The other friend will still think they are friends but can't message them
+            current_user.unfriend(user)
+            db.session.commit()
+            flash('You are not following {}.'.format(username))
+            return redirect('/user/%s' % username)
+        else:
+            return redirect('/index')
 
