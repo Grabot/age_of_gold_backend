@@ -1,4 +1,4 @@
-FROM python:3.9.10
+FROM python:3.10.8
 
 COPY . /app
 WORKDIR /app
