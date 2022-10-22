@@ -1,7 +1,8 @@
 from flask import redirect, request
-from flask_login import current_user
+from flask_login import current_user, login_user
 import requests
 from app.config import DevelopmentConfig
+import json
 
 
 def get_google_provider_cfg():
@@ -50,6 +51,7 @@ def google_login(app):
         print("url: %s" % request.url)
         return redirect(request_uri)
 
+    from app import db
     from app.models.user import User
 
     @app.route("/google/test/login/callback", methods=['GET', 'POST'])
@@ -97,32 +99,66 @@ def google_login(app):
         # You want to make sure their email is verified.
         # The user authenticated with Google, authorized your
         # app, and now you've verified their email through Google!
-        if userinfo_response.json().get("email_verified"):
-            unique_id = userinfo_response.json()["sub"]
-            users_email = userinfo_response.json()["email"]
-            picture = userinfo_response.json()["picture"]
-            users_name = userinfo_response.json()["given_name"]
-            print("user verified!")
-            print(unique_id)
-            print(users_email)
-            print(picture)
-            print(users_name)
-            user = User(username=users_name, email=users_email)
-        else:
+        if not userinfo_response.json().get("email_verified"):
             return "User email not available or not verified by Google.", 400
 
-        # # Create a user in your db with the information provided
-        # # by Google
-        # user = User(
-        #     id_=unique_id, name=users_name, email=users_email, profile_pic=picture
-        # )
-        #
-        # # Doesn't exist? Add it to the database.
-        # if not User.get(unique_id):
-        #     User.create(unique_id, users_name, users_email, picture)
-        #
-        # # Begin user session by logging the user in
-        # login_user(user)
+        unique_id = userinfo_response.json()["sub"]
+        users_email = userinfo_response.json()["email"]
+        picture = userinfo_response.json()["picture"]
+        users_name = userinfo_response.json()["given_name"]
+        print("user verified!")
+        print(unique_id)
+        print(users_email)
+        print(picture)
+        print(users_name)
+        # Check if the user has logged in before using google.
+        # If that's the case it has a Row in the database, and we log in
+        # (we don't use the username, because the user can change it from the Google name)
+        google_user = User.query.filter_by(email=users_email, origin=1).first()
+        if google_user is None:
+            print("new user")
+            # If not than we create a new entry in the database and then log in.
+            # The last verification is to check if username is not taken
+            new_user = User.query.filter_by(username=users_name).first()
+            if new_user is None:
+                print("really new user!")
+                user = User(
+                    username=users_name,
+                    email=users_email,
+                    password_hash="",
+                    origin=1
+                )
+                db.session.add(user)
+                db.session.commit()
+                login_user(user)
+            else:
+                print("username is taken....")
+                # If the username is taken than we change it because we have to create the user here.
+                # The user can change it later if he really hates it.
+                index = 2
+                while index < 100:
+                    new_user_name = users_name + "_%s" % index
+                    print("attempting user creation with username: %s" % new_user_name)
+                    new_user = User.query.filter_by(username=new_user_name).first()
+                    if new_user is None:
+                        print("we finally have a correct username!")
+                        user = User(
+                            username=new_user_name,
+                            email=users_email,
+                            password_hash="",
+                            origin=1
+                        )
+                        db.session.add(user)
+                        db.session.commit()
+                        login_user(user)
+                        break
+                    else:
+                        print("still taken...")
+                        index += 1
+                return "User creation failed, sorry", 400
+        else:
+            print("logging in existing user")
+            login_user(google_user)
 
         # Send user back to homepage
         return redirect("/index")

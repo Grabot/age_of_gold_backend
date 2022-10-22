@@ -34,10 +34,19 @@ class User(UserMixin, db.Model):
         lazy='dynamic',
         cascade='all, delete-orphan')
     username = db.Column(db.Text, index=True, unique=True)
-    email = db.Column(db.Text, index=True, unique=True)
+    # The user can use the same email with a different origin.
+    # The email and origin is unique
+    # TODO: Make email and origin unique.
+    email = db.Column(db.Text, index=True)
     password_hash = db.Column(db.Text)
     about_me = db.Column(db.Text)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    # Keep track of how the user logged in
+    # 0 = regular
+    # 1 = google login
+    # 2 = gitHub login
+    # 3 = reddit login
+    origin = db.Column(db.Integer)
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
