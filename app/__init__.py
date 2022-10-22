@@ -5,12 +5,16 @@ from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from app.routes import set_routes
 from flask_login import LoginManager
+from oauthlib.oauth2 import WebApplicationClient
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
 socks = SocketIO(cors_allowed_origins="*")
+
+# OAuth 2 client setup
+google_client = WebApplicationClient(DevelopmentConfig.GOOGLE_CLIENT_ID)
 
 
 def create_app():

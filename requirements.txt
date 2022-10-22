@@ -46,3 +46,7 @@ WTForms==3.0.1
 zipp==3.9.0
 Gevent==22.10.1
 gevent-websocket==0.10.1
+oauth2==1.9.0.post1
+oauthlib==3.2.2
+requests==2.28.1
+pyopenssl==22.1.0
