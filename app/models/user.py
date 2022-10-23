@@ -52,7 +52,12 @@ class User(UserMixin, db.Model):
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
-        return pwd_context.verify(password, self.password_hash)
+        # If the user has any other origin than regular it should not get here
+        # because the verification is does elsewhere. So if it does, we return False
+        if self.origin != 0:
+            return False
+        else:
+            return pwd_context.verify(password, self.password_hash)
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()

@@ -4,6 +4,7 @@ from flask_login import current_user, login_user, logout_user
 from datetime import datetime
 
 
+#TODO: turn it to api endpoints?
 def regular_login(app):
 
     from flask_login import login_required

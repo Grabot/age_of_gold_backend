@@ -130,10 +130,8 @@ dmypy.json
 
 .idea/
 
-.help_file
-
 kubernetes/flask_secret_production.yaml
 kubernetes/age_of_gold.yaml
 
-create_map.sh
-base_map.sql
+_ignore
+_ignore/*

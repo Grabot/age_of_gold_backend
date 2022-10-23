@@ -1,14 +1,16 @@
 from flask import redirect, request
-from flask_login import current_user, login_user
+from flask_login import current_user
 import requests
 from app.config import DevelopmentConfig
 import json
+from app.routes.login_user_origin import login_user_origin
 
 
 def get_google_provider_cfg():
     return requests.get(DevelopmentConfig.GOOGLE_DISCOVERY_URL).json()
 
 
+# TODO: turn it to api endpoints?
 def google_login(app):
 
     @app.route("/google/test", methods=['GET', 'POST'])
@@ -31,17 +33,12 @@ def google_login(app):
     def login_google():
         # Find out what URL to hit for Google login
         google_provider_cfg = get_google_provider_cfg()
-        if request.scheme == "http":
-            print("http")
-            request.scheme = "https"
-        if request.scheme == "https":
-            print("HTTPS!")
-        print("request: %s" % request.base_url)
+
         authorization_endpoint = google_provider_cfg["authorization_endpoint"]
 
         # Use library to construct the request for Google login and provide
         # scopes that let you retrieve user's profile from Google
-        final_redirect_url = request.base_url.replace("http://", "https://")
+        final_redirect_url = request.base_url.replace("http://", "https://", 1)
         request_uri = google_client.prepare_request_uri(
             authorization_endpoint,
             redirect_uri=final_redirect_url + "/callback",
@@ -51,11 +48,8 @@ def google_login(app):
         print("url: %s" % request.url)
         return redirect(request_uri)
 
-    from app import db
-    from app.models.user import User
-
     @app.route("/google/test/login/callback", methods=['GET', 'POST'])
-    def callback():
+    def google_callback():
         # Get authorization code Google sent back to you
         code = request.args.get("code")
         print("code: %s" % code)
@@ -65,14 +59,15 @@ def google_login(app):
         google_provider_cfg = get_google_provider_cfg()
         token_endpoint = google_provider_cfg["token_endpoint"]
 
-        # Prepare and send a request to get tokens! Yay tokens!
+        # Prepare and send a request to get tokens! Yay, tokens!
         # Not sure why it reverts to regular http:// but change it back to secure connection
-        final_redirect_url = request.base_url.replace("http://", "https://")
+        final_redirect_url = request.base_url.replace("http://", "https://", 1)
         print("final_authorization_response: %s" % final_redirect_url)
+        authorization_response = request.url.replace("http://", "https://", 1)
         print("request url: %s" % request.url)
         token_url, headers, body = google_client.prepare_token_request(
             token_endpoint,
-            authorization_response=request.url,
+            authorization_response=authorization_response,
             redirect_url=final_redirect_url,
             code=code
         )
@@ -94,6 +89,9 @@ def google_login(app):
         # including their Google profile image and email
         userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
         uri, headers, body = google_client.add_token(userinfo_endpoint)
+        print("uri: %s" % uri)
+        print("headers: %s" % headers)
+        print("body: %s" % body)
         userinfo_response = requests.get(uri, headers=headers, data=body)
 
         # You want to make sure their email is verified.
@@ -102,63 +100,16 @@ def google_login(app):
         if not userinfo_response.json().get("email_verified"):
             return "User email not available or not verified by Google.", 400
 
-        unique_id = userinfo_response.json()["sub"]
+        print("complete_json: %s" % userinfo_response.json())
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
         print("user verified!")
-        print(unique_id)
         print(users_email)
         print(picture)
         print(users_name)
-        # Check if the user has logged in before using google.
-        # If that's the case it has a Row in the database, and we log in
-        # (we don't use the username, because the user can change it from the Google name)
-        google_user = User.query.filter_by(email=users_email, origin=1).first()
-        if google_user is None:
-            print("new user")
-            # If not than we create a new entry in the database and then log in.
-            # The last verification is to check if username is not taken
-            new_user = User.query.filter_by(username=users_name).first()
-            if new_user is None:
-                print("really new user!")
-                user = User(
-                    username=users_name,
-                    email=users_email,
-                    password_hash="",
-                    origin=1
-                )
-                db.session.add(user)
-                db.session.commit()
-                login_user(user)
-            else:
-                print("username is taken....")
-                # If the username is taken than we change it because we have to create the user here.
-                # The user can change it later if he really hates it.
-                index = 2
-                while index < 100:
-                    new_user_name = users_name + "_%s" % index
-                    print("attempting user creation with username: %s" % new_user_name)
-                    new_user = User.query.filter_by(username=new_user_name).first()
-                    if new_user is None:
-                        print("we finally have a correct username!")
-                        user = User(
-                            username=new_user_name,
-                            email=users_email,
-                            password_hash="",
-                            origin=1
-                        )
-                        db.session.add(user)
-                        db.session.commit()
-                        login_user(user)
-                        break
-                    else:
-                        print("still taken...")
-                        index += 1
-                return "User creation failed, sorry", 400
-        else:
-            print("logging in existing user")
-            login_user(google_user)
+
+        login_user_origin(users_name, users_email, 1)
 
         # Send user back to homepage
         return redirect("/index")
