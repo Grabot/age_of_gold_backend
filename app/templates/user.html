@@ -10,17 +10,17 @@
             {% if user.last_seen %}<p>Last seen on: {{ user.last_seen }}</p>{% endif %}
             <p>{{ user.friends.count() }} followers, {{ user.followers.count() }} following.</p>
             {% if user == current_user %}
-            <p><a href="{{ url_for('edit_profile') }}">Edit your profile</a></p>
+            <p><a href="/api/edit_profile">Edit your profile</a></p>
             {% elif not current_user.is_friend(user) %}
             <p>
-                <form action="/follow/{{ user.username }}" method="post">
+                <form action="/api/follow/{{ user.username }}" method="post">
                     {{ form.hidden_tag() }}
                     {{ form.submit(value='Follow') }}
                 </form>
             </p>
             {% else %}
             <p>
-                <form action="/unfollow/{{ user.username }}" method="post">
+                <form action="/api/unfollow/{{ user.username }}" method="post">
                     {{ form.hidden_tag() }}
                     {{ form.submit(value='Unfollow') }}
                 </form>

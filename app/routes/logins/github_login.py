@@ -8,7 +8,7 @@ from app.routes.login_user_origin import login_user_origin
 #TODO: turn it to api endpoints?
 def github_login(app):
 
-    @app.route("/github/test/login", methods=['GET', 'POST'])
+    @app.route("/api/github/test/login", methods=['GET', 'POST'])
     def login_github():
         # Find out what URL to hit for GitHub login
         print("attempting to login github :)")
@@ -27,7 +27,7 @@ def github_login(app):
     from app import db
     from app.models.user import User
 
-    @app.route("/github/test/login/callback", methods=['GET', 'POST'])
+    @app.route("/api/github/test/login/callback", methods=['GET', 'POST'])
     def github_callback():
         # Get authorization code Google sent back to you
         print("github callback!!!!")
@@ -88,4 +88,4 @@ def github_login(app):
 
         login_user_origin(users_name, users_email, 2)
 
-        return redirect("/index")
+        return redirect("/api/index")

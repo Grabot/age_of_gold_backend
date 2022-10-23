@@ -13,7 +13,7 @@ def get_google_provider_cfg():
 # TODO: turn it to api endpoints?
 def google_login(app):
 
-    @app.route("/google/test", methods=['GET', 'POST'])
+    @app.route("/api/google/test", methods=['GET', 'POST'])
     def google_test():
         if current_user.is_authenticated:
             return (
@@ -25,11 +25,11 @@ def google_login(app):
                 )
             )
         else:
-            return '<a class="button" href="/google/test/login">Google Login</a>'
+            return '<a class="button" href="/api/google/test/login">Google Login</a>'
 
     from app import google_client
 
-    @app.route("/google/test/login", methods=['GET', 'POST'])
+    @app.route("/api/google/test/login", methods=['GET', 'POST'])
     def login_google():
         # Find out what URL to hit for Google login
         google_provider_cfg = get_google_provider_cfg()
@@ -48,7 +48,7 @@ def google_login(app):
         print("url: %s" % request.url)
         return redirect(request_uri)
 
-    @app.route("/google/test/login/callback", methods=['GET', 'POST'])
+    @app.route("/api/google/test/login/callback", methods=['GET', 'POST'])
     def google_callback():
         # Get authorization code Google sent back to you
         code = request.args.get("code")
@@ -112,5 +112,5 @@ def google_login(app):
         login_user_origin(users_name, users_email, 1)
 
         # Send user back to homepage
-        return redirect("/index")
+        return redirect("/api/index")
 

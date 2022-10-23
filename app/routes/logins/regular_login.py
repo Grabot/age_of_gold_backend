@@ -9,7 +9,7 @@ def regular_login(app):
 
     from flask_login import login_required
 
-    @app.route('/index')
+    @app.route('/api/index')
     @login_required
     def home():
         posts = [
@@ -26,31 +26,31 @@ def regular_login(app):
 
     from app.models.user import User
 
-    @app.route('/login', methods=['GET', 'POST'])
+    @app.route('/api/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
-            return redirect('/index')
+            return redirect('/api/index')
         form = LoginForm()
         if form.validate_on_submit():
             user = User.query.filter_by(username=form.username.data).first()
             if user is None or not user.verify_password(form.password.data):
                 flash('Invalid username or password')
-                return redirect('/login')
+                return redirect('/api/login')
             login_user(user, remember=form.remember_me.data)
-            return redirect('/index')
+            return redirect('/api/index')
         return render_template('login.html', title='Sign In', form=form)
 
-    @app.route('/logout')
+    @app.route('/api/logout')
     def logout():
         logout_user()
-        return redirect('/index')
+        return redirect('/api/index')
 
     from app import db
 
-    @app.route('/register', methods=['GET', 'POST'])
+    @app.route('/api/register', methods=['GET', 'POST'])
     def register():
         if current_user.is_authenticated:
-            return redirect('/index')
+            return redirect('/api/index')
         form = RegistrationForm()
         if form.validate_on_submit():
             user = User(
@@ -62,10 +62,10 @@ def regular_login(app):
             db.session.add(user)
             db.session.commit()
             flash('Congratulations, you are now a registered user!')
-            return redirect('/login')
+            return redirect('/api/login')
         return render_template('register.html', title='Register', form=form)
 
-    @app.route('/user/<username>')
+    @app.route('/api/user/<username>')
     @login_required
     def user(username):
         user = User.query.filter_by(username=username).first_or_404()
@@ -82,7 +82,7 @@ def regular_login(app):
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
 
-    @app.route('/edit_profile', methods=['GET', 'POST'])
+    @app.route('/api/edit_profile', methods=['GET', 'POST'])
     @login_required
     def edit_profile():
         form = EditProfileForm(current_user.username)
@@ -91,7 +91,7 @@ def regular_login(app):
             current_user.about_me = form.about_me.data
             db.session.commit()
             flash('Your changes have been saved.')
-            return redirect('/edit_profile')
+            return redirect('/api/edit_profile')
         elif request.method == 'GET':
             form.username.data = current_user.username
             form.about_me.data = current_user.about_me
@@ -106,7 +106,7 @@ def regular_login(app):
         db.session.rollback()
         return render_template('500.html'), 500
 
-    @app.route('/follow/<username>', methods=['POST'])
+    @app.route('/api/follow/<username>', methods=['POST'])
     @login_required
     def follow(username):
         form = EmptyForm()
@@ -114,19 +114,19 @@ def regular_login(app):
             user = User.query.filter_by(username=username).first()
             if user is None:
                 flash('User {} not found.'.format(username))
-                return redirect('/index')
+                return redirect('/api/index')
             if user == current_user:
                 flash('You cannot follow yourself!')
-                return redirect('/user/%s' % username)
+                return redirect('/api/user/%s' % username)
             current_user.befriend(user)
             user.befriend(current_user)
             db.session.commit()
             flash('You are following {}!'.format(username))
-            return redirect('/user/%s' % username)
+            return redirect('/api/user/%s' % username)
         else:
-            return redirect('/index')
+            return redirect('/api/index')
 
-    @app.route('/unfollow/<username>', methods=['POST'])
+    @app.route('/api/unfollow/<username>', methods=['POST'])
     @login_required
     def unfollow(username):
         form = EmptyForm()
@@ -134,15 +134,15 @@ def regular_login(app):
             user = User.query.filter_by(username=username).first()
             if user is None:
                 flash('User {} not found.'.format(username))
-                return redirect('/index')
+                return redirect('/api/index')
             if user == current_user:
                 flash('You cannot unfollow yourself!')
-                return redirect('/user/%s' % username)
+                return redirect('/api/user/%s' % username)
             # unfriending is only one way. The other friend will still think they are friends but can't message them
             current_user.unfriend(user)
             db.session.commit()
             flash('You are not following {}.'.format(username))
-            return redirect('/user/%s' % username)
+            return redirect('/api/user/%s' % username)
         else:
-            return redirect('/index')
+            return redirect('/api/index')
 
