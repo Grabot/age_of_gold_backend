@@ -15,11 +15,18 @@ class Config(object):
     GOOGLE_DISCOVERY_URL = (
         "https://accounts.google.com/.well-known/openid-configuration"
     )
+
     GITHUB_AUTHORIZE = "https://github.com/login/oauth/authorize"
     GITHUB_ACCESS = "https://github.com/login/oauth/access_token"
     GITHUB_USER = "https://api.github.com/user"
     GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", None)
     GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", None)
+
+    REDDIT_AUTHORIZE = "https://www.reddit.com/api/v1/authorize"
+    # REDDIT_ACCESS = "https://github.com/login/oauth/access_token"
+    # REDDIT_USER = "https://api.github.com/user"
+    REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", None)
+    REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", None)
     DEBUG = True
 
 

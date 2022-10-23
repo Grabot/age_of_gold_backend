@@ -10,7 +10,6 @@ def github_login(app):
 
     @app.route("/api/github/test/login", methods=['GET', 'POST'])
     def login_github():
-        # Find out what URL to hit for GitHub login
         print("attempting to login github :)")
         # base_url = DevelopmentConfig.GITHUB_API
         base_url = DevelopmentConfig.GITHUB_AUTHORIZE
@@ -46,14 +45,15 @@ def github_login(app):
 
         print("github post url: %s" % github_post_url)
 
-        headers = {"Accept": "application/json"}
+        headers = {
+            "Accept": "application/json",
+        }
         token_response = requests.post(
             github_post_url,
             headers=headers
         )
         print("testing url 2: %s" % token_response)
         print("testing url 3: %s" % token_response.url)
-        # TODO: take 'access token' uit txt response!
         print("testing url 3: %s" % token_response.text)
         print("testing url 4: %s" % token_response.json())
         github_response_json = token_response.json()
