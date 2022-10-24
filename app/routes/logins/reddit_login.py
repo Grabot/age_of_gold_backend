@@ -51,13 +51,15 @@ def reddit_login(app):
             "redirect_uri": "http://127.0.0.1:5000/api/reddit/test/login/callback"
         }
 
-        encoded_authorzation = "%s:%s" % (DevelopmentConfig.REDDIT_CLIENT_ID, DevelopmentConfig.REDDIT_CLIENT_SECRET)
-        print("encoded authorization: %s" % encoded_authorzation)
+        encoded_authorization = "%s:%s" % (DevelopmentConfig.REDDIT_CLIENT_ID, DevelopmentConfig.REDDIT_CLIENT_SECRET)
 
-        http_auth = b64encode(encoded_authorzation.encode("utf-8")).decode("utf-8")
+        http_auth = b64encode(encoded_authorization.encode("utf-8")).decode("utf-8")
+        authorization = "Basic %s" % http_auth
+        print("authorization: %s" % authorization)
         headers = {
             "Accept": "application/json",
-            "Authorization": "Basic " + http_auth
+            'User-agent': 'age of gold login bot 0.1',
+            "Authorization": authorization
         }
 
         print("url: %s" % access_base_url)
@@ -74,37 +76,40 @@ def reddit_login(app):
         print("testing url 3: %s" % token_response.url)
 
         print("testing url 3: %s" % token_response.text)
-    #     print("testing url 4: %s" % token_response.json())
-    #     github_response_json = token_response.json()
-    #     print("testing url 5: %s" % github_response_json)
-    #     print("testing url 6: %s" % github_response_json["access_token"])
-    #     print("testing url 7: %s" % github_response_json["token_type"])
-    #     print("testing url 8: %s" % github_response_json["scope"])
-    #
-    #     headers_authorization = {
-    #         "Accept": "application/json",
-    #         "Authorization": "Bearer %s" % github_response_json["access_token"]
-    #     }
-    #     authorization_url = DevelopmentConfig.GITHUB_USER
-    #
-    #     authorization_response = requests.get(
-    #         authorization_url,
-    #         headers=headers_authorization
-    #     )
-    #     print("final?")
-    #     print(authorization_response)
-    #     print(authorization_response.json())
-    #
-    #     github_user = authorization_response.json()
-    #
-    #     users_name = github_user["login"]
-    #     users_email = github_user["email"]
-    #     picture = github_user["avatar_url"]
-    #     print("user verified!")
-    #     print(users_email)
-    #     print(picture)
-    #     print(users_name)
-    #
+        print("testing url 4: %s" % token_response.json())
+        reddit_response_json = token_response.json()
+        print("testing url 5: %s" % reddit_response_json)
+        print("testing url 6: %s" % reddit_response_json["access_token"])
+        print("testing url 7: %s" % reddit_response_json["token_type"])
+        print("testing url 8: %s" % reddit_response_json["scope"])
+        print("testing url 8: %s" % reddit_response_json["expires_in"])
+
+        headers_authorization = {
+            "Accept": "application/json",
+            'User-agent': 'age of gold login bot 0.1',
+            "Authorization": "bearer %s" % reddit_response_json["access_token"]
+        }
+        # authorization_url = DevelopmentConfig.REDDIT_USER
+        authorization_url = "https://oauth.reddit.com/api/v1/me"
+
+        authorization_response = requests.get(
+            authorization_url,
+            headers=headers_authorization
+        )
+        print("final?")
+        print(authorization_response)
+        print(authorization_response.json())
+
+        reddit_user = authorization_response.json()
+
+        # users_name = github_user["login"]
+        # users_email = github_user["email"]
+        # picture = github_user["avatar_url"]
+        # print("user verified!")
+        # print(users_email)
+        # print(picture)
+        # print(users_name)
+
     #     login_user_origin(users_name, users_email, 2)
     #
         return redirect("/api/index")
