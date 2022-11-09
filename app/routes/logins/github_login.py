@@ -8,14 +8,13 @@ from app.routes.login_user_origin import login_user_origin
 #TODO: turn it to api endpoints?
 def github_login(app):
 
-    @app.route("/api/github/test/login", methods=['GET', 'POST'])
+    @app.route("/login/github", methods=['GET', 'POST'])
     def login_github():
         print("attempting to login github :)")
         # base_url = DevelopmentConfig.GITHUB_API
         base_url = DevelopmentConfig.GITHUB_AUTHORIZE
         params = dict()
         params["client_id"] = DevelopmentConfig.GITHUB_CLIENT_ID
-        # params["redirect_uri"] = "http://127.0.0.1:5000/github/test/login/callback"
 
         url_params = urlencode(params)
         github_url = base_url + "/?" + url_params
@@ -23,10 +22,7 @@ def github_login(app):
 
         return redirect(github_url)
 
-    from app import db
-    from app.models.user import User
-
-    @app.route("/api/github/test/login/callback", methods=['GET', 'POST'])
+    @app.route("/login/github/callback", methods=['GET', 'POST'])
     def github_callback():
         # Get authorization code Google sent back to you
         print("github callback!!!!")
@@ -38,7 +34,6 @@ def github_login(app):
         params["client_id"] = DevelopmentConfig.GITHUB_CLIENT_ID
         params["client_secret"] = DevelopmentConfig.GITHUB_CLIENT_SECRET
         params["code"] = code
-        # params["redirect_uri"] = "http://127.0.0.1:5000/github/test/login/callback"
 
         url_params = urlencode(params)
         github_post_url = access_base_url + "/?" + url_params
@@ -88,4 +83,6 @@ def github_login(app):
 
         login_user_origin(users_name, users_email, 2)
 
-        return redirect("/api/index")
+        # Send user to the world
+        world_url = request.base_url.replace("/login/github/callback", "/world")
+        return redirect(world_url)

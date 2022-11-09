@@ -8,16 +8,15 @@ from base64 import b64encode
 #TODO: turn it to api endpoints?
 def reddit_login(app):
 
-    @app.route("/api/reddit/test/login", methods=['GET', 'POST'])
+    @app.route("/login/reddit", methods=['GET', 'POST'])
     def login_reddit():
         print("attempting to login reddit :)")
         # TODO: correct endpoint?
-        # base_url = DevelopmentConfig.REDDIT_AUTHORIZE
-        base_url = "https://www.reddit.com/api/v1/authorize"
+        base_url = DevelopmentConfig.REDDIT_AUTHORIZE
         params = dict()
         params["client_id"] = DevelopmentConfig.REDDIT_CLIENT_ID
         params["duration"] = "temporary"
-        params["redirect_uri"] = "http://127.0.0.1:5000/api/reddit/test/login/callback"
+        params["redirect_uri"] = DevelopmentConfig.REDDIT_REDIRECT
         params["response_type"] = "code"
         params["scope"] = "identity"
         params["state"] = "x"
@@ -28,10 +27,7 @@ def reddit_login(app):
 
         return redirect(reddit_url)
 
-    from app import db
-    from app.models.user import User
-
-    @app.route("/api/reddit/test/login/callback", methods=['GET', 'POST'])
+    @app.route("/login/reddit/callback", methods=['GET', 'POST'])
     def reddit_callback():
         # Get authorization code Google sent back to you
         print("reddit callback!!!!")
@@ -40,15 +36,14 @@ def reddit_login(app):
         state = request.args.get("state")
         print("state: %s" % state)
 
-        # access_base_url = DevelopmentConfig.REDDIT_ACCESS
-        access_base_url = "https://www.reddit.com/api/v1/access_token"
+        access_base_url = DevelopmentConfig.REDDIT_ACCESS
 
         print("reddit post url: %s" % access_base_url)
 
         token_post_data = {
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": "http://127.0.0.1:5000/api/reddit/test/login/callback"
+            "redirect_uri": DevelopmentConfig.REDDIT_REDIRECT
         }
 
         encoded_authorization = "%s:%s" % (DevelopmentConfig.REDDIT_CLIENT_ID, DevelopmentConfig.REDDIT_CLIENT_SECRET)
@@ -71,7 +66,6 @@ def reddit_login(app):
             data=token_post_data
         )
 
-        # TODO: 429( too many requests?!) probeer later nog eens
         print("testing url 2: %s" % token_response)
         print("testing url 3: %s" % token_response.url)
 
@@ -112,4 +106,6 @@ def reddit_login(app):
 
     #     login_user_origin(users_name, users_email, 2)
     #
-        return redirect("/api/index")
+        # Send user to the world
+        world_url = request.base_url.replace("/login/reddit/callback", "/world")
+        return redirect(world_url)

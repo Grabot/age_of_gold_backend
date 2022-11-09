@@ -23,10 +23,11 @@ class Config(object):
     GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", None)
 
     REDDIT_AUTHORIZE = "https://www.reddit.com/api/v1/authorize"
-    # REDDIT_ACCESS = "https://github.com/login/oauth/access_token"
+    REDDIT_ACCESS = "https://www.reddit.com/api/v1/access_token"
     # REDDIT_USER = "https://api.github.com/user"
     REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", None)
     REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", None)
+    REDDIT_REDIRECT = "https://ageof.gold/login/reddit/callback"
     DEBUG = True
 
 
