@@ -11,4 +11,5 @@ from app.rest import map_remove
 from app.rest import add_tile_detail
 from app.rest import login_v1_1
 from app.rest import register_v1_1
+from app.rest import refresh_v1_1
 

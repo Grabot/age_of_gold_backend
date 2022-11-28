@@ -1,3 +1,4 @@
+from authlib.jose.errors import DecodeError
 from passlib.apps import custom_app_context as pwd_context
 from authlib.jose import jwt
 from app import db, auth
@@ -13,6 +14,52 @@ import time
 @login.user_loader
 def load_user(_id):
     return User.query.get(int(_id))
+
+
+def refresh_user_token(access_token, refresh_token):
+    access = None
+    refresh = None
+    try:
+        access = jwt.decode(access_token, DevelopmentConfig.jwk)
+        refresh = jwt.decode(refresh_token, DevelopmentConfig.jwk)
+    except DecodeError:
+        print("decode error, big fail!")
+        return None
+
+    if not access or not refresh:
+        print("big fail!")
+        return None
+
+    # The access token should be active
+    user = User.query.filter_by(token=access_token).first()
+    print('access: %s' % access)
+    print('refresh: %s' % refresh)
+    if user is None or refresh["exp"] < int(time.time()):
+        return None
+
+    # It all needs to match before you send back new tokens
+    if user.id == access["id"] and user.username == refresh["user_name"]:
+        print("it's all good! Send more tokens")
+        return user
+    else:
+        return None
+
+
+def check_token(token):
+    user = User.query.filter_by(token=token).first()
+    if user is None or user.token_expiration < int(time.time()):
+        return None
+    return user
+
+
+def get_user_tokens(user, access_expiration=3600, refresh_expiration=36000):
+    # Create an access_token that the user can use to do user authentication
+    access_token = user.generate_auth_token(access_expiration).decode('ascii')
+    # Create a refresh token that lasts longer that the user can use to generate a new access token
+    refresh_token = user.generate_refresh_token(refresh_expiration).decode('ascii')
+    # Only store the access token, refresh token is kept client side
+    user.set_token(access_token)
+    return [access_token, refresh_token]
 
 
 class User(UserMixin, db.Model):
@@ -130,13 +177,6 @@ class User(UserMixin, db.Model):
             "iat": int(time.time())  # issued at
         }
         return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
-
-    @staticmethod
-    def check_token(token):
-        user = User.query.filter_by(token=token).first()
-        if user is None or user.token_expiration < time.time():
-            return None
-        return user
 
     @property
     def serialize(self):

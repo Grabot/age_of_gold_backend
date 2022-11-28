@@ -109,7 +109,7 @@ def reddit_login(app):
         url_params = urlencode(params)
 
         # Send user to the world
-        world_url = request.base_url.replace("/login/reddit/callback", "/world")
+        world_url = request.base_url.replace("/login/reddit/callback", "/worldaccess")
         world_url_params = world_url + "?" + url_params
         # Send user to the world
-        return redirect(world_url)
+        return redirect(world_url_params)

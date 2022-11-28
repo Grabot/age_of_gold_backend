@@ -89,6 +89,6 @@ def github_login(app):
         url_params = urlencode(params)
 
         # Send user to the world
-        world_url = request.base_url.replace("/login/github/callback", "/world")
+        world_url = request.base_url.replace("/login/github/callback", "/worldaccess")
         world_url_params = world_url + "?" + url_params
         return redirect(world_url_params)

@@ -97,15 +97,15 @@ def google_login(app):
         print(picture)
         print(users_name)
 
-        # login_user_origin(users_name, users_email, 1)
+        login_user_origin(users_name, users_email, 1)
+        # TODO: Create tokens for user? (both very low life?)
         params = dict()
         params["access_token"] = "test"
         params["refresh_token"] = "test2"
         url_params = urlencode(params)
 
         # Send user to the world
-        world_url = request.base_url.replace("/login/google/callback", "/world")
-        print("The world! %s" % world_url)
+        world_url = request.base_url.replace("/login/google/callback", "/worldaccess")
         world_url_params = world_url + "?" + url_params
         print("redirected to the url: %s" % world_url_params)
         return redirect(world_url_params)
