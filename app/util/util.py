@@ -1,7 +1,8 @@
-from app.util.global_vars import map_size
+from app.config import DevelopmentConfig
 
 
 def get_wraparounds(q, r):
+    map_size = DevelopmentConfig.map_size
     wrap_q = 0
     wrap_r = 0
     if q < -map_size:

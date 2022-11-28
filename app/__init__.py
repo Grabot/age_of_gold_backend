@@ -6,11 +6,14 @@ from flask_socketio import SocketIO
 from app.routes import set_routes
 from flask_login import LoginManager
 from oauthlib.oauth2 import WebApplicationClient
+from flask_httpauth import HTTPTokenAuth
+from flask_cors import CORS
 
 
 db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
+auth = HTTPTokenAuth(scheme='Bearer')
 socks = SocketIO(cors_allowed_origins="*")
 
 # OAuth 2 client setup
@@ -19,6 +22,7 @@ google_client = WebApplicationClient(DevelopmentConfig.GOOGLE_CLIENT_ID)
 
 def create_app():
     app = Flask(__name__)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
     app.config.from_object(DevelopmentConfig)
     app.config['SQLALCHEMY_MAX_OVERFLOW'] = 0
     app.config['SQLALCHEMY_POOL_SIZE'] = 1000

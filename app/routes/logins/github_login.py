@@ -83,6 +83,12 @@ def github_login(app):
 
         login_user_origin(users_name, users_email, 2)
 
+        params = dict()
+        params["access_token"] = "test"
+        params["refresh_token"] = "test2"
+        url_params = urlencode(params)
+
         # Send user to the world
         world_url = request.base_url.replace("/login/github/callback", "/world")
-        return redirect(world_url)
+        world_url_params = world_url + "?" + url_params
+        return redirect(world_url_params)

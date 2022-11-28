@@ -1,12 +1,11 @@
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
+from app.config import DevelopmentConfig
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.rest import app_api
 from app import db
-from app.util import global_vars
 
 
 radius = 4
@@ -97,8 +96,8 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
     # q = 9
     # r = -4
     # Go right so q += 1
-    index = -global_vars.map_size - 1
-    while index < global_vars.map_size:
+    index = -DevelopmentConfig.map_size - 1
+    while index < DevelopmentConfig.map_size:
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
         db.session.commit()
@@ -120,7 +119,7 @@ def go_left(q, r, q_for_tiles, r_for_tiles):
     # r = 4
     # Go left so q -= 1 and s += 1
     index = 0
-    while index < global_vars.map_size:
+    while index < DevelopmentConfig.map_size:
         q -= 1
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
@@ -159,9 +158,8 @@ class MapRest(Resource):
         hexagon = Hexagon.query.filter_by(q=0, r=r).first()
 
         if hexagon is None:
-            # map_size = global_vars.map_size
             # We go from the leftmost place all the way to the right.
-            q = -global_vars.map_size
+            q = -DevelopmentConfig.map_size
             # First adapt it to the row
             q_for_tiles = (5 * r)
             r_for_tiles = (-9 * r)

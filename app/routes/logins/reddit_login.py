@@ -3,6 +3,7 @@ import requests
 from app.config import DevelopmentConfig
 from urllib.parse import urlencode
 from base64 import b64encode
+from app.routes.login_user_origin import login_user_origin
 
 
 #TODO: turn it to api endpoints?
@@ -96,16 +97,19 @@ def reddit_login(app):
 
         reddit_user = authorization_response.json()
 
-        # users_name = github_user["login"]
-        # users_email = github_user["email"]
-        # picture = github_user["avatar_url"]
-        # print("user verified!")
-        # print(users_email)
-        # print(picture)
-        # print(users_name)
+        users_name = reddit_user["name"]
+        users_email = "reddit"  # Reddit gives no email?
+        picture = reddit_user["icon_img"]
 
-    #     login_user_origin(users_name, users_email, 2)
-    #
+        login_user_origin(users_name, users_email, 2)
+
+        params = dict()
+        params["access_token"] = "test"
+        params["refresh_token"] = "test2"
+        url_params = urlencode(params)
+
         # Send user to the world
         world_url = request.base_url.replace("/login/reddit/callback", "/world")
+        world_url_params = world_url + "?" + url_params
+        # Send user to the world
         return redirect(world_url)

@@ -6,10 +6,9 @@ from flask import request
 from app import socks
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
-from app.util.global_vars import map_size
 from app.util.util import get_wraparounds
 from app import db
-import time
+from app.config import DevelopmentConfig
 import json
 
 
@@ -40,6 +39,7 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_join_hex(self, data):
+        map_size = DevelopmentConfig.map_size
         q = data["q"]
         r = data["r"]
         if q < -map_size or q > map_size or r < -map_size or r > map_size:
@@ -51,6 +51,7 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_leave_hex(self, data):
+        map_size = DevelopmentConfig.map_size
         q = data["q"]
         r = data["r"]
         if q < -map_size or q > map_size or r < -map_size or r > map_size:
@@ -70,6 +71,7 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
+        map_size = DevelopmentConfig.map_size
         q = data["q"]
         r = data["r"]
         # If the hex is out of the map bounds we want it to loop around

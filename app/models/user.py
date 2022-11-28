@@ -1,10 +1,13 @@
 from passlib.apps import custom_app_context as pwd_context
-from app import db
+from authlib.jose import jwt
+from app import db, auth
+from app.config import DevelopmentConfig
 from flask_login import UserMixin
 from app import login
 from hashlib import md5
 from datetime import datetime
 from app.models.friend import Friend
+import time
 
 
 @login.user_loader
@@ -47,6 +50,8 @@ class User(UserMixin, db.Model):
     # 2 = gitHub login
     # 3 = reddit login
     origin = db.Column(db.Integer)
+    token = db.Column(db.Text, index=True)
+    token_expiration = db.Column(db.Integer)
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -58,6 +63,9 @@ class User(UserMixin, db.Model):
             return False
         else:
             return pwd_context.verify(password, self.password_hash)
+
+    def set_token(self, token):
+        self.token = token
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
@@ -100,6 +108,36 @@ class User(UserMixin, db.Model):
                 return False
         else:
             return False
+
+    def generate_auth_token(self, expires_in=3600):
+        payload = {
+            "id": self.id,
+            "iss": DevelopmentConfig.JWT_ISS,
+            "aud": DevelopmentConfig.JWT_AUD,
+            "sub": DevelopmentConfig.JWT_SUB,
+            "exp": int(time.time()) + expires_in,  # expiration time
+            "iat": int(time.time())  # issued at
+        }
+        return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
+
+    def generate_refresh_token(self, expires_in=36000):
+        payload = {
+            "user_name": self.username,
+            "iss": DevelopmentConfig.JWT_ISS,
+            "aud": DevelopmentConfig.JWT_AUD,
+            "sub": DevelopmentConfig.JWT_SUB,
+            "exp": int(time.time()) + expires_in,  # expiration time
+            "iat": int(time.time())  # issued at
+        }
+        return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
+
+    @staticmethod
+    def check_token(token):
+        user = User.query.filter_by(token=token).first()
+        if user is None or user.token_expiration < time.time():
+            return None
+        return user
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""

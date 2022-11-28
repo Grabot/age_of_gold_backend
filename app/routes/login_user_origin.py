@@ -1,11 +1,15 @@
 from flask_login import login_user
+import re
 
 
-# TODO: The `login_user` function of Flask probably has to be a token with the api endpoint
 def login_user_origin(users_name, users_email, origin):
-    # Not sure why it has to be like this, but it will be different with endpoints
+    # Not sure why it has to be like this
     from app import db
     from app.models.user import User
+
+    # Some very simple pre-check to make sure the username will not be email formatted.
+    if re.match(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+", users_name):
+        users_name = users_name.replace("@", "")
 
     print("logging in user from origin that is not regular")
     # Check if the user has logged in before using this origin.

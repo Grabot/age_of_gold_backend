@@ -1,13 +1,12 @@
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
-
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.rest import app_api
 from app import db
-from app.util import global_vars
 import json
+from app import DevelopmentConfig
 
 
 radius = 4
@@ -99,7 +98,7 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
     # r = -4
     # Go right so q += 1
     index = 0
-    while index < global_vars.map_size:
+    while index < DevelopmentConfig.map_size:
         q += 1
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
@@ -124,7 +123,7 @@ def go_left(q, r, q_for_tiles, r_for_tiles):
     # r = 4
     # Go left so q -= 1
     index = 0
-    while index < global_vars.map_size:
+    while index < DevelopmentConfig.map_size:
         q -= 1
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
@@ -253,7 +252,6 @@ class MapRest(Resource):
         hexagon = Hexagon.query.filter_by(q=0, r=0).first()
 
         if hexagon is None:
-            # map_size = global_vars.map_size
             q = 0
             r = 0
             q_for_tiles = 0
@@ -274,7 +272,7 @@ class MapRest(Resource):
             [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
 
             # going up
-            for x in range(0, global_vars.map_size):
+            for x in range(0, DevelopmentConfig.map_size):
                 [q, r, q_for_tiles, r_for_tiles] = go_left_up(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
@@ -284,7 +282,7 @@ class MapRest(Resource):
             r = 0
             q_for_tiles = 0
             r_for_tiles = 0
-            for x in range(0, global_vars.map_size):
+            for x in range(0, DevelopmentConfig.map_size):
                 [q, r, q_for_tiles, r_for_tiles] = go_right_down(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)

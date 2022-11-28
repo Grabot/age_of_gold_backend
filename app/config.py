@@ -24,11 +24,36 @@ class Config(object):
 
     REDDIT_AUTHORIZE = "https://www.reddit.com/api/v1/authorize"
     REDDIT_ACCESS = "https://www.reddit.com/api/v1/access_token"
-    # REDDIT_USER = "https://api.github.com/user"
+
     REDDIT_CLIENT_ID = os.environ.get("REDDIT_CLIENT_ID", None)
     REDDIT_CLIENT_SECRET = os.environ.get("REDDIT_CLIENT_SECRET", None)
     REDDIT_REDIRECT = "https://ageof.gold/login/reddit/callback"
     DEBUG = True
+
+    jwk = {
+        "alg": os.environ.get("JWT_ALG", ""),
+        "crv": os.environ.get("JWT_CRV", ""),
+        "d": os.environ.get("JWT_D", ""),
+        "key_ops": [
+            "sign",
+            "verify"
+        ],
+        "kty": os.environ.get("JWT_KTY", ""),
+        "x": os.environ.get("JWT_X", ""),
+        "y": os.environ.get("JWT_Y", ""),
+        "use": os.environ.get("JWT_USE", ""),
+        "kid": os.environ.get("JWT_KID", "")
+    }
+
+    header = {
+        "alg": os.environ.get("JWT_ALG", ""),
+        "kid": os.environ.get("JWT_KID", ""),
+        "typ": os.environ.get("JWT_TYP", "")
+    }
+    map_size = 50
+    JWT_SUB = os.environ.get("JWT_SUB", "")
+    JWT_ISS = os.environ.get("JWT_ISS", "")
+    JWT_AUD = os.environ.get("JWT_AUD", "")
 
 
 class DevelopmentConfig(Config):

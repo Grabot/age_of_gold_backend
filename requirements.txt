@@ -21,7 +21,9 @@ h11==0.14.0
 idna==3.4
 importlib-metadata==5.0.0
 importlib-resources==5.10.0
-itsdangerous==2.1.2
+authlib==1.1.0
+Flask-HTTPAuth==4.7.0
+flask-cors==3.0.10
 Jinja2==3.1.2
 jsonschema==4.16.0
 Mako==1.2.3

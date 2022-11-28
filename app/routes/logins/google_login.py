@@ -4,6 +4,7 @@ import requests
 from app.config import DevelopmentConfig
 import json
 from app.routes.login_user_origin import login_user_origin
+from urllib.parse import urlencode
 
 
 def get_google_provider_cfg():
@@ -25,6 +26,7 @@ def google_login(app):
         # Use library to construct the request for Google login and provide
         # scopes that let you retrieve user's profile from Google
         final_redirect_url = request.base_url.replace("http://", "https://", 1)
+        print("redirect uri: %s" % final_redirect_url)
         request_uri = google_client.prepare_request_uri(
             authorization_endpoint,
             redirect_uri=final_redirect_url + "/callback",
@@ -95,9 +97,16 @@ def google_login(app):
         print(picture)
         print(users_name)
 
-        login_user_origin(users_name, users_email, 1)
+        # login_user_origin(users_name, users_email, 1)
+        params = dict()
+        params["access_token"] = "test"
+        params["refresh_token"] = "test2"
+        url_params = urlencode(params)
 
         # Send user to the world
         world_url = request.base_url.replace("/login/google/callback", "/world")
-        return redirect(world_url)
+        print("The world! %s" % world_url)
+        world_url_params = world_url + "?" + url_params
+        print("redirected to the url: %s" % world_url_params)
+        return redirect(world_url_params)
 
