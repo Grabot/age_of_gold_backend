@@ -2,10 +2,11 @@ from flask_cors import cross_origin
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import func
-from app.models.user import User, get_user_tokens
+from app.models.user import User
 from app.rest import app_api
 from flask import request
 from app import db
+from app.util.util import get_user_tokens
 
 
 class Register(Resource):
@@ -52,7 +53,8 @@ class Register(Resource):
             'result': True,
             'message': 'user created successfully.',
             'access_token': access_token,
-            'refresh_token': refresh_token
+            'refresh_token': refresh_token,
+            'user': user.serialize
         }
 
 

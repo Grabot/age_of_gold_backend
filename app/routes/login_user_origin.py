@@ -1,4 +1,3 @@
-from flask_login import login_user
 import re
 
 
@@ -31,7 +30,7 @@ def login_user_origin(users_name, users_email, origin):
             )
             db.session.add(user)
             db.session.commit()
-            login_user(user)
+            return user
         else:
             print("username is taken....")
             # If the username is taken than we change it because we have to create the user here.
@@ -52,13 +51,13 @@ def login_user_origin(users_name, users_email, origin):
                     )
                     db.session.add(user)
                     db.session.commit()
-                    login_user(user)
-                    break
+                    return user
                 else:
                     print("still taken...")
                     index += 1
+            return None
     else:
         print("logging in existing user")
-        login_user(origin_user)
+        return origin_user
 
 

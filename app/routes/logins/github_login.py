@@ -7,6 +7,8 @@ from app.routes.login_user_origin import login_user_origin
 
 #TODO: turn it to api endpoints?
 def github_login(app):
+    from app.util.util import get_user_tokens
+    from app import db
 
     @app.route("/login/github", methods=['GET', 'POST'])
     def login_github():
@@ -81,14 +83,24 @@ def github_login(app):
         print(picture)
         print(users_name)
 
-        login_user_origin(users_name, users_email, 2)
+        user = login_user_origin(users_name, users_email, 2)
 
-        params = dict()
-        params["access_token"] = "test"
-        params["refresh_token"] = "test2"
-        url_params = urlencode(params)
+        if user:
 
-        # Send user to the world
-        world_url = request.base_url.replace("/login/github/callback", "/worldaccess")
-        world_url_params = world_url + "?" + url_params
-        return redirect(world_url_params)
+            [access_token, refresh_token] = get_user_tokens(user, 30, 60)
+
+            db.session.add(user)
+            db.session.commit()
+
+            params = dict()
+            params["access_token"] = access_token
+            params["refresh_token"] = refresh_token
+            url_params = urlencode(params)
+
+            # Send user to the world
+            world_url = request.base_url.replace("/login/github/callback", "/worldaccess")
+            world_url_params = world_url + "?" + url_params
+            return redirect(world_url_params)
+        else:
+            login_url = request.base_url.replace("/login/google/callback", "/")
+            return redirect(login_url)

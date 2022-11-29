@@ -1,5 +1,4 @@
 from flask import redirect, request
-from flask_login import current_user
 import requests
 from app.config import DevelopmentConfig
 import json
@@ -15,6 +14,8 @@ def get_google_provider_cfg():
 def google_login(app):
 
     from app import google_client
+    from app.util.util import get_user_tokens
+    from app import db
 
     @app.route("/login/google", methods=['GET', 'POST'])
     def login_google():
@@ -97,16 +98,26 @@ def google_login(app):
         print(picture)
         print(users_name)
 
-        login_user_origin(users_name, users_email, 1)
-        # TODO: Create tokens for user? (both very low life?)
-        params = dict()
-        params["access_token"] = "test"
-        params["refresh_token"] = "test2"
-        url_params = urlencode(params)
+        user = login_user_origin(users_name, users_email, 1)
+        if user:
 
-        # Send user to the world
-        world_url = request.base_url.replace("/login/google/callback", "/worldaccess")
-        world_url_params = world_url + "?" + url_params
-        print("redirected to the url: %s" % world_url_params)
-        return redirect(world_url_params)
+            [access_token, refresh_token] = get_user_tokens(user, 30, 60)
+
+            db.session.add(user)
+            db.session.commit()
+
+            params = dict()
+            params["access_token"] = access_token
+            params["refresh_token"] = refresh_token
+
+            url_params = urlencode(params)
+
+            # Send user to the world
+            world_url = request.base_url.replace("/login/google/callback", "/worldaccess")
+            world_url_params = world_url + "?" + url_params
+            print("redirected to the url: %s" % world_url_params)
+            return redirect(world_url_params)
+        else:
+            login_url = request.base_url.replace("/login/google/callback", "/")
+            return redirect(login_url)
 
