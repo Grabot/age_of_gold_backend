@@ -66,6 +66,9 @@ class User(UserMixin, db.Model):
     def set_token(self, token):
         self.token = token
 
+    def set_token_expiration(self, token_expiration):
+        self.token_expiration = token_expiration
+
     def avatar(self, size):
         digest = md5(self.email.lower().encode('utf-8')).hexdigest()
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
