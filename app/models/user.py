@@ -1,20 +1,14 @@
 from passlib.apps import custom_app_context as pwd_context
 from authlib.jose import jwt
-from app import db, login
+from app import db
 from app.config import DevelopmentConfig
-from flask_login import UserMixin
 from hashlib import md5
 from datetime import datetime
 from app.models.friend import Friend
 import time
 
 
-@login.user_loader
-def load_user(_id):
-    return User.query.get(int(_id))
-
-
-class User(UserMixin, db.Model):
+class User(db.Model):
     """
     User
     """
