@@ -1,10 +1,9 @@
-from flask_cors import cross_origin
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import func
 from app.models.user import User
 from app.rest import app_api
-from flask import request
+from flask import request, make_response
 from app import db
 from app.util.util import get_user_tokens
 
@@ -20,28 +19,27 @@ class Register(Resource):
     def delete(self):
         pass
 
-    @cross_origin()
     def post(self):
-        print("register?")
         json_data = request.get_json(force=True)
         email = json_data["email"]
-        password = json_data["password"]
         user_name = json_data["user_name"]
+        password = json_data["password"]
 
         if email is None or password is None or user_name is None:
-            return {
+            return make_response({
                        'result': False,
                        'message': "Invalid request"
-                   }, 400
+                   }, 200)
         if User.query.filter(func.lower(User.username) == func.lower(user_name)).first() is not None:
-            return {
+            return make_response({
                 'result': False,
                 'message': "User is already taken, please choose a different one."
-            }, 400
+            }, 200)
 
         user = User(
             username=user_name,
-            email=email
+            email=email,
+            origin=0
         )
         user.hash_password(password)
 
@@ -49,13 +47,17 @@ class Register(Resource):
 
         db.session.add(user)
         db.session.commit()
-        return {
+        login_response = make_response({
             'result': True,
             'message': 'user created successfully.',
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.serialize
-        }
+        }, 200)
+
+        login_response.set_cookie('somecookienameTest', 'I am test cookie', httponly=True, secure=True, samesite=None)
+
+        return login_response
 
 
 api = Api(app_api)

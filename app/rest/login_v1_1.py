@@ -47,7 +47,11 @@ class Login(Resource):
             print("found a user")
             # Valid login, we refresh the token for this user.
             [access_token, refresh_token] = get_user_tokens(user)
-            
+            if not user.verify_password(password):
+                return make_response({
+                    "result": False,
+                    "message": "password not correct"
+                }, 200)
             db.session.add(user)
             db.session.commit()
 

@@ -50,8 +50,10 @@ class User(db.Model):
         self.password_hash = pwd_context.encrypt(password)
 
     def verify_password(self, password):
+        print("going to verify")
         # If the user has any other origin than regular it should not get here
         # because the verification is does elsewhere. So if it does, we return False
+        print("origin: %s" % self.origin)
         if self.origin != 0:
             return False
         else:
