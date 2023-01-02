@@ -31,6 +31,14 @@ def get_wraparounds(q, r):
 
 
 def refresh_user_token(access_token, refresh_token):
+
+    # The access token should be active
+    user = User.query.filter_by(token=access_token).first()
+
+    if user is None:
+        print("access token not active")
+        return None
+
     access = None
     refresh = None
     try:
@@ -44,13 +52,9 @@ def refresh_user_token(access_token, refresh_token):
         print("big fail!")
         return None
 
-    # The access token should be active
-    user = User.query.filter_by(token=access_token).first()
-    print('access: %s' % access)
-    print('refresh: %s' % refresh)
-    if user is None or refresh["exp"] < int(time.time()):
+    if refresh["exp"] < int(time.time()):
+        print("refresh token not active")
         return None
-
     # It all needs to match before you send back new tokens
     if user.id == access["id"] and user.username == refresh["user_name"]:
         print("it's all good! Send more tokens")

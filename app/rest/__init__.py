@@ -13,4 +13,5 @@ from app.rest import login_v1_1
 from app.rest import register_v1_1
 from app.rest import refresh_v1_1
 from app.rest import access_token_v1_1
+from app.rest import test
 
