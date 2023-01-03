@@ -28,7 +28,7 @@ class Refresh(Resource):
             return {
                        'result': False,
                        'message': "User not authorized"
-                   }, 400
+                   }, 200
         else:
             print("stuff present")
             user = refresh_user_token(access_token, refresh_token)
@@ -41,7 +41,7 @@ class Refresh(Resource):
                     'message': 'user token successfully refreshed.',
                     'access_token': access_token,
                     'refresh_token': refresh_token
-                }
+                }, 200
             else:
                 return {
                            'result': False,
