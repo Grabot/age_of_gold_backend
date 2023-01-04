@@ -55,8 +55,6 @@ class Register(Resource):
             'user': user.serialize
         }, 200)
 
-        login_response.set_cookie('somecookienameTest', 'I am test cookie', httponly=True, secure=True, samesite=None)
-
         return login_response
 
 

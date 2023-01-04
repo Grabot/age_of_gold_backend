@@ -67,7 +67,8 @@ def check_token(token):
     user = User.query.filter_by(token=token).first()
     if user is None or user.token_expiration < int(time.time()):
         return None
-    return user
+    else:
+        return user
 
 
 def get_user_tokens(user, access_expiration=3600, refresh_expiration=36000):

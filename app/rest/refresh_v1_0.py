@@ -1,4 +1,3 @@
-from flask_cors import cross_origin
 from flask_restful import Api
 from flask_restful import Resource
 from app.rest import app_api
@@ -40,7 +39,8 @@ class Refresh(Resource):
                     'result': True,
                     'message': 'user token successfully refreshed.',
                     'access_token': access_token,
-                    'refresh_token': refresh_token
+                    'refresh_token': refresh_token,
+                    'user': user.serialize
                 }, 200
             else:
                 return {
