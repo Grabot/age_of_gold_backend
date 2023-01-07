@@ -6,6 +6,7 @@ from flask import request
 from app import socks
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
+from app.models.user import User
 from app.util.util import get_wraparounds
 from app import db
 from app.config import DevelopmentConfig
@@ -92,7 +93,7 @@ class NamespaceSock(Namespace):
             # The hex is within the map bounds so retrieve it
             hexagon = Hexagon.query.filter_by(q=q, r=r).first()
             if hexagon is None:
-                emit("send_hexagon_fail", 'hexagon getting failed', room=request.sid)
+                emit("send_hexagon_fail", room=request.sid)
             else:
                 return_thing = hexagon.serialize
                 emit("send_hexagon_success", return_thing, room=request.sid)
@@ -103,14 +104,17 @@ class NamespaceSock(Namespace):
 
     # noinspection PyMethodMayBeStatic
     def on_change_tile_type(self, data):
+        # TODO: Change to get request?
+        user_id = data["id"]
         q = data["q"]
         r = data["r"]
         tile_type = data["type"]
         tile = Tile.query.filter_by(q=q, r=r).first()
-        if tile:
-            tile.type = tile_type
+        user = User.query.filter_by(id=user_id).first()
+        if tile and user:
             tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
             if tile_hexagon:
+                tile.update_tile_info(tile_type, user_id)
                 db.session.add(tile)
                 room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
                 # We already send the tile back via the socket to the hex room.
@@ -126,11 +130,21 @@ class NamespaceSock(Namespace):
                 tile_hexagon.tiles_detail = json.dumps(prev_details)
                 db.session.add(tile_hexagon)
                 db.session.commit()
-                print("tile type %s change updated" % tile_type)
             else:
                 emit("change_tile_type_failed", room=request.sid)
         else:
             emit("change_tile_type_failed", room=request.sid)
+
+    # noinspection PyMethodMayBeStatic
+    def on_get_tile_info(self, data):
+        # TODO: Change to get request?
+        q = data["q"]
+        r = data["r"]
+        tile = Tile.query.filter_by(q=q, r=r).first()
+        if tile:
+            emit("get_tile_info_success", tile.serialize_full, room=request.sid)
+        else:
+            emit("get_tile_info_failed", room=request.sid)
 
 
 socks.on_namespace(NamespaceSock('/api/v1.0/sock'))
