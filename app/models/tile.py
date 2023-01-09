@@ -28,7 +28,6 @@ class Tile(db.Model):
         self.type = tile_type
         self.last_changed_by = user_id
         self.last_changed_time = datetime.utcnow()
-        print("updated tile!")
 
     @property
     def serialize_full(self):

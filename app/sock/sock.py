@@ -112,26 +112,31 @@ class NamespaceSock(Namespace):
         tile = Tile.query.filter_by(q=q, r=r).first()
         user = User.query.filter_by(id=user_id).first()
         if tile and user:
-            tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
-            if tile_hexagon:
-                tile.update_tile_info(tile_type, user_id)
-                db.session.add(tile)
-                room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
-                # We already send the tile back via the socket to the hex room.
-                emit("change_tile_type_success", tile.serialize, room=room)
-
-                # We can get all the tiles and re-write the tiles_detail
-                # But we will just look for the correct tile in the existing string
-                # and update just that one.
-                prev_details = json.loads(tile_hexagon.tiles_detail)
-                for tile_detail in prev_details:
-                    if tile_detail["q"] == tile.q and tile_detail["r"] == tile.r:
-                        tile_detail["type"] = tile.type
-                tile_hexagon.tiles_detail = json.dumps(prev_details)
-                db.session.add(tile_hexagon)
-                db.session.commit()
-            else:
+            if not user.can_change_tile_type():
                 emit("change_tile_type_failed", room=request.sid)
+            else:
+                tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
+                if tile_hexagon:
+                    user.lock_tile_setting()
+                    tile.update_tile_info(tile_type, user_id)
+                    db.session.add(tile)
+                    db.session.add(user)
+                    room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
+                    # We already send the tile back via the socket to the hex room.
+                    emit("change_tile_type_success", tile.serialize_full, room=room)
+
+                    # We can get all the tiles and re-write the tiles_detail
+                    # But we will just look for the correct tile in the existing string
+                    # and update just that one.
+                    prev_details = json.loads(tile_hexagon.tiles_detail)
+                    for tile_detail in prev_details:
+                        if tile_detail["q"] == tile.q and tile_detail["r"] == tile.r:
+                            tile_detail["type"] = tile.type
+                    tile_hexagon.tiles_detail = json.dumps(prev_details)
+                    db.session.add(tile_hexagon)
+                    db.session.commit()
+                else:
+                    emit("change_tile_type_failed", room=request.sid)
         else:
             emit("change_tile_type_failed", room=request.sid)
 
