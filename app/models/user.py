@@ -48,8 +48,8 @@ class User(db.Model):
     token_expiration = db.Column(db.Integer)
     tile_lock = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def lock_tile_setting(self):
-        self.tile_lock = datetime.utcnow() + timedelta(minutes=10)
+    def lock_tile_setting(self, minutes):
+        self.tile_lock = datetime.utcnow() + timedelta(minutes=minutes)
 
     def can_change_tile_type(self):
         return self.tile_lock <= datetime.utcnow()

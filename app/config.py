@@ -50,7 +50,7 @@ class Config(object):
         "kid": os.environ.get("JWT_KID", ""),
         "typ": os.environ.get("JWT_TYP", "")
     }
-    map_size = 50
+    map_size = 5
     JWT_SUB = os.environ.get("JWT_SUB", "")
     JWT_ISS = os.environ.get("JWT_ISS", "")
     JWT_AUD = os.environ.get("JWT_AUD", "")

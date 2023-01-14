@@ -73,14 +73,14 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_get_hexagon(self, data):
         map_size = DevelopmentConfig.map_size
-        q = data["q"]
-        r = data["r"]
+        hex_q = data["q"]
+        hex_r = data["r"]
         # If the hex is out of the map bounds we want it to loop around
-        if q < -map_size or q > map_size or r < -map_size or r > map_size:
-            [q, wrap_q, r, wrap_r] = get_wraparounds(q, r)
+        if hex_q < -map_size or hex_q > map_size or hex_r < -map_size or hex_r > map_size:
+            [hex_q, wrap_q, hex_r, wrap_r] = get_wraparounds(hex_q, hex_r)
 
             # print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
-            hexagon = Hexagon.query.filter_by(q=q, r=r).first()
+            hexagon = Hexagon.query.filter_by(q=hex_q, r=hex_r).first()
             # We will add a wraparound indicator
             return_hexagon = hexagon.serialize
             return_hexagon["wraparound"] = {
@@ -91,7 +91,7 @@ class NamespaceSock(Namespace):
             return
         else:
             # The hex is within the map bounds so retrieve it
-            hexagon = Hexagon.query.filter_by(q=q, r=r).first()
+            hexagon = Hexagon.query.filter_by(q=hex_q, r=hex_r).first()
             if hexagon is None:
                 emit("send_hexagon_fail", room=request.sid)
             else:
@@ -106,10 +106,10 @@ class NamespaceSock(Namespace):
     def on_change_tile_type(self, data):
         # TODO: Change to get request?
         user_id = data["id"]
-        q = data["q"]
-        r = data["r"]
+        tile_q = data["q"]
+        tile_r = data["r"]
         tile_type = data["type"]
-        tile = Tile.query.filter_by(q=q, r=r).first()
+        tile = Tile.query.filter_by(q=tile_q, r=tile_r).first()
         user = User.query.filter_by(id=user_id).first()
         if tile and user:
             if not user.can_change_tile_type():
@@ -117,7 +117,7 @@ class NamespaceSock(Namespace):
             else:
                 tile_hexagon = Hexagon.query.filter_by(id=tile.hexagon_id).first()
                 if tile_hexagon:
-                    user.lock_tile_setting()
+                    user.lock_tile_setting(1)
                     tile.update_tile_info(tile_type, user_id)
                     db.session.add(tile)
                     db.session.add(user)
@@ -143,9 +143,10 @@ class NamespaceSock(Namespace):
     # noinspection PyMethodMayBeStatic
     def on_get_tile_info(self, data):
         # TODO: Change to get request?
-        q = data["q"]
-        r = data["r"]
-        tile = Tile.query.filter_by(q=q, r=r).first()
+        tile_q = data["q"]
+        tile_r = data["r"]
+        print("tile_q: %s tile_r: %s" % (tile_q, tile_r))
+        tile = Tile.query.filter_by(q=tile_q, r=tile_r).first()
         if tile:
             emit("get_tile_info_success", tile.serialize_full, room=request.sid)
         else:
