@@ -82,3 +82,10 @@ def get_user_tokens(user, access_expiration=3600, refresh_expiration=36000):
     user.set_token_expiration(token_expiration)
     return [access_token, refresh_token]
 
+
+def get_auth_token(auth_header):
+    if auth_header:
+        auth_token = auth_header.split(" ")[1]
+    else:
+        auth_token = ''
+    return auth_token
