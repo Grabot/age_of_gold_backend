@@ -54,6 +54,7 @@ class Config(object):
     JWT_SUB = os.environ.get("JWT_SUB", "")
     JWT_ISS = os.environ.get("JWT_ISS", "")
     JWT_AUD = os.environ.get("JWT_AUD", "")
+    API_SOCK_NAMESPACE = '/api/v1.0/sock'
 
 
 class DevelopmentConfig(Config):
