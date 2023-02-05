@@ -71,48 +71,8 @@ class NamespaceSock(Namespace):
         emit("message_event", 'User has left room %s' % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
-    def on_get_hexagon(self, data):
-        map_size = DevelopmentConfig.map_size
-        hex_q = data["q"]
-        hex_r = data["r"]
-        # If the hex is out of the map bounds we want it to loop around
-        if hex_q < -map_size or hex_q > map_size or hex_r < -map_size or hex_r > map_size:
-            [hex_q, wrap_q, hex_r, wrap_r] = get_wraparounds(hex_q, hex_r)
-
-            # print("wraparound test! q: {} r: {} s: {}   wrap_q: {}  wrap_r: {}".format(q, r, s, wrap_q, wrap_q))
-            hexagon = Hexagon.query.filter_by(q=hex_q, r=hex_r).first()
-            # We will add a wraparound indicator
-            return_hexagon = hexagon.serialize
-            return_hexagon["wraparound"] = {
-                "q": wrap_q,
-                "r": wrap_r
-            }
-            emit("send_hexagon_success", return_hexagon, room=request.sid)
-            return
-        else:
-            # The hex is within the map bounds so retrieve it
-            hexagon = Hexagon.query.filter_by(q=hex_q, r=hex_r).first()
-            if hexagon is None:
-                emit("send_hexagon_fail", room=request.sid)
-            else:
-                return_thing = hexagon.serialize
-                emit("send_hexagon_success", return_thing, room=request.sid)
-
-    # noinspection PyMethodMayBeStatic
     def on_send_message(self, data):
         emit("send_message_success", data, broadcast=True)
-
-    # noinspection PyMethodMayBeStatic
-    def on_get_tile_info(self, data):
-        # TODO: Change to get request?
-        tile_q = data["q"]
-        tile_r = data["r"]
-        print("tile_q: %s tile_r: %s" % (tile_q, tile_r))
-        tile = Tile.query.filter_by(q=tile_q, r=tile_r).first()
-        if tile:
-            emit("get_tile_info_success", tile.serialize_full, room=request.sid)
-        else:
-            emit("get_tile_info_failed", room=request.sid)
 
 
 socks.on_namespace(NamespaceSock(DevelopmentConfig.API_SOCK_NAMESPACE))

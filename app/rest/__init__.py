@@ -16,4 +16,5 @@ from app.rest import token_login_v1_0
 from app.rest import test
 from app.rest import tile_change_v1_0
 from app.rest import get_hexagon_v1_0
+from app.rest import get_tile_info_v1_0
 
