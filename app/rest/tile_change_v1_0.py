@@ -82,6 +82,7 @@ class TileChange(Resource):
 
         tile_change_response = make_response({
             'result': True,
+            'tile_lock': user.get_tile_lock().strftime('%Y-%m-%dT%H:%M:%S.%f')
         }, 200)
         return tile_change_response
 

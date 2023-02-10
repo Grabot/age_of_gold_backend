@@ -48,6 +48,9 @@ class User(db.Model):
     token_expiration = db.Column(db.Integer)
     tile_lock = db.Column(db.DateTime, default=datetime.utcnow)
 
+    def get_tile_lock(self):
+        return self.tile_lock
+
     def lock_tile_setting(self, minutes):
         self.tile_lock = datetime.utcnow() + timedelta(minutes=minutes)
 
