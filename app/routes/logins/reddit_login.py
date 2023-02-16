@@ -83,7 +83,7 @@ def reddit_login(app):
 
         headers_authorization = {
             "Accept": "application/json",
-            'User-agent': 'age of gold login bot 0.1',
+            'User-agent': 'app of gold login bot 0.1',
             "Authorization": "bearer %s" % reddit_response_json["access_token"]
         }
         # authorization_url = DevelopmentConfig.REDDIT_USER
