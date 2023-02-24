@@ -3,6 +3,7 @@ from flask_restful import Resource
 from app.rest import app_api
 from flask import request
 from app import db
+from app.rest.rest_util import get_failed_response
 from app.util.util import refresh_user_token, get_user_tokens
 
 
@@ -43,10 +44,7 @@ class Refresh(Resource):
                     'user': user.serialize
                 }, 200
             else:
-                return {
-                           'result': False,
-                           'message': "Authorization failed"
-                       }, 200
+                return get_failed_response("Authorization failed")
 
 
 api = Api(app_api)

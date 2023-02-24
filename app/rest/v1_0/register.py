@@ -5,6 +5,7 @@ from app.models.user import User
 from app.rest import app_api
 from flask import request, make_response
 from app import db
+from app.rest.rest_util import get_failed_response
 from app.util.util import get_user_tokens
 
 
@@ -26,15 +27,9 @@ class Register(Resource):
         password = json_data["password"]
 
         if email is None or password is None or user_name is None:
-            return make_response({
-                       'result': False,
-                       'message': "Invalid request"
-                   }, 200)
+            return get_failed_response("Invalid request")
         if User.query.filter(func.lower(User.username) == func.lower(user_name)).first() is not None:
-            return make_response({
-                'result': False,
-                'message': "User is already taken, please choose a different one."
-            }, 200)
+            return get_failed_response("User is already taken, please choose a different one.")
 
         user = User(
             username=user_name,

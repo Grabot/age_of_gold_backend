@@ -3,6 +3,7 @@ from flask_restful import Resource
 from app.rest import app_api
 from flask import request
 from app import db
+from app.rest.rest_util import get_failed_response
 from app.util.util import get_user_tokens, check_token
 
 
@@ -18,22 +19,15 @@ class TokenLogin(Resource):
         pass
 
     def post(self):
-        print("TokenLogin?")
         json_data = request.get_json(force=True)
         user = None
         if "access_token" in json_data:
             user = check_token(json_data["access_token"])
         else:
-            return {
-                "result": False,
-                "message": "invalid request"
-            }, 200
+            return get_failed_response("invalid request")
 
         if not user:
-            return {
-                "result": False,
-                "message": "user not found"
-            }, 200
+            return get_failed_response("user not found")
         else:
             # The access token was still good, refresh tokens and send back.
             [access_token, refresh_token] = get_user_tokens(user)
