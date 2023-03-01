@@ -119,6 +119,7 @@ class User(db.Model):
             return False
 
     def generate_auth_token(self, expires_in=3600):
+        # also used for email password reset token
         payload = {
             "id": self.id,
             "iss": DevelopmentConfig.JWT_ISS,

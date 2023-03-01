@@ -6,6 +6,7 @@ from flask_socketio import SocketIO
 from app.routes import set_routes
 from oauthlib.oauth2 import WebApplicationClient
 from flask_cors import CORS
+from flask_mail import Mail
 
 
 db = SQLAlchemy()
@@ -13,6 +14,7 @@ migrate = Migrate()
 allow_origin = "*"
 # allow_origin = "http://localhost:34745"
 socks = SocketIO(cors_allowed_origins=allow_origin)
+mail = Mail()
 
 # OAuth 2 client setup
 google_client = WebApplicationClient(DevelopmentConfig.GOOGLE_CLIENT_ID)
@@ -29,6 +31,7 @@ def create_app():
     db.init_app(app)
     socks.init_app(app, message_queue=DevelopmentConfig.REDIS_URL)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     from app.rest import app_api as api_bp
     app.register_blueprint(api_bp)

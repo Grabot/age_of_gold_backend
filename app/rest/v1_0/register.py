@@ -28,6 +28,7 @@ class Register(Resource):
 
         if email is None or password is None or user_name is None:
             return get_failed_response("Invalid request")
+
         if User.query.filter(func.lower(User.username) == func.lower(user_name)).first() is not None:
             return get_failed_response("User is already taken, please choose a different one.")
 
@@ -42,6 +43,7 @@ class Register(Resource):
 
         db.session.add(user)
         db.session.commit()
+
         login_response = make_response({
             'result': True,
             'message': 'user created successfully.',

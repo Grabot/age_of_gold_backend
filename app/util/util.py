@@ -89,3 +89,15 @@ def get_auth_token(auth_header):
     else:
         auth_token = ''
     return auth_token
+
+
+def verify_token(token):
+    try:
+        id_token = jwt.decode(token, DevelopmentConfig.jwk)
+    except DecodeError:
+        return
+
+    if id_token is None:
+        return
+
+    return User.query.get(id_token)

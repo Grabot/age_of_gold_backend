@@ -1,17 +1,20 @@
-from flask_cors import cross_origin
 from flask_restful import Api
 from flask_restful import Resource
-from sqlalchemy import func
-from app.models.user import User
+from app import mail
+from app.config import Config
 from app.rest import app_api
-from flask import request, make_response
-from app import db
-from app.util.util import get_user_tokens
+from flask import make_response
+from flask_mail import Message
+from app.util.email.verification_email import verification_email
 
 
 class Test(Resource):
 
     def get(self):
+        print(Config.MAIL_SENDER)
+        msg = Message('test subject', sender=Config.MAIL_SENDER, recipients=['SanderKools@gmail.com'])
+        msg.html = verification_email
+        mail.send(msg)
         pass
 
     def put(self):
