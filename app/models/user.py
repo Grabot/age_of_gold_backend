@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 from app.models.friend import Friend
 import time
+from sqlalchemy import Index
 
 
 class User(db.Model):
@@ -33,8 +34,7 @@ class User(db.Model):
     username = db.Column(db.Text, index=True, unique=True)
     # The user can use the same email with a different origin.
     # The email and origin is unique
-    # TODO: Make email and origin unique.
-    email = db.Column(db.Text, index=True)
+    email = db.Column(db.Text)
     password_hash = db.Column(db.Text)
     about_me = db.Column(db.Text)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -47,6 +47,9 @@ class User(db.Model):
     token = db.Column(db.Text, index=True)
     token_expiration = db.Column(db.Integer)
     tile_lock = db.Column(db.DateTime, default=datetime.utcnow)
+    email_verified = db.Column(db.Boolean, default=False)
+
+    __table_args__ = (Index('user_index', "email", "origin", unique=True),)
 
     def get_tile_lock(self):
         return self.tile_lock
@@ -141,11 +144,18 @@ class User(db.Model):
         }
         return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
 
+    def is_verified(self):
+        return self.email_verified
+
+    def verify_user(self):
+        self.email_verified = True
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
         return {
             'id': self.id,
             'username': self.username,
+            'verified': self.email_verified,
             'tile_lock': self.tile_lock.strftime('%Y-%m-%dT%H:%M:%S.%f'),
         }

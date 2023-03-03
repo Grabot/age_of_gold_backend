@@ -91,7 +91,7 @@ def get_auth_token(auth_header):
     return auth_token
 
 
-def verify_token(token):
+def decode_token(token):
     try:
         id_token = jwt.decode(token, DevelopmentConfig.jwk)
     except DecodeError:
@@ -100,4 +100,4 @@ def verify_token(token):
     if id_token is None:
         return
 
-    return User.query.get(id_token)
+    return id_token

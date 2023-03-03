@@ -11,8 +11,7 @@ from app.util.email.verification_email import verification_email
 class Test(Resource):
 
     def get(self):
-        print(Config.MAIL_SENDER)
-        msg = Message('test subject', sender=Config.MAIL_SENDER, recipients=['SanderKools@gmail.com'])
+        msg = Message('test subject', sender=Config.MAIL_USERNAME, recipients=['SanderKools@gmail.com'])
         msg.html = verification_email
         mail.send(msg)
         pass

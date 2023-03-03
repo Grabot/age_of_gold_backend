@@ -12,10 +12,9 @@ class EmailProcess(multiprocessing.Process):
         self.html_body = html_body
 
     def run(self):
-        print("sending reset password email: %s" % self.email)
-        sender = Config.MAIL_SENDER
+        print("sending email: %s" % self.email)
+        sender = Config.MAIL_USERNAME
         recipients = [self.email]
-        print("sending now")
         send_email(self.email_subject, sender, recipients, self.html_body)
         print("done sending")
 
