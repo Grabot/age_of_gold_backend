@@ -25,13 +25,6 @@ class GetHexagon(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
-            return get_failed_response("back to login")
-
-        user = check_token(auth_token)
-        if not user:
-            return get_failed_response("back to login")
 
         # The json should have 1 or more hexagons
         hexagons = json.loads(json_data["hexagons"])
