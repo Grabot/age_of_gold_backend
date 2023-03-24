@@ -32,6 +32,9 @@ class Register(Resource):
         if User.query.filter(func.lower(User.username) == func.lower(user_name)).first() is not None:
             return get_failed_response("User is already taken, please choose a different one.")
 
+        if User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first() is not None:
+            return get_failed_response("This email has already been used to create an account")
+
         user = User(
             username=user_name,
             email=email,

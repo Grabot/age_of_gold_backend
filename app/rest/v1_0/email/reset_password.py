@@ -2,7 +2,7 @@ import time
 from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
-
+from sqlalchemy import func
 from app.config import Config
 from app.models.user import User
 from app.rest import app_api
@@ -30,7 +30,7 @@ class ResetPassword(Resource):
         if email is None:
             return get_failed_response("error occurred")
 
-        user = User.query.filter_by(email=email, origin=0).first()
+        user = User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first()
         if not user:
             return get_failed_response("no account found using this email")
 

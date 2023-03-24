@@ -2,8 +2,6 @@ from app import db
 from datetime import datetime
 
 
-# TODO: remove?
-#  For now this is purely for debugging, to test out the user login and interaction
 class Post(db.Model):
     """
     Post
@@ -12,7 +10,8 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('User.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('User.id'))  # sender
+    chat_id = db.Column(db.Integer, default=None)  # receiver (nothing for global)
 
     @property
     def serialize(self):

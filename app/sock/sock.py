@@ -70,9 +70,9 @@ class NamespaceSock(Namespace):
         # print("left room %s" % room)
         emit("message_event", 'User has left room %s' % room, room=request.sid)
 
-    # noinspection PyMethodMayBeStatic
-    def on_send_message(self, data):
-        emit("send_message_success", data, broadcast=True)
+    # # noinspection PyMethodMayBeStatic
+    # def on_send_message(self, data):
+    #     emit("send_message_success", data, broadcast=True)
 
 
 socks.on_namespace(NamespaceSock(DevelopmentConfig.API_SOCK_NAMESPACE))

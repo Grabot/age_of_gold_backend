@@ -26,11 +26,11 @@ class Login(Resource):
         if "email" in json_data:
             email = json_data["email"]
             password = json_data["password"]
-            user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+            user = User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first()
         elif "user_name" in json_data:
             user_name = json_data["user_name"]
             password = json_data["password"]
-            user = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
+            user = User.query.filter_by(origin=0).filter(func.lower(User.username) == func.lower(user_name)).first()
         else:
             return {
                 "result": False,
