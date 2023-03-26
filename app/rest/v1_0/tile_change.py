@@ -10,7 +10,7 @@ from app import db, DevelopmentConfig
 import json
 
 from app.rest.rest_util import get_failed_response
-from app.util.util import get_auth_token, check_token
+from app.util.util import get_auth_token, check_token, get_hex_room
 
 
 class TileChange(Resource):
@@ -58,7 +58,7 @@ class TileChange(Resource):
         tile.update_tile_info(int(tile_type), user.id)
         db.session.add(tile)
         db.session.add(user)
-        room = "%s_%s" % (tile_hexagon.q, tile_hexagon.r)
+        room = get_hex_room(tile_hexagon.q, tile_hexagon.r)
         # Emit the results to the hex room.
         emit("change_tile_type_success", tile.serialize_full, room=room, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
 

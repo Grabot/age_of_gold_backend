@@ -101,3 +101,8 @@ def decode_token(token):
         return
 
     return id_token
+
+def get_hex_room(hex_q, hex_r):
+    room = "%s_%s" % (hex_q, hex_r)
+    return room
+

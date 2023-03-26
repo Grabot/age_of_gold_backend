@@ -6,10 +6,10 @@ from app.models.post import Post
 from app.rest import app_api
 from app import db, DevelopmentConfig
 from app.rest.rest_util import get_failed_response
-from app.util.util import get_auth_token, check_token
+from app.util.util import get_auth_token, check_token, get_hex_room
 
 
-class SendMessage(Resource):
+class SendMessageLocal(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
@@ -33,18 +33,19 @@ class SendMessage(Resource):
             return get_failed_response("an error occurred")
 
         message_body = json_data["message"]
-        post = Post(
-            body=message_body,
-            user_id=user.id
-        )
+        hex_q = json_data["hex_q"]
+        hex_r = json_data["hex_r"]
+        tile_q = json_data["tile_q"]
+        tile_r = json_data["tile_r"]
+        room = get_hex_room(hex_q, hex_r)
         socket_response = {
             "user_name": user.username,
-            "message": message_body
+            "message": message_body,
+            "tile_q": tile_q,
+            "tile_r": tile_r
         }
-        db.session.add(post)
-        db.session.commit()
 
-        emit("send_message_success", socket_response, broadcast=True, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+        emit("send_message_local", socket_response, room=room, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
 
         send_message_response = make_response({
             'result': True,
@@ -53,4 +54,4 @@ class SendMessage(Resource):
 
 
 api = Api(app_api)
-api.add_resource(SendMessage, '/api/v1.0/send/message', endpoint='send_message')
+api.add_resource(SendMessageLocal, '/api/v1.0/send/message/local', endpoint='send_message_local')
