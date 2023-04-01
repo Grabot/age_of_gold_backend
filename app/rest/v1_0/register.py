@@ -1,11 +1,14 @@
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import func
+
+from app.config import Config
 from app.models.user import User
 from app.rest import app_api
 from flask import request, make_response
 from app import db
 from app.rest.rest_util import get_failed_response
+from app.util.generate_avatar import AvatarProcess
 from app.util.util import get_user_tokens
 
 
@@ -40,6 +43,8 @@ class Register(Resource):
             email=email,
             origin=0
         )
+        avatar = AvatarProcess(email, Config.UPLOAD_FOLDER)
+        avatar.start()
         user.hash_password(password)
 
         [access_token, refresh_token] = get_user_tokens(user)

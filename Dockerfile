@@ -13,6 +13,7 @@ COPY age_of_gold.py ./
 COPY migrations ./migrations/
 COPY app ./app/
 COPY .env ./
+RUN mkdir -p static/uploads
 
 EXPOSE 5000
 ENTRYPOINT ["/bin/sh", "boot.sh"]

@@ -9,6 +9,8 @@ services:
     ports:
       - 5000:5000
     restart: always
+    volumes:
+      - ${SHARED_DIR}:/app/static/uploads/
     depends_on:
       - age_of_db
     links:

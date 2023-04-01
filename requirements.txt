@@ -65,3 +65,4 @@ WTForms==3.0.1
 zipp==3.13.0
 zope.event==4.6
 zope.interface==5.5.2
+Pillow==9.4.0

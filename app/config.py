@@ -62,6 +62,7 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     BASE_URL = os.environ.get("BASE_URL")
+    UPLOAD_FOLDER = 'static/uploads/'
 
 
 class DevelopmentConfig(Config):
