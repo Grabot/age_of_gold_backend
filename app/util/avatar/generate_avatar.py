@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw
 import math
 import os
 import stat
+from hashlib import md5
 
 angles = [83, 84, 85, 86, 94, 95, 96, 97]
 min_line_length = 20
@@ -339,20 +340,23 @@ def background_square_clean(_rand, _width, _height, _index):
 
 
 class AvatarProcess(multiprocessing.Process):
-    def __init__(self, email_address, file_path):
+    def __init__(self, file_name, file_path):
         super(AvatarProcess, self).__init__()
-        self.email = email_address
+        self.file_name = file_name
         self.file_path = file_path
 
     def run(self):
         # Code repurposed from https://github.com/Grabot/Stijl
-        random.seed(self.email)
+        # The email hash will be the seed of the avatar generation
+        # email_hash = md5(self.email.lower().encode('utf-8')).hexdigest()
+        random.seed(self.file_name)
         planes = []
         # Add an index so that we can pick new colours from the same list
         # using the same seed and get a new one every time.
         index = 0
-        width = 250
-        height = 250
+        # We make it slightly bigger to avoid black corners on the image from outer lines
+        width = 252
+        height = 252
         background_plane = background_square_clean(random, width, height, index)
         index += 1
         planes.append(background_plane)
@@ -383,12 +387,13 @@ class AvatarProcess(multiprocessing.Process):
 
         del draw
 
-        bound_x = int(width / 2)
-        bound_y = int(height / 2)
-        box = (bound_x, bound_y, bound_x + width, bound_y + height)
+        bound_x = int(width / 2) + 1
+        bound_y = int(height / 2) + 1
+        # subtract 2 again to make it 250x250
+        box = (bound_x, bound_y, bound_x + width - 2, bound_y + height - 2)
         im2 = im.crop(box)
 
-        file = os.path.join(self.file_path, "%s.png" % self.email)
+        file = os.path.join(self.file_path, "%s.png" % self.file_name)
         im2.save(file)
         os.chmod(file, stat.S_IRWXO)
 

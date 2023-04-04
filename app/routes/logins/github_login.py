@@ -1,11 +1,13 @@
-from flask import redirect, request
-import requests
-from app.config import DevelopmentConfig
 from urllib.parse import urlencode
+
+import requests
+from flask import redirect, request
+
+from app.config import DevelopmentConfig, Config
 from app.routes.login_user_origin import login_user_origin
+from app.util.avatar.generate_avatar import AvatarProcess
 
 
-#TODO: turn it to api endpoints?
 def github_login(app):
     from app.util.util import get_user_tokens
     from app import db
@@ -29,7 +31,6 @@ def github_login(app):
         # Get authorization code Google sent back to you
         print("github callback!!!!")
         code = request.args.get("code")
-        print("code: %s" % code)
 
         access_base_url = DevelopmentConfig.GITHUB_ACCESS
         params = dict()
@@ -40,8 +41,6 @@ def github_login(app):
         url_params = urlencode(params)
         github_post_url = access_base_url + "/?" + url_params
 
-        print("github post url: %s" % github_post_url)
-
         headers = {
             "Accept": "application/json",
         }
@@ -49,15 +48,8 @@ def github_login(app):
             github_post_url,
             headers=headers
         )
-        print("testing url 2: %s" % token_response)
-        print("testing url 3: %s" % token_response.url)
-        print("testing url 3: %s" % token_response.text)
-        print("testing url 4: %s" % token_response.json())
+
         github_response_json = token_response.json()
-        print("testing url 5: %s" % github_response_json)
-        print("testing url 6: %s" % github_response_json["access_token"])
-        print("testing url 7: %s" % github_response_json["token_type"])
-        print("testing url 8: %s" % github_response_json["scope"])
 
         headers_authorization = {
             "Accept": "application/json",
@@ -69,23 +61,17 @@ def github_login(app):
             authorization_url,
             headers=headers_authorization
         )
-        print("final?")
-        print(authorization_response)
-        print(authorization_response.json())
 
         github_user = authorization_response.json()
 
         users_name = github_user["login"]
         users_email = github_user["email"]
-        picture = github_user["avatar_url"]
-        print("user verified!")
-        print(users_email)
-        print(picture)
-        print(users_name)
 
         user = login_user_origin(users_name, users_email, 2)
 
         if user:
+            avatar = AvatarProcess(user.avatar_filename(), Config.UPLOAD_FOLDER)
+            avatar.start()
 
             [access_token, refresh_token] = get_user_tokens(user, 30, 60)
 

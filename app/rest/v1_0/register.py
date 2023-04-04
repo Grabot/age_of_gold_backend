@@ -8,7 +8,7 @@ from app.rest import app_api
 from flask import request, make_response
 from app import db
 from app.rest.rest_util import get_failed_response
-from app.util.generate_avatar import AvatarProcess
+from app.util.avatar.generate_avatar import AvatarProcess
 from app.util.util import get_user_tokens
 
 
@@ -43,7 +43,7 @@ class Register(Resource):
             email=email,
             origin=0
         )
-        avatar = AvatarProcess(email, Config.UPLOAD_FOLDER)
+        avatar = AvatarProcess(user.avatar_filename(), Config.UPLOAD_FOLDER)
         avatar.start()
         user.hash_password(password)
 

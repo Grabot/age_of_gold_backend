@@ -1,16 +1,18 @@
-from flask import redirect, request
-import requests
-from app.config import DevelopmentConfig
 import json
-from app.routes.login_user_origin import login_user_origin
 from urllib.parse import urlencode
+
+import requests
+from flask import redirect, request
+
+from app.config import DevelopmentConfig, Config
+from app.routes.login_user_origin import login_user_origin
+from app.util.avatar.generate_avatar import AvatarProcess
 
 
 def get_google_provider_cfg():
     return requests.get(DevelopmentConfig.GOOGLE_DISCOVERY_URL).json()
 
 
-# TODO: turn it to api endpoints?
 def google_login(app):
 
     from app import google_client
@@ -51,25 +53,21 @@ def google_login(app):
         # Prepare and send a request to get tokens! Yay, tokens!
         # Not sure why it reverts to regular http:// but change it back to secure connection
         final_redirect_url = request.base_url.replace("http://", "https://", 1)
-        print("final_authorization_response: %s" % final_redirect_url)
         authorization_response = request.url.replace("http://", "https://", 1)
-        print("request url: %s" % request.url)
+
         token_url, headers, body = google_client.prepare_token_request(
             token_endpoint,
             authorization_response=authorization_response,
             redirect_url=final_redirect_url,
             code=code
         )
-        print("token_url: %s" % token_url)
-        print("headers: %s" % headers)
-        print("body: %s" % body)
+
         token_response = requests.post(
             token_url,
             headers=headers,
             data=body,
             auth=(DevelopmentConfig.GOOGLE_CLIENT_ID, DevelopmentConfig.GOOGLE_CLIENT_SECRET),
         )
-        print("response? :% s" % token_response)
         # Parse the tokens!
         google_client.parse_request_body_response(json.dumps(token_response.json()))
 
@@ -78,9 +76,7 @@ def google_login(app):
         # including their Google profile image and email
         userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
         uri, headers, body = google_client.add_token(userinfo_endpoint)
-        print("uri: %s" % uri)
-        print("headers: %s" % headers)
-        print("body: %s" % body)
+
         userinfo_response = requests.get(uri, headers=headers, data=body)
 
         # You want to make sure their email is verified.
@@ -89,17 +85,13 @@ def google_login(app):
         if not userinfo_response.json().get("email_verified"):
             return "User email not available or not verified by Google.", 400
 
-        print("complete_json: %s" % userinfo_response.json())
         users_email = userinfo_response.json()["email"]
-        picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
-        print("user verified!")
-        print(users_email)
-        print(picture)
-        print(users_name)
 
         user = login_user_origin(users_name, users_email, 1)
         if user:
+            avatar = AvatarProcess(user.avatar_filename(), Config.UPLOAD_FOLDER)
+            avatar.start()
 
             [access_token, refresh_token] = get_user_tokens(user, 30, 60)
 

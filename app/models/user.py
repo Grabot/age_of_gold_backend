@@ -1,7 +1,7 @@
 from passlib.apps import custom_app_context as pwd_context
 from authlib.jose import jwt
 from app import db
-from app.config import DevelopmentConfig
+from app.config import DevelopmentConfig, Config
 from hashlib import md5
 from datetime import datetime
 from datetime import timedelta
@@ -149,6 +149,9 @@ class User(db.Model):
 
     def verify_user(self):
         self.email_verified = True
+
+    def avatar_filename(self):
+        return md5(self.email.lower().encode('utf-8')).hexdigest()
 
     @property
     def serialize(self):
