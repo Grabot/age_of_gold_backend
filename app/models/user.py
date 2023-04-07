@@ -153,6 +153,9 @@ class User(db.Model):
     def avatar_filename(self):
         return md5(self.email.lower().encode('utf-8')).hexdigest()
 
+    def set_new_username(self, new_username):
+        self.username = new_username
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""

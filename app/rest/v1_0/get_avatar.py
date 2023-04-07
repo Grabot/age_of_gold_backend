@@ -2,7 +2,7 @@ from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import func
-
+import os
 from app.models.user import User
 from app.rest.rest_util import get_failed_response
 from app.rest import app_api
@@ -32,14 +32,12 @@ class GetAvatar(Resource):
         print("Found a user")
 
         filename = user_get.avatar_filename()
-        file_path = '/app/static/uploads/%s.png' % filename
-        if not file_path.is_file():
+        file_path = os.path.join("/app", "static", "uploads", "%s.png" % filename)
+        if not os.path.isfile(file_path):
             return get_failed_response("An error occurred")
         else:
-            with open('/app/static/uploads/%s.png' % filename, 'rb') as fd:
+            with open(file_path, 'rb') as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
-
-            print("Retrieved the image data")
 
             avatar_response = make_response({
                 'result': True,
