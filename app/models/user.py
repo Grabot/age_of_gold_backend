@@ -48,6 +48,7 @@ class User(db.Model):
     token_expiration = db.Column(db.Integer)
     tile_lock = db.Column(db.DateTime, default=datetime.utcnow)
     email_verified = db.Column(db.Boolean, default=False)
+    default_avatar = db.Column(db.Boolean, default=True)
 
     __table_args__ = (Index('user_index', "email", "origin", unique=True),)
 
@@ -61,7 +62,7 @@ class User(db.Model):
         return self.tile_lock <= datetime.utcnow()
 
     def hash_password(self, password):
-        self.password_hash = pwd_context.encrypt(password)
+        self.password_hash = pwd_context.hash(password)
 
     def verify_password(self, password):
         print("going to verify")
@@ -153,8 +154,20 @@ class User(db.Model):
     def avatar_filename(self):
         return md5(self.email.lower().encode('utf-8')).hexdigest()
 
+    def avatar_filename_small(self):
+        return self.avatar_filename() + "_small"
+
+    def avatar_filename_default(self):
+        return self.avatar_filename() + "_default"
+
     def set_new_username(self, new_username):
         self.username = new_username
+
+    def set_default_avatar(self, value):
+        self.default_avatar = value
+
+    def is_default(self):
+        return self.default_avatar
 
     @property
     def serialize(self):

@@ -10,8 +10,10 @@ from app.rest.rest_util import get_failed_response
 from app.rest import app_api
 import base64
 
+from app.util.util import get_auth_token, check_token
 
-class GetAvatar(Resource):
+
+class GetAvatarUser(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
@@ -25,19 +27,22 @@ class GetAvatar(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        json_data = request.get_json(force=True)
-        user_name = json_data["user_name"]
-        user_avatar = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
+        auth_token = get_auth_token(request.headers.get('Authorization'))
+        if auth_token == '':
+            return get_failed_response("Something went wrong")
+
+        user_avatar = check_token(auth_token)
         if not user_avatar:
-            return get_failed_response("user not found")
+            return get_failed_response("Something went wrong")
 
         file_folder = Config.UPLOAD_FOLDER
         if user_avatar.is_default():
             file_name = user_avatar.avatar_filename_default()
         else:
-            file_name = user_avatar.avatar_filename_small()
+            file_name = user_avatar.avatar_filename()
 
         file_path = os.path.join(file_folder, "%s.png" % file_name)
+
         if not os.path.isfile(file_path):
             return get_failed_response("An error occurred")
         else:
@@ -53,4 +58,4 @@ class GetAvatar(Resource):
 
 
 api = Api(app_api)
-api.add_resource(GetAvatar, '/api/v1.0/get/avatar', endpoint='get_avatar')
+api.add_resource(GetAvatarUser, '/api/v1.0/get/avatar/user', endpoint='get_avatar_user')

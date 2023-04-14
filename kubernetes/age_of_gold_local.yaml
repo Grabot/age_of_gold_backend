@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
         - name: redis-api
-          image: redis:latest
+          image: redis:7.0
           ports:
             - containerPort: 6379
 #          resources:
@@ -151,7 +151,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
         - name: postgres
-          image: postgres:latest
+          image: postgres:14.7
           ports:
             - name: tcp-5432
               containerPort: 5432

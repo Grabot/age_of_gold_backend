@@ -4,7 +4,6 @@ from PIL import Image, ImageDraw
 import math
 import os
 import stat
-from hashlib import md5
 
 angles = [83, 84, 85, 86, 94, 95, 96, 97]
 min_line_length = 20
@@ -348,13 +347,15 @@ class AvatarProcess(multiprocessing.Process):
     def run(self):
         # Code repurposed from https://github.com/Grabot/Stijl
         # The email hash will be the seed of the avatar generation
-        # email_hash = md5(self.email.lower().encode('utf-8')).hexdigest()
         random.seed(self.file_name)
+        # Because this will be the default image we will add an indicator that it is the default.
+        self.file_name += "_default"
         planes = []
         # Add an index so that we can pick new colours from the same list
         # using the same seed and get a new one every time.
         index = 0
-        # We make it slightly bigger to avoid black corners on the image from outer lines
+        # We want the resulting image to be 250x250
+        # We initially make it slightly bigger to avoid black corners on the image from outer lines
         width = 252
         height = 252
         background_plane = background_square_clean(random, width, height, index)

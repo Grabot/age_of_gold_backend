@@ -19,7 +19,7 @@ services:
   age_of_db:
     container_name: age_of_db
     env_file: .env
-    image: postgres:latest
+    image: postgres:15.2
     networks:
       - default
     ports:
@@ -38,7 +38,7 @@ services:
       - "shared_buffers=4096MB"
 
   redis:
-    image: redis:latest
+    image: redis:7.0.10
     ports:
       - 6379:6379
     command:
