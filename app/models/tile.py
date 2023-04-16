@@ -35,11 +35,10 @@ class Tile(db.Model):
         if self.last_changed_by:
             user = User.query.filter_by(id=self.last_changed_by).first()
             if user:
-                user_info = user.serialize
+                user_info = user.serialize_avatar
         last_time = None
         if self.last_changed_time:
             last_time = self.last_changed_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
-        print("getting full tile info %s, %s" % (user_info, last_time))
         return {
             'q': self.q,
             'r': self.r,

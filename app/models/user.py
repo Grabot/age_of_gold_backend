@@ -1,3 +1,6 @@
+import base64
+import os
+
 from passlib.apps import custom_app_context as pwd_context
 from authlib.jose import jwt
 from app import db
@@ -169,6 +172,24 @@ class User(db.Model):
     def is_default(self):
         return self.default_avatar
 
+    def get_user_avatar(self, full=False):
+        if self.default_avatar:
+            file_name = self.avatar_filename_default()
+        else:
+            if full:
+                file_name = self.avatar_filename()
+            else:
+                file_name = self.avatar_filename_small()
+        file_folder = Config.UPLOAD_FOLDER
+
+        file_path = os.path.join(file_folder, "%s.png" % file_name)
+        if not os.path.isfile(file_path):
+            return ""
+        else:
+            with open(file_path, 'rb') as fd:
+                image_as_base64 = base64.encodebytes(fd.read()).decode()
+            return image_as_base64
+
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
@@ -177,4 +198,14 @@ class User(db.Model):
             'username': self.username,
             'verified': self.email_verified,
             'tile_lock': self.tile_lock.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+            'avatar': self.get_user_avatar(True),
+        }
+
+    @property
+    def serialize_avatar(self):
+        """Return object data in easily serializable format"""
+        return {
+            'id': self.id,
+            'username': self.username,
+            'avatar': self.get_user_avatar(False)
         }
