@@ -32,9 +32,6 @@ class GetUser(Resource):
         if not user:
             return get_failed_response("back to login")
 
-        if not user.can_change_tile_type():
-            return get_failed_response("not allowed")
-
         user_name = json_data["user_name"]
         user_get = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
         if not user_get:

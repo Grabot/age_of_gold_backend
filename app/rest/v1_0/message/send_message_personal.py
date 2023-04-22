@@ -44,7 +44,8 @@ class SendMessagePersonal(Resource):
         room_from = "room_%s" % from_user.id
         room_to = "room_%s" % user_send.id
         socket_response = {
-            "user_name": from_user.username,
+            "from_user": from_user.username,
+            "to_user": user_send.username,
             "message": message_body
         }
 
