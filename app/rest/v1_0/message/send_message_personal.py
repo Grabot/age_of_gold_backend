@@ -4,6 +4,7 @@ from flask_restful import Resource
 from flask_socketio import emit
 from sqlalchemy import func
 
+from app.models.message.personal_message import PersonalMessage
 from app.models.post import Post
 from app.models.user import User
 from app.rest import app_api
@@ -51,6 +52,14 @@ class SendMessagePersonal(Resource):
 
         emit("send_message_personal", socket_response, room=room_from, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
         emit("send_message_personal", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+
+        new_personal_message = PersonalMessage(
+            body=message_body,
+            user_id=from_user.id,
+            receiver_id=user_send.id
+        )
+        db.session.add(new_personal_message)
+        db.session.commit()
 
         send_message_response = make_response({
             'result': True,

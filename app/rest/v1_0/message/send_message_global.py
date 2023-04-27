@@ -2,6 +2,8 @@ from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
 from flask_socketio import emit
+
+from app.models.message.global_message import GlobalMessage
 from app.models.post import Post
 from app.rest import app_api
 from app import db, DevelopmentConfig
@@ -33,12 +35,20 @@ class SendMessageGlobal(Resource):
             return get_failed_response("an error occurred")
 
         message_body = json_data["message"]
+        users_username = user.username
         socket_response = {
-            "user_name": user.username,
+            "user_name": users_username,
             "message": message_body,
         }
 
         emit("send_message_global", socket_response, broadcast=True, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+
+        new_global_message = GlobalMessage(
+            body=message_body,
+            sender_name=users_username,
+        )
+        db.session.add(new_global_message)
+        db.session.commit()
 
         send_message_response = make_response({
             'result': True,
