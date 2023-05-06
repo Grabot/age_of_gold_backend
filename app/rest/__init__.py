@@ -16,3 +16,4 @@ from app.rest.v1_0 import get_avatar
 from app.rest.v1_0 import email
 from app.rest.v1_0 import message
 from app.rest.v1_0 import settings
+from app.rest.v1_0 import social

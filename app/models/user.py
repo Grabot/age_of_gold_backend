@@ -1,6 +1,5 @@
 import base64
 import os
-
 from passlib.apps import custom_app_context as pwd_context
 from authlib.jose import jwt
 from app import db
@@ -8,9 +7,10 @@ from app.config import DevelopmentConfig, Config
 from hashlib import md5
 from datetime import datetime
 from datetime import timedelta
-from app.models.friend import Friend
 import time
 from sqlalchemy import Index
+
+from app.models.friend import Friend
 
 
 class User(db.Model):
@@ -88,25 +88,14 @@ class User(db.Model):
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
 
     def befriend(self, user):
-        friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
-        if not friend:
-            friend = Friend(
-                user_id=self.id,
-                friend_id=user.id,
-                last_time_activity=datetime.utcnow(),
-                unread_messages=0,
-                ignored=False,
-                removed=False
-            )
-            db.session.add(friend)
-            return friend
-        else:
-            if friend.is_removed():
-                friend.remove(False)
-                db.session.add(friend)
-                return friend
-            else:
-                return friend
+        # Only call if the Friend object is not present yet.
+        friend = Friend(
+            user_id=self.id,
+            friend_id=user.id,
+            username=user.username,
+        )
+        db.session.add(friend)
+        return friend
 
     def unfriend(self, user):
         if self.is_friend(user):
@@ -119,7 +108,7 @@ class User(db.Model):
         if user:
             friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
             if friend:
-                return not friend.is_removed()
+                return not friend.is_removed() and friend.is_accepted()
             else:
                 return False
         else:
@@ -190,20 +179,35 @@ class User(db.Model):
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
             return image_as_base64
 
+    def get_friend_ids(self):
+        # Return a list of friend ids, set retrieved to False, so we can retrieve details later.
+        return [
+            friend.serialize for friend in self.friends if not friend.removed]
+
     @property
     def serialize(self):
-        """Return object data in easily serializable format"""
+        # Get detailed user information, mostly used for login
         return {
             'id': self.id,
             'username': self.username,
             'verified': self.email_verified,
             'tile_lock': self.tile_lock.strftime('%Y-%m-%dT%H:%M:%S.%f'),
+            'friends': self.get_friend_ids(),
             'avatar': self.get_user_avatar(True),
         }
 
     @property
-    def serialize_avatar(self):
-        """Return object data in easily serializable format"""
+    def serialize_get(self):
+        # get user details without personal information
+        return {
+            'id': self.id,
+            'username': self.username,
+            'avatar': self.get_user_avatar(True),
+        }
+
+    @property
+    def serialize_minimal(self):
+        # get minimal user details
         return {
             'id': self.id,
             'username': self.username,

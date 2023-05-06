@@ -39,7 +39,7 @@ class GetUser(Resource):
 
         get_user_response = make_response({
             'result': True,
-            'user': user_get.serialize
+            'user': user_get.serialize_get
         }, 200)
         return get_user_response
 

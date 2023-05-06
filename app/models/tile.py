@@ -35,7 +35,7 @@ class Tile(db.Model):
         if self.last_changed_by:
             user = User.query.filter_by(id=self.last_changed_by).first()
             if user:
-                user_info = user.serialize_avatar
+                user_info = user.serialize_minimal
         last_time = None
         if self.last_changed_time:
             last_time = self.last_changed_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
