@@ -2,6 +2,8 @@ from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import desc, func
+
+from app.models.friend import Friend
 from app.models.message.personal_message import PersonalMessage
 from app.models.user import User
 from app.rest import app_api
@@ -35,12 +37,14 @@ class GetPersonalMessages(Resource):
         to_user = json_data["from_user"]
         user_to = User.query.filter(func.lower(User.username) == func.lower(to_user)).first()
 
+        friend = Friend.query.filter_by(user_id=user_from.id, friend_id=user_to.id).first()
+
         print("going to retrieve personal messages")
         # We only retrieve the last 60 messages because we think there is no reason to scroll further back
-        personal_messages = PersonalMessage.query.filter(
-            (PersonalMessage.user_id == user_from.id, PersonalMessage.receiver_id == user_to.id)
-            | (PersonalMessage.user_id == user_to.id, PersonalMessage.receiver_id == user_from.id)).order_by(
-            desc(PersonalMessage.timestamp)).limit(60).all()
+        page = 0  # the user can scroll back to previous messages using the pagination feature
+        personal_messages = PersonalMessage.query.filter_by(user_id=user_from.id, receiver_id=user_to.id). \
+            union(PersonalMessage.query.filter_by(user_id=user_to.id, receiver_id=user_from.id)). \
+            order_by(PersonalMessage.timestamp.desc()).paginate(page, 60, False).items
         print("We retrieved some personal messages %s" % personal_messages)
         # messages = [m.serialize for m in personal_messages]
 

@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime
 
+
 class Friend(db.Model):
     """
     A connection between one user and another.
@@ -17,6 +18,8 @@ class Friend(db.Model):
     accepted = db.Column(db.Boolean, default=False)
     ignored = db.Column(db.Boolean, default=False)
     removed = db.Column(db.Boolean, default=False)
+    # Indicates if a request is made or if they are just chatting and who made the first move to send the request
+    requested = db.Column(db.Boolean, default=None, nullable=True)
 
     def remove(self, deletion):
         self.removed = deletion
@@ -26,6 +29,9 @@ class Friend(db.Model):
 
     def is_accepted(self):
         return self.accepted
+
+    def add_unread_message(self):
+        self.unread_messages += 1
 
     @property
     def serialize(self):
@@ -41,6 +47,7 @@ class Friend(db.Model):
             'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
             'unread_messages': self.unread_messages,
             'ignored': self.ignored,
-            'accepted': self.accepted
+            'accepted': self.accepted,
+            'requested': self.requested
         }
 

@@ -92,9 +92,8 @@ class User(db.Model):
         friend = Friend(
             user_id=self.id,
             friend_id=user.id,
-            username=user.username,
+            unread_messages=0
         )
-        db.session.add(friend)
         return friend
 
     def unfriend(self, user):
@@ -102,13 +101,12 @@ class User(db.Model):
             friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
             if friend:
                 friend.remove(True)
-                db.session.add(friend)
 
     def is_friend(self, user):
         if user:
             friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
             if friend:
-                return not friend.is_removed() and friend.is_accepted()
+                return friend.accepted and not friend.removed
             else:
                 return False
         else:
@@ -181,8 +179,7 @@ class User(db.Model):
 
     def get_friend_ids(self):
         # Return a list of friend ids, set retrieved to False, so we can retrieve details later.
-        return [
-            friend.serialize for friend in self.friends if not friend.removed]
+        return [friend.serialize for friend in self.friends if not friend.removed]
 
     @property
     def serialize(self):

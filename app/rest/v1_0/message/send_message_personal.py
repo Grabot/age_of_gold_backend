@@ -4,6 +4,7 @@ from flask_restful import Resource
 from flask_socketio import emit
 from sqlalchemy import func
 
+from app.models.friend import Friend
 from app.models.message.personal_message import PersonalMessage
 from app.models.post import Post
 from app.models.user import User
@@ -53,6 +54,18 @@ class SendMessagePersonal(Resource):
         emit("send_message_personal", socket_response, room=room_from, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
         emit("send_message_personal", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
 
+        # There are 2 friend objects, but right now we just want the object belonging to who we're sending it to.
+        friend_send = Friend.query.filter_by(user_id=user_send.id, friend_id=from_user.id).first()
+        if not friend_send:
+            # If there is no friend object we will create both of them, add an unread message to who we're messaging
+            friend_send = user_send.befriend(from_user)
+            from_friend = from_user.befriend(user_send)
+            db.session.add(from_friend)
+
+        friend_send.add_unread_message()
+        db.session.add(friend_send)
+
+        # I could add the Friend object on the message, but it's not needed for storage or retrieval, so we won't
         new_personal_message = PersonalMessage(
             body=message_body,
             user_id=from_user.id,
