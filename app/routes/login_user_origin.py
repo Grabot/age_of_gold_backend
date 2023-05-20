@@ -35,7 +35,7 @@ def login_user_origin(users_name, users_email, origin):
         else:
             print("username is taken....")
             # If the username is taken than we change it because we have to create the user here.
-            # The user can change it later if he really hates it.
+            # The user can change it later if that person really hates it.
             # We just assume that it eventually always manages to create a user.
             index = 2
             while index < 100:

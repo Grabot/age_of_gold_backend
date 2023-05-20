@@ -53,22 +53,53 @@ class AddFriend(Resource):
             print("already friends")
 
         # set requested indicator
-        friend_from.requested = True
-        friend_befriend.requested = False
-        db.session.add(friend_from)
-        db.session.add(friend_befriend)
-        db.session.commit()
-        # Emit on the room of the befriend person. If he is online he will see the message
-        socket_response = {
-            "test": True,
-        }
-        room_to = "room_%s" % user_befriend.id
-        emit("added_friend_request", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+        if friend_from.requested is True and friend_befriend.requested is False:
+            print("request is already sent!")
+            add_friend_response = make_response({
+                'result': True,
+                'message': "request already sent"
+            }, 200)
+            return add_friend_response
+        elif friend_befriend.requested is True and friend_from.requested is False:
+            print("The other person has sent a request")
+            # This is if a friend request is send by the other person and now this person sends one.
+            # Let's assume they both accept to be friends
+            friend_from.accepted = True
+            friend_befriend.accepted = True
+            db.session.add(friend_from)
+            db.session.add(friend_befriend)
+            db.session.commit()
 
-        add_friend_response = make_response({
-            'result': True,
-        }, 200)
-        return add_friend_response
+            socket_response = {
+                "from": user_from.username,
+            }
+            room_to = "room_%s" % user_befriend.id
+            emit("accept_friend_request", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+
+            add_friend_response = make_response({
+                'result': True,
+                'message': "They are now friends"
+            }, 200)
+            return add_friend_response
+        else:
+            print("Successfully sent a request")
+            friend_from.requested = True
+            friend_befriend.requested = False
+            db.session.add(friend_from)
+            db.session.add(friend_befriend)
+            db.session.commit()
+            # Emit on the room of the befriend person. If that person is online he will see the request
+            socket_response = {
+                "from": user_from.serialize_minimal,
+            }
+            room_to = "room_%s" % user_befriend.id
+            emit("received_friend_request", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+
+            add_friend_response = make_response({
+                'result': True,
+                'message': "success"
+            }, 200)
+            return add_friend_response
 
 
 api = Api(app_api)

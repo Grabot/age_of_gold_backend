@@ -96,17 +96,11 @@ class User(db.Model):
         )
         return friend
 
-    def unfriend(self, user):
-        if self.is_friend(user):
-            friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
-            if friend:
-                friend.remove(True)
-
     def is_friend(self, user):
         if user:
             friend = self.friends.filter_by(user_id=self.id, friend_id=user.id).first()
             if friend:
-                return friend.accepted and not friend.removed
+                return friend.accepted
             else:
                 return False
         else:
@@ -178,8 +172,7 @@ class User(db.Model):
             return image_as_base64
 
     def get_friend_ids(self):
-        # Return a list of friend ids, set retrieved to False, so we can retrieve details later.
-        return [friend.serialize for friend in self.friends if not friend.removed]
+        return [friend.serialize for friend in self.friends if friend.requested is not None or friend.unread_messages != 0]
 
     @property
     def serialize(self):

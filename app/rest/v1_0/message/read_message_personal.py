@@ -2,15 +2,16 @@ from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
 from sqlalchemy import func
-from app.models.message.personal_message import PersonalMessage
+
+from app import db
+from app.models.friend import Friend
 from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
 from app.util.util import get_auth_token, check_token
-import time
 
 
-class GetPersonalMessages(Resource):
+class ReadPersonalMessages(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self):
@@ -33,25 +34,27 @@ class GetPersonalMessages(Resource):
         if not user_from:
             return get_failed_response("an error occurred")
 
-        to_user = json_data["from_user"]
-        user_to = User.query.filter(func.lower(User.username) == func.lower(to_user)).first()
-        if not user_to:
+        read_user = json_data["read_user"]
+        user_read = User.query.filter(func.lower(User.username) == func.lower(read_user)).first()
+        if not user_read:
             return get_failed_response("user not found")
-        # We only retrieve the last 60 messages because we think there is no reason to scroll further back
-        page = 0  # the user can scroll back to previous messages using the pagination feature
-        personal_messages = PersonalMessage.query.filter_by(user_id=user_from.id, receiver_id=user_to.id)\
-            .union(PersonalMessage.query.filter_by(user_id=user_to.id, receiver_id=user_from.id))\
-            .order_by(PersonalMessage.timestamp.desc())\
-            .paginate(page=page, per_page=60, error_out=False).items
 
-        messages = [m.serialize for m in personal_messages]
+        friend = Friend.query.filter_by(user_id=user_from.id, friend_id=user_read.id).first()
+        if not friend:
+            return get_failed_response("something went wrong")
+
+        print("unread messages: %s" % friend.unread_messages)
+
+        friend.unread_messages = 0
+        db.session.add(friend)
+        db.session.commit()
 
         get_message_response = make_response({
             'result': True,
-            'messages': messages
+            'message': 'success'
         }, 200)
         return get_message_response
 
 
 api = Api(app_api)
-api.add_resource(GetPersonalMessages, '/api/v1.0/get/message/personal', endpoint='get_message_personal')
+api.add_resource(ReadPersonalMessages, '/api/v1.0/read/message/personal', endpoint='read_message_personal')

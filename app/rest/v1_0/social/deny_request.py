@@ -1,9 +1,10 @@
 from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
+from flask_socketio import emit
 from sqlalchemy import func
 
-from app import db
+from app import db, DevelopmentConfig
 from app.models.friend import Friend
 from app.models.user import User
 from app.rest import app_api
@@ -47,11 +48,24 @@ class DenyRequest(Resource):
         else:
             friend_from.requested = None
             friend_befriend.requested = None
+
+            if friend_from.accepted:
+                # We also set the accepted back to false. This can be a denied request or an unfriend.
+                friend_from.accepted = False
+                friend_befriend.accepted = False
+                # TODO: Add message that they are unfriended?
+
             db.session.add(friend_from)
             db.session.add(friend_befriend)
             db.session.commit()
 
-            # TODO: socket update?
+            # Emit on the room of the befriend person. If that person is online he will see the request
+            socket_response = {
+                "from": user_from.username,
+            }
+            room_to = "room_%s" % user_de_befriend.id
+            emit("denied_friend", socket_response, room=room_to,
+                 namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
 
             deny_request_response = make_response({
                 'result': True,

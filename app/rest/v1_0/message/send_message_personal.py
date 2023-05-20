@@ -6,7 +6,7 @@ from sqlalchemy import func
 
 from app.models.friend import Friend
 from app.models.message.personal_message import PersonalMessage
-from app.models.post import Post
+from datetime import datetime
 from app.models.user import User
 from app.rest import app_api
 from app import db, DevelopmentConfig
@@ -43,17 +43,6 @@ class SendMessagePersonal(Resource):
         if not user_send:
             return get_failed_response("user not found")
 
-        room_from = "room_%s" % from_user.id
-        room_to = "room_%s" % user_send.id
-        socket_response = {
-            "from_user": from_user.username,
-            "to_user": user_send.username,
-            "message": message_body
-        }
-
-        emit("send_message_personal", socket_response, room=room_from, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
-        emit("send_message_personal", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
-
         # There are 2 friend objects, but right now we just want the object belonging to who we're sending it to.
         friend_send = Friend.query.filter_by(user_id=user_send.id, friend_id=from_user.id).first()
         if not friend_send:
@@ -65,12 +54,29 @@ class SendMessagePersonal(Resource):
         friend_send.add_unread_message()
         db.session.add(friend_send)
 
+        now = datetime.utcnow()
+
         # I could add the Friend object on the message, but it's not needed for storage or retrieval, so we won't
         new_personal_message = PersonalMessage(
             body=message_body,
             user_id=from_user.id,
-            receiver_id=user_send.id
+            receiver_id=user_send.id,
+            timestamp=now
         )
+
+        room_from = "room_%s" % from_user.id
+        room_to = "room_%s" % user_send.id
+        socket_response = {
+            "from_user": from_user.username,
+            "to_user": user_send.username,
+            "message": message_body,
+            "timestamp": now.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        }
+
+        emit("send_message_personal", socket_response, room=room_from, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+        emit("send_message_personal", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+
+
         db.session.add(new_personal_message)
         db.session.commit()
 
