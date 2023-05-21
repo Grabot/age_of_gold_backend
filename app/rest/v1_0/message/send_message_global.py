@@ -9,6 +9,7 @@ from app.rest import app_api
 from app import db, DevelopmentConfig
 from app.rest.rest_util import get_failed_response
 from app.util.util import get_auth_token, check_token
+from datetime import datetime
 
 
 class SendMessageGlobal(Resource):
@@ -36,9 +37,13 @@ class SendMessageGlobal(Resource):
 
         message_body = json_data["message"]
         users_username = user.username
+
+        now = datetime.utcnow()
+
         socket_response = {
             "user_name": users_username,
             "message": message_body,
+            "timestamp": now.strftime('%Y-%m-%dT%H:%M:%S.%f')
         }
 
         emit("send_message_global", socket_response, broadcast=True, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
@@ -46,6 +51,7 @@ class SendMessageGlobal(Resource):
         new_global_message = GlobalMessage(
             body=message_body,
             sender_name=users_username,
+            timestamp=now
         )
         db.session.add(new_global_message)
         db.session.commit()

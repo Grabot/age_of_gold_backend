@@ -172,7 +172,7 @@ class User(db.Model):
             return image_as_base64
 
     def get_friend_ids(self):
-        return [friend.serialize for friend in self.friends if friend.requested is not None or friend.unread_messages != 0]
+        return [friend.serialize for friend in self.friends]
 
     @property
     def serialize(self):

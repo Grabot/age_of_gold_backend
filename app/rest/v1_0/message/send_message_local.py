@@ -2,7 +2,7 @@ from flask import request, make_response
 from flask_restful import Api
 from flask_restful import Resource
 from flask_socketio import emit
-from app.models.post import Post
+from datetime import datetime
 from app.rest import app_api
 from app import db, DevelopmentConfig
 from app.rest.rest_util import get_failed_response
@@ -32,6 +32,8 @@ class SendMessageLocal(Resource):
         if not user:
             return get_failed_response("an error occurred")
 
+        now = datetime.utcnow()
+
         message_body = json_data["message"]
         hex_q = json_data["hex_q"]
         hex_r = json_data["hex_r"]
@@ -42,7 +44,8 @@ class SendMessageLocal(Resource):
             "user_name": user.username,
             "message": message_body,
             "tile_q": tile_q,
-            "tile_r": tile_r
+            "tile_r": tile_r,
+            "timestamp": now.strftime('%Y-%m-%dT%H:%M:%S.%f')
         }
 
         emit("send_message_local", socket_response, room=room, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
