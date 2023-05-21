@@ -6,13 +6,16 @@ from app.models.message.global_message import GlobalMessage
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
 from app.util.util import get_auth_token, check_token
+import time
 
 
 class GetGlobalMessages(Resource):
 
     # noinspection PyMethodMayBeStatic
     def get(self, page):
-        print("getting global messages: %s" % page)
+        if not page or not page.isdigit():
+            return get_failed_response("an error occurred")
+
         auth_token = get_auth_token(request.headers.get('Authorization'))
         if auth_token == '':
             return get_failed_response("an error occurred")
@@ -22,10 +25,10 @@ class GetGlobalMessages(Resource):
             return get_failed_response("an error occurred")
 
         # We only retrieve the last 60 messages because we think there is no reason to scroll further back
-        global_messages = GlobalMessage.query.order_by(desc(GlobalMessage.timestamp)).limit(60).all()
-        messages = [m.serialize for m in global_messages]
+        global_messages = GlobalMessage.query.order_by(desc(GlobalMessage.timestamp))\
+            .paginate(page=int(page), per_page=60, error_out=False).items
 
-        print("length of messages: %s" % len(messages))
+        messages = [m.serialize for m in global_messages]
 
         get_message_response = make_response({
             'result': True,
