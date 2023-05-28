@@ -168,7 +168,6 @@ def get_tiles(hexagon_id, _q, _r):
 
 
 class HexagonRest(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         print("get hexagon")
@@ -192,7 +191,7 @@ class HexagonRest(Resource):
         return {
             "hexagons": hexagons,
             "lowest_hex": lowest_hex,
-            "highest_hex": highest_hex
+            "highest_hex": highest_hex,
         }
 
     def put(self):
@@ -226,20 +225,14 @@ class HexagonRest(Resource):
                     print("wut")
                 else:
                     print("hexagon has %s tiles" % len(hexagon.tiles))
-                    return {
-                        "result": "hexagon created",
-                        "hexagon": hexagon.serialize
-                    }
+                    return {"result": "hexagon created", "hexagon": hexagon.serialize}
             else:
                 print("here we can update")
                 print("hexagon has %s tiles" % len(hexagon.tiles))
-                return {
-                    "result": "hexagon updated",
-                    "hexagon": hexagon.serialize
-                }
+                return {"result": "hexagon updated", "hexagon": hexagon.serialize}
         else:
             return {"result": "q or r is not provided. These are needed"}
 
 
 api = Api(app_api)
-api.add_resource(HexagonRest, '/api/v1.0/hexagon', endpoint='hexagon')
+api.add_resource(HexagonRest, "/api/v1.0/hexagon", endpoint="hexagon")

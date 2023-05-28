@@ -7,7 +7,6 @@ from app.rest import app_api
 
 
 class GetTileInfo(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -24,18 +23,22 @@ class GetTileInfo(Resource):
         tile_q = json_data["q"]
         tile_r = json_data["r"]
         print("tile_q: %s tile_r: %s" % (tile_q, tile_r))
-        if not tile_q or not tile_r or not tile_q.lstrip("-").isdigit() or not tile_r.lstrip("-").isdigit():
+        if (
+            not tile_q
+            or not tile_r
+            or not tile_q.lstrip("-").isdigit()
+            or not tile_r.lstrip("-").isdigit()
+        ):
             return get_failed_response("error occurred")
         tile = Tile.query.filter_by(q=tile_q, r=tile_r).first()
         if not tile:
             return get_failed_response("error occurred")
 
-        get_tile_info_response = make_response({
-            'result': True,
-            'tile': tile.serialize_full
-        }, 200)
+        get_tile_info_response = make_response(
+            {"result": True, "tile": tile.serialize_full}, 200
+        )
         return get_tile_info_response
 
 
 api = Api(app_api)
-api.add_resource(GetTileInfo, '/api/v1.0/tile/get/info', endpoint='get_tile_info')
+api.add_resource(GetTileInfo, "/api/v1.0/tile/get/info", endpoint="get_tile_info")

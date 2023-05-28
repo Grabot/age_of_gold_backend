@@ -6,7 +6,8 @@ class Hexagon(db.Model):
     """
     Hexagon
     """
-    __tablename__ = 'Hexagon'
+
+    __tablename__ = "Hexagon"
     id = db.Column(db.Integer, primary_key=True)
     tiles = db.relationship("Tile", backref="tile")
     q = db.Column(db.Integer)
@@ -15,14 +16,10 @@ class Hexagon(db.Model):
     # s = db.Column(db.Integer)
     tiles_detail = db.Column(db.Text)
 
-    __table_args__ = (Index('hexagon_index', "q", "r", unique=True),)
+    __table_args__ = (Index("hexagon_index", "q", "r", unique=True),)
 
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
         # We don't send the `s` because it can be deduced from q and r
-        return {
-            'tiles': self.tiles_detail,
-            'q': self.q,
-            'r': self.r
-        }
+        return {"tiles": self.tiles_detail, "q": self.q, "r": self.r}

@@ -8,7 +8,6 @@ from app.util.util import get_user_tokens, check_token
 
 
 class TokenLogin(Resource):
-
     def get(self):
         pass
 
@@ -35,13 +34,13 @@ class TokenLogin(Resource):
             db.session.add(user)
             db.session.commit()
             return {
-                'result': True,
-                'message': 'user logged in successfully.',
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'user': user.serialize
+                "result": True,
+                "message": "user logged in successfully.",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": user.serialize,
             }, 200
 
 
 api = Api(app_api)
-api.add_resource(TokenLogin, '/api/v1.0/login/token', endpoint='token_login')
+api.add_resource(TokenLogin, "/api/v1.0/login/token", endpoint="token_login")

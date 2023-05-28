@@ -9,9 +9,12 @@ from app.util.email.verification_email import verification_email
 
 
 class Test(Resource):
-
     def get(self):
-        msg = Message('test subject', sender=Config.MAIL_USERNAME, recipients=['SanderKools@gmail.com'])
+        msg = Message(
+            "test subject",
+            sender=Config.MAIL_USERNAME,
+            recipients=["SanderKools@gmail.com"],
+        )
         msg.html = verification_email
         mail.send(msg)
         pass
@@ -25,15 +28,17 @@ class Test(Resource):
     def post(self):
         print("reached test endpoint")
         # print(request.headers)
-        test_response = make_response({
-            'result': True,
-            'message': 'This is a test endpoint',
-            'access_token': "",
-            'refresh_token': ""
-        })
+        test_response = make_response(
+            {
+                "result": True,
+                "message": "This is a test endpoint",
+                "access_token": "",
+                "refresh_token": "",
+            }
+        )
 
         return test_response
 
 
 api = Api(app_api)
-api.add_resource(Test, '/api/v1.0/test', endpoint='test')
+api.add_resource(Test, "/api/v1.0/test", endpoint="test")

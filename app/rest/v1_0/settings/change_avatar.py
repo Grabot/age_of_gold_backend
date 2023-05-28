@@ -15,7 +15,6 @@ from PIL import Image
 
 
 class ChangeAvatar(Resource):
-
     def get(self):
         pass
 
@@ -28,8 +27,8 @@ class ChangeAvatar(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("Something went wrong")
 
         user = check_token(auth_token)
@@ -41,7 +40,9 @@ class ChangeAvatar(Resource):
 
         # Turn base64 string to PIL image file
         new_avatar_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar)))
-        new_avatar_small_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar_small)))
+        new_avatar_small_pil = Image.open(
+            io.BytesIO(base64.b64decode(new_avatar_small))
+        )
 
         # Get the file name and path
         file_folder = Config.UPLOAD_FOLDER
@@ -60,13 +61,16 @@ class ChangeAvatar(Resource):
         db.session.add(user)
         db.session.commit()
 
-        avatar_response = make_response({
-            'result': True,
-            'message': "success",
-        }, 200)
+        avatar_response = make_response(
+            {
+                "result": True,
+                "message": "success",
+            },
+            200,
+        )
 
         return avatar_response
 
 
 api = Api(app_api)
-api.add_resource(ChangeAvatar, '/api/v1.0/change/avatar', endpoint='change_avatar')
+api.add_resource(ChangeAvatar, "/api/v1.0/change/avatar", endpoint="change_avatar")

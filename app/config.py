@@ -7,7 +7,7 @@ load_dotenv()
 
 class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "you-will-never-guess"
 
     # Configuration
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
@@ -34,35 +34,32 @@ class Config(object):
         "alg": os.environ.get("JWT_ALG", ""),
         "crv": os.environ.get("JWT_CRV", ""),
         "d": os.environ.get("JWT_D", ""),
-        "key_ops": [
-            "sign",
-            "verify"
-        ],
+        "key_ops": ["sign", "verify"],
         "kty": os.environ.get("JWT_KTY", ""),
         "x": os.environ.get("JWT_X", ""),
         "y": os.environ.get("JWT_Y", ""),
         "use": os.environ.get("JWT_USE", ""),
-        "kid": os.environ.get("JWT_KID", "")
+        "kid": os.environ.get("JWT_KID", ""),
     }
 
     header = {
         "alg": os.environ.get("JWT_ALG", ""),
         "kid": os.environ.get("JWT_KID", ""),
-        "typ": os.environ.get("JWT_TYP", "")
+        "typ": os.environ.get("JWT_TYP", ""),
     }
     map_size = 50
     JWT_SUB = os.environ.get("JWT_SUB", "")
     JWT_ISS = os.environ.get("JWT_ISS", "")
     JWT_AUD = os.environ.get("JWT_AUD", "")
-    API_SOCK_NAMESPACE = '/api/v1.0/sock'
+    API_SOCK_NAMESPACE = "/api/v1.0/sock"
 
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_SERVER = os.environ.get("MAIL_SERVER")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or 25)
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS") is not None
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     BASE_URL = os.environ.get("BASE_URL")
-    UPLOAD_FOLDER = 'static/uploads/'
+    UPLOAD_FOLDER = "static/uploads/"
 
 
 class DevelopmentConfig(Config):
@@ -77,8 +74,13 @@ class DevelopmentConfig(Config):
 
     PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
 
-    DB_URL = 'postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}'.format(
-        user=POSTGRES_USER, pw=POSTGRES_PASSWORD, url=POSTGRES_URL, port=POSTGRES_PORT, db=POSTGRES_DB)
+    DB_URL = "postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        pw=POSTGRES_PASSWORD,
+        url=POSTGRES_URL,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
+    )
 
     REDIS_URL = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
 

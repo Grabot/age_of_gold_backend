@@ -12,7 +12,6 @@ from app.util.util import get_auth_token, check_token
 
 
 class ReadPersonalMessages(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -26,8 +25,8 @@ class ReadPersonalMessages(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("an error occurred")
 
         user_from = check_token(auth_token)
@@ -35,11 +34,15 @@ class ReadPersonalMessages(Resource):
             return get_failed_response("an error occurred")
 
         read_user = json_data["read_user"]
-        user_read = User.query.filter(func.lower(User.username) == func.lower(read_user)).first()
+        user_read = User.query.filter(
+            func.lower(User.username) == func.lower(read_user)
+        ).first()
         if not user_read:
             return get_failed_response("user not found")
 
-        friend = Friend.query.filter_by(user_id=user_from.id, friend_id=user_read.id).first()
+        friend = Friend.query.filter_by(
+            user_id=user_from.id, friend_id=user_read.id
+        ).first()
         if not friend:
             return get_failed_response("something went wrong")
 
@@ -49,12 +52,15 @@ class ReadPersonalMessages(Resource):
         db.session.add(friend)
         db.session.commit()
 
-        get_message_response = make_response({
-            'result': True,
-            'message': 'success'
-        }, 200)
+        get_message_response = make_response(
+            {"result": True, "message": "success"}, 200
+        )
         return get_message_response
 
 
 api = Api(app_api)
-api.add_resource(ReadPersonalMessages, '/api/v1.0/read/message/personal', endpoint='read_message_personal')
+api.add_resource(
+    ReadPersonalMessages,
+    "/api/v1.0/read/message/personal",
+    endpoint="read_message_personal",
+)

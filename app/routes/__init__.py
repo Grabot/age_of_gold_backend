@@ -13,8 +13,9 @@ def set_routes(app):
 
     @app.route("/api/avatar/<filename>")
     def image_as_html(filename):
-        with open('/app/static/uploads/%s' % filename, 'rb') as fd:
-            image_as_base64_html = f"""data:image/png;base64,{base64.encodebytes(fd.read()).decode()}"""
+        with open("/app/static/uploads/%s" % filename, "rb") as fd:
+            image_as_base64_html = (
+                f"""data:image/png;base64,{base64.encodebytes(fd.read()).decode()}"""
+            )
 
-        return render_template('avatar.html', image=image_as_base64_html)
-
+        return render_template("avatar.html", image=image_as_base64_html)

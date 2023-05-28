@@ -11,7 +11,6 @@ from app.util.util import get_auth_token, check_token, get_wraparounds
 
 
 class GetHexagon(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -39,7 +38,12 @@ class GetHexagon(Resource):
             hex_q = hexagon["q"]
             hex_r = hexagon["r"]
             # If the hex is out of the map bounds we want it to loop around
-            if hex_q < -map_size or hex_q > map_size or hex_r < -map_size or hex_r > map_size:
+            if (
+                hex_q < -map_size
+                or hex_q > map_size
+                or hex_r < -map_size
+                or hex_r > map_size
+            ):
                 [hex_q, wrap_q, hex_r, wrap_r] = get_wraparounds(hex_q, hex_r)
 
                 hex_retrieve_wrapped.append([hex_q, hex_r, wrap_q, wrap_r])
@@ -47,7 +51,11 @@ class GetHexagon(Resource):
             hex_retrieve.append([hex_q, hex_r])
         hexes_return = []
         if hex_retrieve:
-            hexes = db.session.query(Hexagon).filter(tuple_(Hexagon.q, Hexagon.r).in_(hex_retrieve)).all()
+            hexes = (
+                db.session.query(Hexagon)
+                .filter(tuple_(Hexagon.q, Hexagon.r).in_(hex_retrieve))
+                .all()
+            )
             for hexagon in hexes:
                 return_hexagon = hexagon.serialize
                 if is_wrapped:
@@ -55,17 +63,20 @@ class GetHexagon(Resource):
                         if hexagon.q == hex_wrapped[0] and hexagon.r == hex_wrapped[1]:
                             return_hexagon["wraparound"] = {
                                 "q": hex_wrapped[2],
-                                "r": hex_wrapped[3]
+                                "r": hex_wrapped[3],
                             }
                             break
                 hexes_return.append(return_hexagon)
 
-        get_hexagon_response = make_response({
-            'result': True,
-            'hexagons': hexes_return,
-        }, 200)
+        get_hexagon_response = make_response(
+            {
+                "result": True,
+                "hexagons": hexes_return,
+            },
+            200,
+        )
         return get_hexagon_response
 
 
 api = Api(app_api)
-api.add_resource(GetHexagon, '/api/v1.0/hexagon/get', endpoint='get_hexagon')
+api.add_resource(GetHexagon, "/api/v1.0/hexagon/get", endpoint="get_hexagon")

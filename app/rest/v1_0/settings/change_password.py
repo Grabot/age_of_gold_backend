@@ -11,7 +11,6 @@ from app.util.util import get_auth_token, check_token
 
 
 class ChangePassword(Resource):
-
     def get(self):
         pass
 
@@ -25,8 +24,8 @@ class ChangePassword(Resource):
     def post(self):
         print("Changing password")
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("Something went wrong")
 
         user = check_token(auth_token)
@@ -39,13 +38,18 @@ class ChangePassword(Resource):
         db.session.add(user)
         db.session.commit()
 
-        change_password_response = make_response({
-            'result': True,
-            'message': new_password,
-        }, 200)
+        change_password_response = make_response(
+            {
+                "result": True,
+                "message": new_password,
+            },
+            200,
+        )
 
         return change_password_response
 
 
 api = Api(app_api)
-api.add_resource(ChangePassword, '/api/v1.0/change/password', endpoint='change_password')
+api.add_resource(
+    ChangePassword, "/api/v1.0/change/password", endpoint="change_password"
+)

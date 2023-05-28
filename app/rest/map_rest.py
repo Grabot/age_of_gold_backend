@@ -103,7 +103,9 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
         db.session.commit()
-        print("created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id))
+        print(
+            "created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id)
+        )
         q_for_tiles += 9
         r_for_tiles -= 4
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
@@ -197,7 +199,9 @@ def go_left_down(q, r, q_for_tiles, r_for_tiles):
     hexagon = Hexagon(q=q, r=r)
     db.session.add(hexagon)
     db.session.commit()
-    print("created hexagon (left down) with q: %s r: %s and id: %s" % (q, r, hexagon.id))
+    print(
+        "created hexagon (left down) with q: %s r: %s and id: %s" % (q, r, hexagon.id)
+    )
     q_for_tiles -= 4
     r_for_tiles -= 5
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
@@ -219,7 +223,9 @@ def go_right_down(q, r, q_for_tiles, r_for_tiles):
     hexagon = Hexagon(q=q, r=r)
     db.session.add(hexagon)
     db.session.commit()
-    print("created hexagon (right down) with q: %s r: %s and id: %s" % (q, r, hexagon.id))
+    print(
+        "created hexagon (right down) with q: %s r: %s and id: %s" % (q, r, hexagon.id)
+    )
     q_for_tiles += 5
     r_for_tiles -= 9
     tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
@@ -234,7 +240,6 @@ def go_right_down(q, r, q_for_tiles, r_for_tiles):
 
 
 class MapRest(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         return {"Hello": "Map"}
@@ -273,7 +278,9 @@ class MapRest(Resource):
 
             # going up
             for x in range(0, DevelopmentConfig.map_size):
-                [q, r, q_for_tiles, r_for_tiles] = go_left_up(q, r, q_for_tiles, r_for_tiles)
+                [q, r, q_for_tiles, r_for_tiles] = go_left_up(
+                    q, r, q_for_tiles, r_for_tiles
+                )
                 [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
 
@@ -283,16 +290,15 @@ class MapRest(Resource):
             q_for_tiles = 0
             r_for_tiles = 0
             for x in range(0, DevelopmentConfig.map_size):
-                [q, r, q_for_tiles, r_for_tiles] = go_right_down(q, r, q_for_tiles, r_for_tiles)
+                [q, r, q_for_tiles, r_for_tiles] = go_right_down(
+                    q, r, q_for_tiles, r_for_tiles
+                )
                 [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
 
         else:
-            return {
-                "result": True,
-                "message": "map already created"
-            }
+            return {"result": True, "message": "map already created"}
 
 
 api = Api(app_api)
-api.add_resource(MapRest, '/api/v1.0/map', endpoint='map')
+api.add_resource(MapRest, "/api/v1.0/map", endpoint="map")

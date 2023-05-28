@@ -14,7 +14,6 @@ import json
 
 
 class NamespaceSock(Namespace):
-
     # noinspection PyMethodMayBeStatic
     def on_connect(self):
         print("on_connect")
@@ -37,7 +36,12 @@ class NamespaceSock(Namespace):
             room = "room_%s" % user_id
             print("joined room: %s" % room)
             join_room(room)
-            emit("message_event", 'User has entered room %s' % room, room=room, namespace='/api/v1.0/sock')
+            emit(
+                "message_event",
+                "User has entered room %s" % room,
+                room=room,
+                namespace="/api/v1.0/sock",
+            )
 
     # noinspection PyMethodMayBeStatic
     def on_leave(self, data):
@@ -46,7 +50,7 @@ class NamespaceSock(Namespace):
             room = "room_%s" % user_id
             leave_room(room)
             # print("left room %s" % room)
-            emit("message_event", 'User has left room %s' % room, room=request.sid)
+            emit("message_event", "User has left room %s" % room, room=request.sid)
 
     # noinspection PyMethodMayBeStatic
     def on_join_hex(self, data):
@@ -58,7 +62,11 @@ class NamespaceSock(Namespace):
         room = "%s_%s" % (q, r)
         join_room(room)
         # print("joined hex room: %s" % room)
-        emit("message_event", 'User is looking at hex %s %s and has entered room %s' % (q, r, room), room=room)
+        emit(
+            "message_event",
+            "User is looking at hex %s %s and has entered room %s" % (q, r, room),
+            room=room,
+        )
 
     # noinspection PyMethodMayBeStatic
     def on_leave_hex(self, data):
@@ -70,7 +78,7 @@ class NamespaceSock(Namespace):
         room = "%s_%s" % (q, r)
         leave_room(room)
         # print("left hex room: %s" % room)
-        emit("message_event", 'User has left hex room %s' % room, room=request.sid)
+        emit("message_event", "User has left hex room %s" % room, room=request.sid)
 
     # # noinspection PyMethodMayBeStatic
     # def on_send_message(self, data):
@@ -78,4 +86,3 @@ class NamespaceSock(Namespace):
 
 
 socks.on_namespace(NamespaceSock(DevelopmentConfig.API_SOCK_NAMESPACE))
-

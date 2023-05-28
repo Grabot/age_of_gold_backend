@@ -13,7 +13,6 @@ from app.util.util import get_user_tokens
 
 
 class Register(Resource):
-
     def get(self):
         pass
 
@@ -32,17 +31,27 @@ class Register(Resource):
         if email is None or password is None or user_name is None:
             return get_failed_response("Invalid request")
 
-        if User.query.filter(func.lower(User.username) == func.lower(user_name)).first() is not None:
-            return get_failed_response("User is already taken, please choose a different one.")
+        if (
+            User.query.filter(
+                func.lower(User.username) == func.lower(user_name)
+            ).first()
+            is not None
+        ):
+            return get_failed_response(
+                "User is already taken, please choose a different one."
+            )
 
-        if User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first() is not None:
-            return get_failed_response("This email has already been used to create an account")
+        if (
+            User.query.filter_by(origin=0)
+            .filter(func.lower(User.email) == func.lower(email))
+            .first()
+            is not None
+        ):
+            return get_failed_response(
+                "This email has already been used to create an account"
+            )
 
-        user = User(
-            username=user_name,
-            email=email,
-            origin=0
-        )
+        user = User(username=user_name, email=email, origin=0)
         avatar = AvatarProcess(user.avatar_filename(), Config.UPLOAD_FOLDER)
         avatar.start()
         user.hash_password(password)
@@ -52,16 +61,19 @@ class Register(Resource):
         db.session.add(user)
         db.session.commit()
 
-        login_response = make_response({
-            'result': True,
-            'message': 'user created successfully.',
-            'access_token': access_token,
-            'refresh_token': refresh_token,
-            'user': user.serialize
-        }, 200)
+        login_response = make_response(
+            {
+                "result": True,
+                "message": "user created successfully.",
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": user.serialize,
+            },
+            200,
+        )
 
         return login_response
 
 
 api = Api(app_api)
-api.add_resource(Register, '/api/v1.0/register', endpoint='register_user')
+api.add_resource(Register, "/api/v1.0/register", endpoint="register_user")

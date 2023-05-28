@@ -12,7 +12,7 @@ def github_login(app):
     from app.util.util import get_user_tokens
     from app import db
 
-    @app.route("/login/github", methods=['GET', 'POST'])
+    @app.route("/login/github", methods=["GET", "POST"])
     def login_github():
         print("attempting to login github :)")
         # base_url = DevelopmentConfig.GITHUB_API
@@ -26,7 +26,7 @@ def github_login(app):
 
         return redirect(github_url)
 
-    @app.route("/login/github/callback", methods=['GET', 'POST'])
+    @app.route("/login/github/callback", methods=["GET", "POST"])
     def github_callback():
         # Get authorization code Google sent back to you
         print("github callback!!!!")
@@ -44,22 +44,18 @@ def github_login(app):
         headers = {
             "Accept": "application/json",
         }
-        token_response = requests.post(
-            github_post_url,
-            headers=headers
-        )
+        token_response = requests.post(github_post_url, headers=headers)
 
         github_response_json = token_response.json()
 
         headers_authorization = {
             "Accept": "application/json",
-            "Authorization": "Bearer %s" % github_response_json["access_token"]
+            "Authorization": "Bearer %s" % github_response_json["access_token"],
         }
         authorization_url = DevelopmentConfig.GITHUB_USER
 
         authorization_response = requests.get(
-            authorization_url,
-            headers=headers_authorization
+            authorization_url, headers=headers_authorization
         )
 
         github_user = authorization_response.json()
@@ -84,7 +80,9 @@ def github_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace("/login/github/callback", "/worldaccess")
+            world_url = request.base_url.replace(
+                "/login/github/callback", "/worldaccess"
+            )
             world_url_params = world_url + "?" + url_params
             return redirect(world_url_params)
         else:

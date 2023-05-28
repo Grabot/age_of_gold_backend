@@ -11,7 +11,6 @@ from app.util.util import get_auth_token, check_token
 
 
 class SearchFriend(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -26,8 +25,8 @@ class SearchFriend(Resource):
     def post(self):
         print("search for friend")
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("an error occurred")
 
         user_from = check_token(auth_token)
@@ -36,17 +35,18 @@ class SearchFriend(Resource):
 
         user_search = json_data["username"]
         print("search for friend: %s" % user_search)
-        search_user = User.query.filter(func.lower(User.username) == func.lower(user_search)).first()
+        search_user = User.query.filter(
+            func.lower(User.username) == func.lower(user_search)
+        ).first()
         if not search_user:
             return get_failed_response("an error occurred")
         else:
             print("found someone, returning")
-            search_user_response = make_response({
-                'result': True,
-                'friend': search_user.serialize_get
-            }, 200)
+            search_user_response = make_response(
+                {"result": True, "friend": search_user.serialize_get}, 200
+            )
             return search_user_response
 
 
 api = Api(app_api)
-api.add_resource(SearchFriend, '/api/v1.0/search/friend', endpoint='search_friend')
+api.add_resource(SearchFriend, "/api/v1.0/search/friend", endpoint="search_friend")

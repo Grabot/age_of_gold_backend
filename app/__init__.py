@@ -22,21 +22,25 @@ google_client = WebApplicationClient(DevelopmentConfig.GOOGLE_CLIENT_ID)
 
 def create_app():
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": allow_origin}})
+    CORS(
+        app, supports_credentials=True, resources={r"/api/*": {"origins": allow_origin}}
+    )
     app.config.from_object(DevelopmentConfig)
-    app.config['SQLALCHEMY_MAX_OVERFLOW'] = 0
-    app.config['SQLALCHEMY_POOL_SIZE'] = 1000
-    app.config['SQLALCHEMY_RECORD_QUERIES'] = False
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
+    app.config["SQLALCHEMY_POOL_SIZE"] = 1000
+    app.config["SQLALCHEMY_RECORD_QUERIES"] = False
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
     socks.init_app(app, message_queue=DevelopmentConfig.REDIS_URL)
     migrate.init_app(app, db)
     mail.init_app(app)
 
     from app.rest import app_api as api_bp
+
     app.register_blueprint(api_bp)
 
     from app.sock import app_sock as sock_bp
+
     app.register_blueprint(sock_bp)
 
     # Didn't know a better way to do it.
@@ -45,4 +49,3 @@ def create_app():
     from app import models
 
     return app
-

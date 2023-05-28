@@ -31,7 +31,6 @@ def get_wraparounds(q, r):
 
 
 def refresh_user_token(access_token, refresh_token):
-
     # The access token should be active
     user = User.query.filter_by(token=access_token).first()
 
@@ -74,9 +73,9 @@ def check_token(token):
 def get_user_tokens(user, access_expiration=3600, refresh_expiration=36000):
     # Create an access_token that the user can use to do user authentication
     token_expiration = int(time.time()) + access_expiration
-    access_token = user.generate_auth_token(access_expiration).decode('ascii')
+    access_token = user.generate_auth_token(access_expiration).decode("ascii")
     # Create a refresh token that lasts longer that the user can use to generate a new access token
-    refresh_token = user.generate_refresh_token(refresh_expiration).decode('ascii')
+    refresh_token = user.generate_refresh_token(refresh_expiration).decode("ascii")
     # Only store the access token, refresh token is kept client side
     user.set_token(access_token)
     user.set_token_expiration(token_expiration)
@@ -87,7 +86,7 @@ def get_auth_token(auth_header):
     if auth_header:
         auth_token = auth_header.split(" ")[1]
     else:
-        auth_token = ''
+        auth_token = ""
     return auth_token
 
 
@@ -102,7 +101,7 @@ def decode_token(token):
 
     return id_token
 
+
 def get_hex_room(hex_q, hex_r):
     room = "%s_%s" % (hex_q, hex_r)
     return room
-

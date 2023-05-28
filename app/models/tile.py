@@ -8,20 +8,21 @@ class Tile(db.Model):
     """
     Tile
     """
-    __tablename__ = 'Tile'
+
+    __tablename__ = "Tile"
     id = db.Column(db.Integer, primary_key=True)
-    hexagon_id = db.Column(db.Integer, db.ForeignKey('Hexagon.id'))
+    hexagon_id = db.Column(db.Integer, db.ForeignKey("Hexagon.id"))
     q = db.Column(db.Integer)
     r = db.Column(db.Integer)
     # We no longer require to actually have the 's' indicator s = (q + r) * -1
     # s = db.Column(db.Integer)
     type = db.Column(db.Integer)
-    last_changed_by = db.Column(db.Integer, db.ForeignKey('User.id'))
+    last_changed_by = db.Column(db.Integer, db.ForeignKey("User.id"))
     last_changed_time = db.Column(db.DateTime)
 
     __table_args__ = (
-        Index('tile_q_r_index', "q", "r", unique=True),
-        Index('tile_id_index', "id", unique=True),
+        Index("tile_q_r_index", "q", "r", unique=True),
+        Index("tile_id_index", "id", unique=True),
     )
 
     def update_tile_info(self, tile_type, user_id):
@@ -38,21 +39,17 @@ class Tile(db.Model):
                 user_info = user.serialize_minimal
         last_time = None
         if self.last_changed_time:
-            last_time = self.last_changed_time.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            last_time = self.last_changed_time.strftime("%Y-%m-%dT%H:%M:%S.%f")
         return {
-            'q': self.q,
-            'r': self.r,
-            'type': self.type,
-            'last_changed_by': user_info,
-            'last_changed_time': last_time,
+            "q": self.q,
+            "r": self.r,
+            "type": self.type,
+            "last_changed_by": user_info,
+            "last_changed_time": last_time,
         }
 
     @property
     def serialize(self):
         """Return object data in easily serializable format"""
         # We don't send the `s` because it can be deduced from q and r
-        return {
-            'q': self.q,
-            'r': self.r,
-            'type': self.type
-        }
+        return {"q": self.q, "r": self.r, "type": self.type}

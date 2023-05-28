@@ -10,7 +10,6 @@ from app.util.util import get_user_tokens
 
 
 class Login(Resource):
-
     def get(self):
         pass
 
@@ -26,43 +25,46 @@ class Login(Resource):
         if "email" in json_data:
             email = json_data["email"]
             password = json_data["password"]
-            user = User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first()
+            user = (
+                User.query.filter_by(origin=0)
+                .filter(func.lower(User.email) == func.lower(email))
+                .first()
+            )
         elif "user_name" in json_data:
             user_name = json_data["user_name"]
             password = json_data["password"]
-            user = User.query.filter_by(origin=0).filter(func.lower(User.username) == func.lower(user_name)).first()
+            user = (
+                User.query.filter_by(origin=0)
+                .filter(func.lower(User.username) == func.lower(user_name))
+                .first()
+            )
         else:
-            return {
-                "result": False,
-                "message": "invalid request"
-            }
+            return {"result": False, "message": "invalid request"}
 
         if user:
             # Valid login, we refresh the token for this user.
             [access_token, refresh_token] = get_user_tokens(user)
             if not user.verify_password(password):
-                return make_response({
-                    "result": False,
-                    "message": "password not correct"
-                }, 200)
+                return make_response(
+                    {"result": False, "message": "password not correct"}, 200
+                )
             db.session.add(user)
             db.session.commit()
 
-            login_response = make_response({
-                'result': True,
-                'message': 'user logged in successfully.',
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'user': user.serialize
-            })
+            login_response = make_response(
+                {
+                    "result": True,
+                    "message": "user logged in successfully.",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                    "user": user.serialize,
+                }
+            )
 
             return login_response
         else:
-            return {
-                "result": False,
-                "message": "user name or email not found"
-            }
+            return {"result": False, "message": "user name or email not found"}
 
 
 api = Api(app_api)
-api.add_resource(Login, '/api/v1.0/login', endpoint='login_user')
+api.add_resource(Login, "/api/v1.0/login", endpoint="login_user")

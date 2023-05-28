@@ -9,6 +9,7 @@ class Friend(db.Model):
     We assume that they made this connection because they want
     to be friendly with each other, so we classify it as 'Friend'
     """
+
     __tablename__ = "Friend"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
@@ -35,12 +36,13 @@ class Friend(db.Model):
         if friend is not None:
             friend_detail = friend.serialize_minimal
         return {
-            'id': self.id,
-            'friend': friend_detail,
-            'last_time_activity': self.last_time_activity.strftime('%Y-%m-%dT%H:%M:%S.%f'),
-            'unread_messages': self.unread_messages,
-            'ignored': self.ignored,
-            'accepted': self.accepted,
-            'requested': self.requested
+            "id": self.id,
+            "friend": friend_detail,
+            "last_time_activity": self.last_time_activity.strftime(
+                "%Y-%m-%dT%H:%M:%S.%f"
+            ),
+            "unread_messages": self.unread_messages,
+            "ignored": self.ignored,
+            "accepted": self.accepted,
+            "requested": self.requested,
         }
-

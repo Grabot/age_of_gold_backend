@@ -13,10 +13,9 @@ from app import db
 
 
 class VerifyEmail(Resource):
-
     def get(self):
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("back to login")
 
         user = check_token(auth_token)
@@ -24,7 +23,7 @@ class VerifyEmail(Resource):
             return get_failed_response("user not found")
 
         expiration_time = 18000  # 5 hours
-        reset_token = user.generate_auth_token(expiration_time).decode('ascii')
+        reset_token = user.generate_auth_token(expiration_time).decode("ascii")
         subject = "Age of Gold - Verify your email"
         body = verification_email.format(base_url=Config.BASE_URL, token=reset_token)
         p = EmailProcess(user.email, subject, body)
@@ -33,10 +32,13 @@ class VerifyEmail(Resource):
         # We generate an auth token, but we don't store it on the user.
         # For the verification we will just attempt to decode it and check the id.
 
-        verify_email_response = make_response({
-            'result': True,
-            'message': 'Email verification email send',
-        }, 200)
+        verify_email_response = make_response(
+            {
+                "result": True,
+                "message": "Email verification email send",
+            },
+            200,
+        )
 
         return verify_email_response
 
@@ -71,23 +73,29 @@ class VerifyEmail(Resource):
             return get_failed_response("no user found")
 
         if user.is_verified():
-            verify_email_response = make_response({
-                'result': True,
-                'message': 'Email %s has already been verified!' % user.email,
-            }, 200)
+            verify_email_response = make_response(
+                {
+                    "result": True,
+                    "message": "Email %s has already been verified!" % user.email,
+                },
+                200,
+            )
 
         else:
             user.verify_user()
             db.session.add(user)
             db.session.commit()
 
-            verify_email_response = make_response({
-                'result': True,
-                'message': 'Email %s is verified!' % user.email,
-            }, 200)
+            verify_email_response = make_response(
+                {
+                    "result": True,
+                    "message": "Email %s is verified!" % user.email,
+                },
+                200,
+            )
 
         return verify_email_response
 
 
 api = Api(app_api)
-api.add_resource(VerifyEmail, '/api/v1.0/email/verification', endpoint='verify_email')
+api.add_resource(VerifyEmail, "/api/v1.0/email/verification", endpoint="verify_email")

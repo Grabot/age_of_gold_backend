@@ -148,7 +148,6 @@ def get_length(start_point, end_point):
 
 
 def add_square_clean(_rand, _width, _height, _planes, _index):
-
     attempts = 0
     while attempts < 100:
         attempts += 1
@@ -218,9 +217,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         triangle_1_line_2 = Line(next_line.start, next_line.end)
         triangle_1_line_3 = Line(next_line.end, test_point_b_1)
 
-        triangle_1_ang_3 = get_angle_lines(
-            triangle_1_line_2, triangle_1_line_3
-        )
+        triangle_1_ang_3 = get_angle_lines(triangle_1_line_2, triangle_1_line_3)
 
         t2_ang_1 = ang_3 - triangle_1_ang_3
         t2_ang_2 = ang_4
@@ -234,8 +231,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         change_line = next_line.get_next()
         angle_c_1 = math.degrees(
             math.asin(
-                (change_line.end[1] - change_line.start[1])
-                / change_line.get_length()
+                (change_line.end[1] - change_line.start[1]) / change_line.get_length()
             )
         )
 
@@ -383,8 +379,10 @@ class AvatarProcess(multiprocessing.Process):
             points = []
             for line in plane.get_all_lines():
                 points.append((line.start[0] + width, line.start[1] + height))
-            plane_colour = tuple(int(plane.colour.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4))
-            draw.polygon(points, plane_colour, outline='black', width=2)
+            plane_colour = tuple(
+                int(plane.colour.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)
+            )
+            draw.polygon(points, plane_colour, outline="black", width=2)
 
         del draw
 
@@ -397,4 +395,3 @@ class AvatarProcess(multiprocessing.Process):
         file = os.path.join(self.file_path, "%s.png" % self.file_name)
         im2.save(file)
         os.chmod(file, stat.S_IRWXO)
-

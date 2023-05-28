@@ -12,7 +12,6 @@ import base64
 
 
 class GetAvatar(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -27,7 +26,9 @@ class GetAvatar(Resource):
     def post(self):
         json_data = request.get_json(force=True)
         user_name = json_data["user_name"]
-        user_avatar = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
+        user_avatar = User.query.filter(
+            func.lower(User.username) == func.lower(user_name)
+        ).first()
         if not user_avatar:
             return get_failed_response("user not found")
 
@@ -41,16 +42,15 @@ class GetAvatar(Resource):
         if not os.path.isfile(file_path):
             return get_failed_response("An error occurred")
         else:
-            with open(file_path, 'rb') as fd:
+            with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
 
-            avatar_response = make_response({
-                'result': True,
-                'avatar': image_as_base64
-            }, 200)
+            avatar_response = make_response(
+                {"result": True, "avatar": image_as_base64}, 200
+            )
 
             return avatar_response
 
 
 api = Api(app_api)
-api.add_resource(GetAvatar, '/api/v1.0/get/avatar', endpoint='get_avatar')
+api.add_resource(GetAvatar, "/api/v1.0/get/avatar", endpoint="get_avatar")

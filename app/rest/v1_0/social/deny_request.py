@@ -13,7 +13,6 @@ from app.util.util import get_auth_token, check_token
 
 
 class DenyRequest(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -26,8 +25,8 @@ class DenyRequest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("an error occurred")
 
         user_from = check_token(auth_token)
@@ -36,12 +35,18 @@ class DenyRequest(Resource):
 
         json_data = request.get_json(force=True)
         user_name = json_data["user_name"]
-        user_de_befriend = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
+        user_de_befriend = User.query.filter(
+            func.lower(User.username) == func.lower(user_name)
+        ).first()
         if not user_de_befriend:
             return get_failed_response("an error occurred")
 
-        friend_from = Friend.query.filter_by(user_id=user_from.id, friend_id=user_de_befriend.id).first()
-        friend_befriend = Friend.query.filter_by(user_id=user_de_befriend.id, friend_id=user_from.id).first()
+        friend_from = Friend.query.filter_by(
+            user_id=user_from.id, friend_id=user_de_befriend.id
+        ).first()
+        friend_befriend = Friend.query.filter_by(
+            user_id=user_de_befriend.id, friend_id=user_from.id
+        ).first()
         if not friend_from or not friend_befriend:
             # They both have to exist if you're denying one
             return get_failed_response("no friend request found")
@@ -64,15 +69,18 @@ class DenyRequest(Resource):
                 "from": user_from.username,
             }
             room_to = "room_%s" % user_de_befriend.id
-            emit("denied_friend", socket_response, room=room_to,
-                 namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+            emit(
+                "denied_friend",
+                socket_response,
+                room=room_to,
+                namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
+            )
 
-            deny_request_response = make_response({
-                'result': True,
-                'message': "success"
-            }, 200)
+            deny_request_response = make_response(
+                {"result": True, "message": "success"}, 200
+            )
             return deny_request_response
 
 
 api = Api(app_api)
-api.add_resource(DenyRequest, '/api/v1.0/deny/request', endpoint='deny_request')
+api.add_resource(DenyRequest, "/api/v1.0/deny/request", endpoint="deny_request")

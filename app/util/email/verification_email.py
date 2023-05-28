@@ -1,5 +1,3 @@
-
-
 verification_email = """
 <!DOCTYPE html>
 <html>
@@ -32,7 +30,7 @@ verification_email = """
    * 1. Windows Mobile
    * 2. iOS / OSX
    */
-  body, 
+  body,
   table,
   td,
   a {{

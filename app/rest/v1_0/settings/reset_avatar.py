@@ -16,7 +16,6 @@ from PIL import Image
 
 
 class ResetAvatar(Resource):
-
     def get(self):
         pass
 
@@ -28,8 +27,8 @@ class ResetAvatar(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("Something went wrong")
 
         user_avatar = check_token(auth_token)
@@ -47,16 +46,19 @@ class ResetAvatar(Resource):
         if not os.path.isfile(file_path):
             return get_failed_response("An error occurred")
         else:
-            with open(file_path, 'rb') as fd:
+            with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
-        
-            reset_avatar_response = make_response({
-                'result': True,
-                'message': image_as_base64,
-            }, 200)
+
+            reset_avatar_response = make_response(
+                {
+                    "result": True,
+                    "message": image_as_base64,
+                },
+                200,
+            )
 
             return reset_avatar_response
 
 
 api = Api(app_api)
-api.add_resource(ResetAvatar, '/api/v1.0/reset/avatar', endpoint='reset_avatar')
+api.add_resource(ResetAvatar, "/api/v1.0/reset/avatar", endpoint="reset_avatar")

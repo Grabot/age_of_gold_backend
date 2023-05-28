@@ -13,7 +13,6 @@ from app.util.util import check_token
 
 
 class UpdatePassword(Resource):
-
     def get(self):
         pass
 
@@ -43,13 +42,18 @@ class UpdatePassword(Resource):
         db.session.add(user)
         db.session.commit()
 
-        password_check_response = make_response({
-            'result': True,
-            'message': 'password updated!',
-        }, 200)
+        password_check_response = make_response(
+            {
+                "result": True,
+                "message": "password updated!",
+            },
+            200,
+        )
 
         return password_check_response
 
 
 api = Api(app_api)
-api.add_resource(UpdatePassword, '/api/v1.0/password/update', endpoint='update_password')
+api.add_resource(
+    UpdatePassword, "/api/v1.0/password/update", endpoint="update_password"
+)

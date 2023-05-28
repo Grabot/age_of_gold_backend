@@ -13,7 +13,6 @@ from app.util.util import get_auth_token, check_token
 
 
 class AddFriend(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -27,8 +26,8 @@ class AddFriend(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("an error occurred")
 
         user_from = check_token(auth_token)
@@ -36,18 +35,27 @@ class AddFriend(Resource):
             return get_failed_response("an error occurred")
 
         user_name = json_data["user_name"]
-        print("friend %s is going to add %s as a new friend!" % (user_from.username, user_name))
-        user_befriend = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
+        print(
+            "friend %s is going to add %s as a new friend!"
+            % (user_from.username, user_name)
+        )
+        user_befriend = User.query.filter(
+            func.lower(User.username) == func.lower(user_name)
+        ).first()
         if not user_befriend:
             return get_failed_response("an error occurred")
-        friend_from = Friend.query.filter_by(user_id=user_from.id, friend_id=user_befriend.id).first()
+        friend_from = Friend.query.filter_by(
+            user_id=user_from.id, friend_id=user_befriend.id
+        ).first()
         if not friend_from:
             print("they were not friends yet, so going to create the friend objects")
             # not friends yet, create Friend objects, always for both users!
             friend_befriend = user_befriend.befriend(user_from)
             friend_from = user_from.befriend(user_befriend)
         else:
-            friend_befriend = Friend.query.filter_by(user_id=user_befriend.id, friend_id=user_from.id).first()
+            friend_befriend = Friend.query.filter_by(
+                user_id=user_befriend.id, friend_id=user_from.id
+            ).first()
             if not friend_befriend:
                 return get_failed_response("an error occurred")
             print("already friends")
@@ -55,10 +63,9 @@ class AddFriend(Resource):
         # set requested indicator
         if friend_from.requested is True and friend_befriend.requested is False:
             print("request is already sent!")
-            add_friend_response = make_response({
-                'result': True,
-                'message': "request already sent"
-            }, 200)
+            add_friend_response = make_response(
+                {"result": True, "message": "request already sent"}, 200
+            )
             return add_friend_response
         elif friend_befriend.requested is True and friend_from.requested is False:
             print("The other person has sent a request")
@@ -74,12 +81,16 @@ class AddFriend(Resource):
                 "from": user_from.username,
             }
             room_to = "room_%s" % user_befriend.id
-            emit("accept_friend_request", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+            emit(
+                "accept_friend_request",
+                socket_response,
+                room=room_to,
+                namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
+            )
 
-            add_friend_response = make_response({
-                'result': True,
-                'message': "They are now friends"
-            }, 200)
+            add_friend_response = make_response(
+                {"result": True, "message": "They are now friends"}, 200
+            )
             return add_friend_response
         else:
             print("Successfully sent a request")
@@ -93,14 +104,18 @@ class AddFriend(Resource):
                 "from": user_from.serialize_minimal,
             }
             room_to = "room_%s" % user_befriend.id
-            emit("received_friend_request", socket_response, room=room_to, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+            emit(
+                "received_friend_request",
+                socket_response,
+                room=room_to,
+                namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
+            )
 
-            add_friend_response = make_response({
-                'result': True,
-                'message': "success"
-            }, 200)
+            add_friend_response = make_response(
+                {"result": True, "message": "success"}, 200
+            )
             return add_friend_response
 
 
 api = Api(app_api)
-api.add_resource(AddFriend, '/api/v1.0/add/friend', endpoint='add_friend')
+api.add_resource(AddFriend, "/api/v1.0/add/friend", endpoint="add_friend")

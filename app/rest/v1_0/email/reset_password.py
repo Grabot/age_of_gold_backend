@@ -13,7 +13,6 @@ from app.util.email.reset_password_email import reset_password_email
 
 
 class ResetPassword(Resource):
-
     def get(self):
         pass
 
@@ -30,13 +29,17 @@ class ResetPassword(Resource):
         if email is None:
             return get_failed_response("error occurred")
 
-        user = User.query.filter_by(origin=0).filter(func.lower(User.email) == func.lower(email)).first()
+        user = (
+            User.query.filter_by(origin=0)
+            .filter(func.lower(User.email) == func.lower(email))
+            .first()
+        )
         if not user:
             return get_failed_response("no account found using this email")
 
         expiration_time = 18000  # 5 hours
         token_expiration = int(time.time()) + expiration_time
-        reset_token = user.generate_auth_token(expiration_time).decode('ascii')
+        reset_token = user.generate_auth_token(expiration_time).decode("ascii")
 
         print("attempting to send an email to %s" % email)
         subject = "Age of Gold - Change your password"
@@ -49,13 +52,16 @@ class ResetPassword(Resource):
         db.session.add(user)
         db.session.commit()
 
-        password_reset_response = make_response({
-            'result': True,
-            'message': 'password reset mail is send',
-        }, 200)
+        password_reset_response = make_response(
+            {
+                "result": True,
+                "message": "password reset mail is send",
+            },
+            200,
+        )
 
         return password_reset_response
 
 
 api = Api(app_api)
-api.add_resource(ResetPassword, '/api/v1.0/password/reset', endpoint='reset_password')
+api.add_resource(ResetPassword, "/api/v1.0/password/reset", endpoint="reset_password")

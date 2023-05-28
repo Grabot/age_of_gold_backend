@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-app_api = Blueprint('api', __name__)
+app_api = Blueprint("api", __name__)
 
 from app.rest import test
 from app.rest import map_rest

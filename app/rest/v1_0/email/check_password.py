@@ -13,7 +13,6 @@ from app.util.util import check_token
 
 
 class CheckPassword(Resource):
-
     def get(self):
         pass
 
@@ -35,13 +34,16 @@ class CheckPassword(Resource):
         if not user:
             return get_failed_response("user not found")
 
-        password_check_response = make_response({
-            'result': True,
-            'message': 'password check was good',
-        }, 200)
+        password_check_response = make_response(
+            {
+                "result": True,
+                "message": "password check was good",
+            },
+            200,
+        )
 
         return password_check_response
 
 
 api = Api(app_api)
-api.add_resource(CheckPassword, '/api/v1.0/password/check', endpoint='check_password')
+api.add_resource(CheckPassword, "/api/v1.0/password/check", endpoint="check_password")

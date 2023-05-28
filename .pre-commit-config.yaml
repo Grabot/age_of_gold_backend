@@ -6,12 +6,13 @@ repos:
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
-    -   id: check-yaml
     -   id: check-added-large-files
     -   id: check-merge-conflict
     -   id: check-ast
-    -   id: double-quote-string-fixer
     -   id: debug-statements
     -   id: check-toml
-    -   id: check-json
-    -   id: check-xml
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    -   id: black
+        language_version: python3.10.6

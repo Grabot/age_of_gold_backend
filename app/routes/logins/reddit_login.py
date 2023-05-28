@@ -13,7 +13,7 @@ def reddit_login(app):
     from app.util.util import get_user_tokens
     from app import db
 
-    @app.route("/login/reddit", methods=['GET', 'POST'])
+    @app.route("/login/reddit", methods=["GET", "POST"])
     def login_reddit():
         print("attempting to login reddit :)")
         # TODO: correct endpoint?
@@ -32,7 +32,7 @@ def reddit_login(app):
 
         return redirect(reddit_url)
 
-    @app.route("/login/reddit/callback", methods=['GET', 'POST'])
+    @app.route("/login/reddit/callback", methods=["GET", "POST"])
     def reddit_callback():
         # Get authorization code Google sent back to you
         print("reddit callback!!!!")
@@ -44,37 +44,37 @@ def reddit_login(app):
         token_post_data = {
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": DevelopmentConfig.REDDIT_REDIRECT
+            "redirect_uri": DevelopmentConfig.REDDIT_REDIRECT,
         }
 
-        encoded_authorization = "%s:%s" % (DevelopmentConfig.REDDIT_CLIENT_ID, DevelopmentConfig.REDDIT_CLIENT_SECRET)
+        encoded_authorization = "%s:%s" % (
+            DevelopmentConfig.REDDIT_CLIENT_ID,
+            DevelopmentConfig.REDDIT_CLIENT_SECRET,
+        )
 
         http_auth = b64encode(encoded_authorization.encode("utf-8")).decode("utf-8")
         authorization = "Basic %s" % http_auth
         headers = {
             "Accept": "application/json",
-            'User-agent': 'age of gold login bot 0.1',
-            "Authorization": authorization
+            "User-agent": "age of gold login bot 0.1",
+            "Authorization": authorization,
         }
 
         token_response = requests.post(
-            access_base_url,
-            headers=headers,
-            data=token_post_data
+            access_base_url, headers=headers, data=token_post_data
         )
 
         reddit_response_json = token_response.json()
 
         headers_authorization = {
             "Accept": "application/json",
-            'User-agent': 'app of gold login bot 0.1',
-            "Authorization": "bearer %s" % reddit_response_json["access_token"]
+            "User-agent": "app of gold login bot 0.1",
+            "Authorization": "bearer %s" % reddit_response_json["access_token"],
         }
         authorization_url = DevelopmentConfig.REDDIT_USER
 
         authorization_response = requests.get(
-            authorization_url,
-            headers=headers_authorization
+            authorization_url, headers=headers_authorization
         )
 
         reddit_user = authorization_response.json()
@@ -99,7 +99,9 @@ def reddit_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace("/login/reddit/callback", "/worldaccess")
+            world_url = request.base_url.replace(
+                "/login/reddit/callback", "/worldaccess"
+            )
             world_url_params = world_url + "?" + url_params
             # Send user to the world
             return redirect(world_url_params)

@@ -101,7 +101,9 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
         db.session.commit()
-        print("created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id))
+        print(
+            "created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id)
+        )
 
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
         for tile in tiles:
@@ -136,7 +138,6 @@ def go_left(q, r, q_for_tiles, r_for_tiles):
 
 
 class MapRest(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         print("get map")
@@ -161,23 +162,17 @@ class MapRest(Resource):
             # We go from the leftmost place all the way to the right.
             q = -DevelopmentConfig.map_size
             # First adapt it to the row
-            q_for_tiles = (5 * r)
-            r_for_tiles = (-9 * r)
+            q_for_tiles = 5 * r
+            r_for_tiles = -9 * r
             # Then adapt it to the column
-            q_for_tiles += (9 * q)
-            r_for_tiles += (-4 * q)
+            q_for_tiles += 9 * q
+            r_for_tiles += -4 * q
 
             [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
-            return {
-                "result": True,
-                "message": "Row %s successfully created!" % r
-            }
+            return {"result": True, "message": "Row %s successfully created!" % r}
         else:
-            return {
-                "result": True,
-                "message": "Row already created"
-            }
+            return {"result": True, "message": "Row already created"}
 
 
 api = Api(app_api)
-api.add_resource(MapRest, '/api/v1.0/map/row', endpoint='map_row')
+api.add_resource(MapRest, "/api/v1.0/map/row", endpoint="map_row")

@@ -17,23 +17,26 @@ class User(db.Model):
     """
     User
     """
-    __tablename__ = 'User'
+
+    __tablename__ = "User"
     id = db.Column(db.Integer, primary_key=True)
     # friends of the user
     friends = db.relationship(
-        'Friend',
+        "Friend",
         foreign_keys=[Friend.user_id],
-        backref=db.backref('followers', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
+        backref=db.backref("followers", lazy="joined"),
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     # other friends that have befriended this user
     # A friend connection makes 2 'Friend' entries, each of these lists corresponds to the different direction
     followers = db.relationship(
-        'Friend',
+        "Friend",
         foreign_keys=[Friend.friend_id],
-        backref=db.backref('friends', lazy='joined'),
-        lazy='dynamic',
-        cascade='all, delete-orphan')
+        backref=db.backref("friends", lazy="joined"),
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     username = db.Column(db.Text, index=True, unique=True)
     # The user can use the same email with a different origin.
     # The email and origin is unique
@@ -53,7 +56,7 @@ class User(db.Model):
     email_verified = db.Column(db.Boolean, default=False)
     default_avatar = db.Column(db.Boolean, default=True)
 
-    __table_args__ = (Index('user_index', "email", "origin", unique=True),)
+    __table_args__ = (Index("user_index", "email", "origin", unique=True),)
 
     def get_tile_lock(self):
         return self.tile_lock
@@ -84,16 +87,14 @@ class User(db.Model):
         self.token_expiration = token_expiration
 
     def avatar(self, size):
-        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
-        return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
+        digest = md5(self.email.lower().encode("utf-8")).hexdigest()
+        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
+            digest, size
+        )
 
     def befriend(self, user):
         # Only call if the Friend object is not present yet.
-        friend = Friend(
-            user_id=self.id,
-            friend_id=user.id,
-            unread_messages=0
-        )
+        friend = Friend(user_id=self.id, friend_id=user.id, unread_messages=0)
         return friend
 
     def is_friend(self, user):
@@ -114,7 +115,7 @@ class User(db.Model):
             "aud": DevelopmentConfig.JWT_AUD,
             "sub": DevelopmentConfig.JWT_SUB,
             "exp": int(time.time()) + expires_in,  # expiration time
-            "iat": int(time.time())  # issued at
+            "iat": int(time.time()),  # issued at
         }
         return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
 
@@ -125,7 +126,7 @@ class User(db.Model):
             "aud": DevelopmentConfig.JWT_AUD,
             "sub": DevelopmentConfig.JWT_SUB,
             "exp": int(time.time()) + expires_in,  # expiration time
-            "iat": int(time.time())  # issued at
+            "iat": int(time.time()),  # issued at
         }
         return jwt.encode(DevelopmentConfig.header, payload, DevelopmentConfig.jwk)
 
@@ -136,7 +137,7 @@ class User(db.Model):
         self.email_verified = True
 
     def avatar_filename(self):
-        return md5(self.email.lower().encode('utf-8')).hexdigest()
+        return md5(self.email.lower().encode("utf-8")).hexdigest()
 
     def avatar_filename_small(self):
         return self.avatar_filename() + "_small"
@@ -167,7 +168,7 @@ class User(db.Model):
         if not os.path.isfile(file_path):
             return ""
         else:
-            with open(file_path, 'rb') as fd:
+            with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
             return image_as_base64
 
@@ -178,28 +179,28 @@ class User(db.Model):
     def serialize(self):
         # Get detailed user information, mostly used for login
         return {
-            'id': self.id,
-            'username': self.username,
-            'verified': self.email_verified,
-            'tile_lock': self.tile_lock.strftime('%Y-%m-%dT%H:%M:%S.%f'),
-            'friends': self.get_friend_ids(),
-            'avatar': self.get_user_avatar(True),
+            "id": self.id,
+            "username": self.username,
+            "verified": self.email_verified,
+            "tile_lock": self.tile_lock.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "friends": self.get_friend_ids(),
+            "avatar": self.get_user_avatar(True),
         }
 
     @property
     def serialize_get(self):
         # get user details without personal information
         return {
-            'id': self.id,
-            'username': self.username,
-            'avatar': self.get_user_avatar(True),
+            "id": self.id,
+            "username": self.username,
+            "avatar": self.get_user_avatar(True),
         }
 
     @property
     def serialize_minimal(self):
         # get minimal user details
         return {
-            'id': self.id,
-            'username': self.username,
-            'avatar': self.get_user_avatar(False)
+            "id": self.id,
+            "username": self.username,
+            "avatar": self.get_user_avatar(False),
         }

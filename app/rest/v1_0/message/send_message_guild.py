@@ -10,7 +10,6 @@ from app.util.util import get_auth_token, check_token, get_hex_room
 
 
 class SendMessageGuild(Resource):
-
     # noinspection PyMethodMayBeStatic
     def get(self):
         pass
@@ -24,8 +23,8 @@ class SendMessageGuild(Resource):
     # noinspection PyMethodMayBeStatic
     def post(self):
         json_data = request.get_json(force=True)
-        auth_token = get_auth_token(request.headers.get('Authorization'))
-        if auth_token == '':
+        auth_token = get_auth_token(request.headers.get("Authorization"))
+        if auth_token == "":
             return get_failed_response("an error occurred")
 
         user = check_token(auth_token)
@@ -42,16 +41,26 @@ class SendMessageGuild(Resource):
         socket_response = {
             "user_name": user.username,
             "message": message_body,
-            "timestamp": now.strftime('%Y-%m-%dT%H:%M:%S.%f')
+            "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
         }
 
-        emit("send_message_guild", socket_response, broadcast=True, namespace=DevelopmentConfig.API_SOCK_NAMESPACE)
+        emit(
+            "send_message_guild",
+            socket_response,
+            broadcast=True,
+            namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
+        )
 
-        send_message_response = make_response({
-            'result': True,
-        }, 200)
+        send_message_response = make_response(
+            {
+                "result": True,
+            },
+            200,
+        )
         return send_message_response
 
 
 api = Api(app_api)
-api.add_resource(SendMessageGuild, '/api/v1.0/send/message/guild', endpoint='send_message_guild')
+api.add_resource(
+    SendMessageGuild, "/api/v1.0/send/message/guild", endpoint="send_message_guild"
+)

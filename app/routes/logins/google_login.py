@@ -14,12 +14,11 @@ def get_google_provider_cfg():
 
 
 def google_login(app):
-
     from app import google_client
     from app.util.util import get_user_tokens
     from app import db
 
-    @app.route("/login/google", methods=['GET', 'POST'])
+    @app.route("/login/google", methods=["GET", "POST"])
     def login_google():
         # Find out what URL to hit for Google login
         google_provider_cfg = get_google_provider_cfg()
@@ -39,7 +38,7 @@ def google_login(app):
         print("url: %s" % request.url)
         return redirect(request_uri)
 
-    @app.route("/login/google/callback", methods=['GET', 'POST'])
+    @app.route("/login/google/callback", methods=["GET", "POST"])
     def google_callback():
         # Get authorization code Google sent back to you
         code = request.args.get("code")
@@ -59,14 +58,17 @@ def google_login(app):
             token_endpoint,
             authorization_response=authorization_response,
             redirect_url=final_redirect_url,
-            code=code
+            code=code,
         )
 
         token_response = requests.post(
             token_url,
             headers=headers,
             data=body,
-            auth=(DevelopmentConfig.GOOGLE_CLIENT_ID, DevelopmentConfig.GOOGLE_CLIENT_SECRET),
+            auth=(
+                DevelopmentConfig.GOOGLE_CLIENT_ID,
+                DevelopmentConfig.GOOGLE_CLIENT_SECRET,
+            ),
         )
         # Parse the tokens!
         google_client.parse_request_body_response(json.dumps(token_response.json()))
@@ -105,11 +107,12 @@ def google_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace("/login/google/callback", "/worldaccess")
+            world_url = request.base_url.replace(
+                "/login/google/callback", "/worldaccess"
+            )
             world_url_params = world_url + "?" + url_params
             print("redirected to the url: %s" % world_url_params)
             return redirect(world_url_params)
         else:
             login_url = request.base_url.replace("/login/google/callback", "/")
             return redirect(login_url)
-
