@@ -24,8 +24,8 @@ repos:
     -   id: black
         language_version: python3.10.6
         name: black (python)
-#-   repo: https://github.com/PyCQA/flake8
-#    rev: 6.0.0
-#    hooks:
-#    -   id: flake8
-#        name: flake8 (python)
+-   repo: https://github.com/PyCQA/flake8
+    rev: 6.0.0
+    hooks:
+    -   id: flake8
+        name: flake8 (python)
