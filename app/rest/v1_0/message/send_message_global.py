@@ -6,7 +6,6 @@ from flask_socketio import emit
 
 from app import DevelopmentConfig, db
 from app.models.message.global_message import GlobalMessage
-from app.models.post import Post
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
 from app.util.util import check_token, get_auth_token

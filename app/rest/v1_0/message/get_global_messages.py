@@ -1,5 +1,3 @@
-import time
-
 from flask import make_response, request
 from flask_restful import Api, Resource
 from sqlalchemy import desc
@@ -24,7 +22,7 @@ class GetGlobalMessages(Resource):
         if not user:
             return get_failed_response("an error occurred")
 
-        # We only retrieve the last 60 messages because we think there is no reason to scroll further back
+        # We only retrieve the last 60 messages. This is about 1 screen of messages
         global_messages = (
             GlobalMessage.query.order_by(desc(GlobalMessage.timestamp))
             .paginate(page=int(page), per_page=60, error_out=False)

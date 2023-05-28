@@ -1,14 +1,9 @@
-import time
-
 from flask import make_response, request
 from flask_restful import Api, Resource
 
 from app import db
-from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
-from app.util.email.email import EmailProcess
-from app.util.email.reset_password_email import reset_password_email
 from app.util.util import check_token
 
 

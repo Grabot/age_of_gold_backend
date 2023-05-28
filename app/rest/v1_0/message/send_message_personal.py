@@ -42,10 +42,11 @@ class SendMessagePersonal(Resource):
         if not user_send:
             return get_failed_response("user not found")
 
-        # There are 2 friend objects, but right now we just want the object belonging to who we're sending it to.
+        # Retrieve the friend object belonging to who we're sending it to.
         friend_send = Friend.query.filter_by(user_id=user_send.id, friend_id=from_user.id).first()
         if not friend_send:
-            # If there is no friend object we will create both of them, add an unread message to who we're messaging
+            # If there is no friend object we will create both of them.
+            # After creation, add an unread message to who we're messaging
             friend_send = user_send.befriend(from_user)
             from_friend = from_user.befriend(user_send)
             db.session.add(from_friend)
@@ -55,7 +56,8 @@ class SendMessagePersonal(Resource):
 
         now = datetime.utcnow()
 
-        # I could add the Friend object on the message, but it's not needed for storage or retrieval, so we won't
+        # I could add the Friend object on the message,
+        # but it's not needed for storage or retrieval, so we won't
         new_personal_message = PersonalMessage(
             body=message_body,
             user_id=from_user.id,

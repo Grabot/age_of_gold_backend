@@ -1,5 +1,4 @@
 from flask import make_response, request
-from flask_cors import cross_origin
 from flask_restful import Api, Resource
 from sqlalchemy import func
 

@@ -1,5 +1,5 @@
 [flake8]
-ignore = E402
+ignore = E402, W503
 max-line-length = 100
 exclude =
     migrations
@@ -12,3 +12,8 @@ exclude =
 per-file-ignores =
     ./app/__init__.py:F401
     ./app/models/__init__.py:F401
+    ./app/models/message/__init__.py:F401
+    ./app/rest/__init__.py:F401
+    ./app/rest/v1_0/email/__init__.py:F401
+    ./app/rest/v1_0/message/__init__.py:F401
+    ./app/rest/v1_0/settings/__init__.py:F401

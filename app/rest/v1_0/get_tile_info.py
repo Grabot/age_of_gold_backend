@@ -22,7 +22,6 @@ class GetTileInfo(Resource):
         json_data = request.get_json(force=True)
         tile_q = json_data["q"]
         tile_r = json_data["r"]
-        print("tile_q: %s tile_r: %s" % (tile_q, tile_r))
         if (
             not tile_q
             or not tile_r

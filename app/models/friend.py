@@ -19,7 +19,8 @@ class Friend(db.Model):
     unread_messages = db.Column(db.Integer, default=0)
     accepted = db.Column(db.Boolean, default=False)
     ignored = db.Column(db.Boolean, default=False)
-    # Indicates if a request is made or if they are just chatting and who made the first move to send the request
+    # Indicates if a request is made or if they are just chatting.
+    # If it's filled it determines who made the first move to send the request.
     requested = db.Column(db.Boolean, default=None, nullable=True)
 
     def is_accepted(self):

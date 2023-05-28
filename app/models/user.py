@@ -29,7 +29,8 @@ class User(db.Model):
         cascade="all, delete-orphan",
     )
     # other friends that have befriended this user
-    # A friend connection makes 2 'Friend' entries, each of these lists corresponds to the different direction
+    # A friend connection makes 2 'Friend' entries,
+    # each of these lists corresponds to the different direction
     followers = db.relationship(
         "Friend",
         foreign_keys=[Friend.friend_id],

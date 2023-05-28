@@ -1,5 +1,3 @@
-import time
-
 from flask import make_response, request
 from flask_restful import Api, Resource
 from sqlalchemy import func
@@ -40,7 +38,7 @@ class GetPersonalMessages(Resource):
         user_to = User.query.filter(func.lower(User.username) == func.lower(to_user)).first()
         if not user_to:
             return get_failed_response("user not found")
-        # We only retrieve the last 60 messages because we think there is no reason to scroll further back,
+        # We only retrieve the last 60 messages because there is no reason to read further back,
         # unless the user wants to
         personal_messages = (
             PersonalMessage.query.filter_by(user_id=user_from.id, receiver_id=user_to.id)

@@ -8,7 +8,7 @@ from app import DevelopmentConfig, db
 from app.models.hexagon import Hexagon
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
-from app.util.util import check_token, get_auth_token, get_wraparounds
+from app.util.util import get_wraparounds
 
 
 class GetHexagon(Resource):
