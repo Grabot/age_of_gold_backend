@@ -1,5 +1,7 @@
 import multiprocessing
+
 from flask_mail import Message
+
 from app import mail
 from app.config import Config
 

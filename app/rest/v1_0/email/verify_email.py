@@ -1,15 +1,16 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
+import time
+
+from flask import make_response, request
+from flask_restful import Api, Resource
+
+from app import db
 from app.config import Config
 from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
 from app.util.email.email import EmailProcess
 from app.util.email.verification_email import verification_email
-from app.util.util import get_auth_token, check_token, decode_token
-import time
-from app import db
+from app.util.util import check_token, decode_token, get_auth_token
 
 
 class VerifyEmail(Resource):

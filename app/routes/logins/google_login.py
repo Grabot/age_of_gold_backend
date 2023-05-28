@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import requests
 from flask import redirect, request
 
-from app.config import DevelopmentConfig, Config
+from app.config import Config, DevelopmentConfig
 from app.routes.login_user_origin import login_user_origin
 from app.util.avatar.generate_avatar import AvatarProcess
 
@@ -14,9 +14,8 @@ def get_google_provider_cfg():
 
 
 def google_login(app):
-    from app import google_client
+    from app import db, google_client
     from app.util.util import get_user_tokens
-    from app import db
 
     @app.route("/login/google", methods=["GET", "POST"])
     def login_google():

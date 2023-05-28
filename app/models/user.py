@@ -1,15 +1,15 @@
 import base64
 import os
-from passlib.apps import custom_app_context as pwd_context
-from authlib.jose import jwt
-from app import db
-from app.config import DevelopmentConfig, Config
-from hashlib import md5
-from datetime import datetime
-from datetime import timedelta
 import time
+from datetime import datetime, timedelta
+from hashlib import md5
+
+from authlib.jose import jwt
+from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy import Index
 
+from app import db
+from app.config import Config, DevelopmentConfig
 from app.models.friend import Friend
 
 

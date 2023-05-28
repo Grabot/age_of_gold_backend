@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 # loads the environment variable file

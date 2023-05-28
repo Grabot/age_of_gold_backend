@@ -1,14 +1,14 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
-from sqlalchemy import func
+import base64
 import os
+
+from flask import make_response, request
+from flask_restful import Api, Resource
+from sqlalchemy import func
 
 from app.config import Config
 from app.models.user import User
-from app.rest.rest_util import get_failed_response
 from app.rest import app_api
-import base64
+from app.rest.rest_util import get_failed_response
 
 
 class GetAvatar(Resource):

@@ -1,7 +1,9 @@
-from app.rest.v1_0.message import send_message_global
-from app.rest.v1_0.message import send_message_local
-from app.rest.v1_0.message import send_message_guild
-from app.rest.v1_0.message import send_message_personal
-from app.rest.v1_0.message import get_global_messages
-from app.rest.v1_0.message import get_personal_messages
-from app.rest.v1_0.message import read_message_personal
+from app.rest.v1_0.message import (
+    get_global_messages,
+    get_personal_messages,
+    read_message_personal,
+    send_message_global,
+    send_message_guild,
+    send_message_local,
+    send_message_personal,
+)

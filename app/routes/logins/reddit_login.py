@@ -4,14 +4,14 @@ from urllib.parse import urlencode
 import requests
 from flask import redirect, request
 
-from app.config import DevelopmentConfig, Config
+from app.config import Config, DevelopmentConfig
 from app.routes.login_user_origin import login_user_origin
 from app.util.avatar.generate_avatar import AvatarProcess
 
 
 def reddit_login(app):
-    from app.util.util import get_user_tokens
     from app import db
+    from app.util.util import get_user_tokens
 
     @app.route("/login/reddit", methods=["GET", "POST"])
     def login_reddit():

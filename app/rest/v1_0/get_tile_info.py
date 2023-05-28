@@ -1,9 +1,9 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
-from app.rest.rest_util import get_failed_response
+from flask import make_response, request
+from flask_restful import Api, Resource
+
 from app.models.tile import Tile
 from app.rest import app_api
+from app.rest.rest_util import get_failed_response
 
 
 class GetTileInfo(Resource):

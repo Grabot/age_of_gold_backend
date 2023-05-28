@@ -1,12 +1,10 @@
 from flask import request
-from flask_restful import Api
-from flask_restful import Resource
+from flask_restful import Api, Resource
 
+from app import db
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.rest import app_api
-from app import db
-
 
 radius = 4
 # a hex section with radius r is Cube(2 * r+1, -r, -r-1)

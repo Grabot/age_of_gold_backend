@@ -1,13 +1,13 @@
-from app.config import DevelopmentConfig
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_socketio import SocketIO
-from app.routes import set_routes
-from oauthlib.oauth2 import WebApplicationClient
 from flask_cors import CORS
 from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
+from oauthlib.oauth2 import WebApplicationClient
 
+from app.config import DevelopmentConfig
+from app.routes import set_routes
 
 db = SQLAlchemy()
 migrate = Migrate()

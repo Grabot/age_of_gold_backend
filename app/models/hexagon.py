@@ -1,5 +1,6 @@
-from app import db
 from sqlalchemy import Index
+
+from app import db
 
 
 class Hexagon(db.Model):

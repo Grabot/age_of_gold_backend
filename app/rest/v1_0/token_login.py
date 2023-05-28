@@ -1,10 +1,10 @@
-from flask_restful import Api
-from flask_restful import Resource
-from app.rest import app_api
 from flask import request
+from flask_restful import Api, Resource
+
 from app import db
+from app.rest import app_api
 from app.rest.rest_util import get_failed_response
-from app.util.util import get_user_tokens, check_token
+from app.util.util import check_token, get_user_tokens
 
 
 class TokenLogin(Resource):

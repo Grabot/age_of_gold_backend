@@ -1,7 +1,9 @@
-from sqlalchemy import Index
-from app.models.user import User
-from app import db
 from datetime import datetime
+
+from sqlalchemy import Index
+
+from app import db
+from app.models.user import User
 
 
 class Tile(db.Model):

@@ -1,12 +1,11 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
+from flask import make_response, request
+from flask_restful import Api, Resource
 from sqlalchemy import func
+
 from app.models.user import User
-from app.rest.rest_util import get_failed_response
 from app.rest import app_api
-from app.util.util import get_auth_token
-from app.util.util import check_token
+from app.rest.rest_util import get_failed_response
+from app.util.util import check_token, get_auth_token
 
 
 class GetUser(Resource):

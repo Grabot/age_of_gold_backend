@@ -1,10 +1,10 @@
-from flask_restful import Api
-from flask_restful import Resource
+from flask import make_response
+from flask_mail import Message
+from flask_restful import Api, Resource
+
 from app import mail
 from app.config import Config
 from app.rest import app_api
-from flask import make_response
-from flask_mail import Message
 from app.util.email.verification_email import verification_email
 
 

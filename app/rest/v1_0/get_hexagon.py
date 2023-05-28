@@ -1,13 +1,14 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
+import json
+
+from flask import make_response, request
+from flask_restful import Api, Resource
 from sqlalchemy import tuple_
+
+from app import DevelopmentConfig, db
 from app.models.hexagon import Hexagon
 from app.rest import app_api
-from app import db, DevelopmentConfig
-import json
 from app.rest.rest_util import get_failed_response
-from app.util.util import get_auth_token, check_token, get_wraparounds
+from app.util.util import check_token, get_auth_token, get_wraparounds
 
 
 class GetHexagon(Resource):

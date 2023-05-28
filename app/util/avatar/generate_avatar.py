@@ -1,9 +1,10 @@
-import random
-import multiprocessing
-from PIL import Image, ImageDraw
 import math
+import multiprocessing
 import os
+import random
 import stat
+
+from PIL import Image, ImageDraw
 
 angles = [83, 84, 85, 86, 94, 95, 96, 97]
 min_line_length = 20

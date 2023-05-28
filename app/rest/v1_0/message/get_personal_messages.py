@@ -1,13 +1,14 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
+import time
+
+from flask import make_response, request
+from flask_restful import Api, Resource
 from sqlalchemy import func
+
 from app.models.message.personal_message import PersonalMessage
 from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
-from app.util.util import get_auth_token, check_token
-import time
+from app.util.util import check_token, get_auth_token
 
 
 class GetPersonalMessages(Resource):

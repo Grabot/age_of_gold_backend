@@ -1,18 +1,18 @@
-from flask import request, make_response
-from flask_restful import Api
-from flask_restful import Resource
+import base64
+import io
+import os
+import stat
+
+from flask import make_response, request
+from flask_restful import Api, Resource
+from PIL import Image
 
 from app import db
 from app.config import Config
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
 from app.util.avatar.generate_avatar import AvatarProcess
-from app.util.util import get_auth_token, check_token
-import os
-import io
-import base64
-import stat
-from PIL import Image
+from app.util.util import check_token, get_auth_token
 
 
 class ResetAvatar(Resource):

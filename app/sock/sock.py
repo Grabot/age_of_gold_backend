@@ -1,16 +1,14 @@
-from flask_socketio import Namespace
-from flask_socketio import join_room
-from flask_socketio import leave_room
-from flask_socketio import emit
+import json
+
 from flask import request
-from app import socks
+from flask_socketio import Namespace, emit, join_room, leave_room
+
+from app import db, socks
+from app.config import DevelopmentConfig
 from app.models.hexagon import Hexagon
 from app.models.tile import Tile
 from app.models.user import User
 from app.util.util import get_wraparounds
-from app import db
-from app.config import DevelopmentConfig
-import json
 
 
 class NamespaceSock(Namespace):

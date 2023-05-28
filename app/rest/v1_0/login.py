@@ -1,11 +1,11 @@
+from flask import make_response, request
 from flask_cors import cross_origin
-from flask_restful import Api
-from flask_restful import Resource
+from flask_restful import Api, Resource
 from sqlalchemy import func
+
+from app import db
 from app.models.user import User
 from app.rest import app_api
-from flask import request, make_response
-from app import db
 from app.util.util import get_user_tokens
 
 
