@@ -16,3 +16,4 @@ repos:
     hooks:
     -   id: black
         language_version: python3.10.6
+        name: black (python)
