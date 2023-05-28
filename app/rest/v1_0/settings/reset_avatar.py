@@ -1,17 +1,13 @@
 import base64
-import io
 import os
-import stat
 
 from flask import make_response, request
 from flask_restful import Api, Resource
-from PIL import Image
 
 from app import db
 from app.config import Config
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
-from app.util.avatar.generate_avatar import AvatarProcess
 from app.util.util import check_token, get_auth_token
 
 

@@ -2,7 +2,6 @@ from flask import make_response, request
 from flask_restful import Api, Resource
 from sqlalchemy import func
 
-from app.models.friend import Friend
 from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response

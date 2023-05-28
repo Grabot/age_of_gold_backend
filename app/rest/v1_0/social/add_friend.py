@@ -65,7 +65,7 @@ class AddFriend(Resource):
             return add_friend_response
         elif friend_befriend.requested is True and friend_from.requested is False:
             print("The other person has sent a request")
-            # This is if a friend request is send by the other person and now this person sends one.
+            # This is if a friend request is send by the other person and now this person sends one
             # Let's assume they both accept to be friends
             friend_from.accepted = True
             friend_befriend.accepted = True
@@ -95,7 +95,7 @@ class AddFriend(Resource):
             db.session.add(friend_from)
             db.session.add(friend_befriend)
             db.session.commit()
-            # Emit on the room of the befriend person. If that person is online he will see the request
+            # Emit on the room of the person. If that person is online they will see the request
             socket_response = {
                 "from": user_from.serialize_minimal,
             }

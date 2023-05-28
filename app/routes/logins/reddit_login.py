@@ -37,7 +37,6 @@ def reddit_login(app):
         # Get authorization code Google sent back to you
         print("reddit callback!!!!")
         code = request.args.get("code")
-        state = request.args.get("state")
 
         access_base_url = DevelopmentConfig.REDDIT_ACCESS
 

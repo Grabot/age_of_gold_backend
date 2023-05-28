@@ -1,13 +1,8 @@
-import json
-
 from flask import request
 from flask_socketio import Namespace, emit, join_room, leave_room
 
-from app import db, socks
+from app import socks
 from app.config import DevelopmentConfig
-from app.models.hexagon import Hexagon
-from app.models.tile import Tile
-from app.models.user import User
 from app.util.util import get_wraparounds
 
 

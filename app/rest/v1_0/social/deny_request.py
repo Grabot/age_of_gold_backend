@@ -54,7 +54,8 @@ class DenyRequest(Resource):
             friend_befriend.requested = None
 
             if friend_from.accepted:
-                # We also set the accepted back to false. This can be a denied request or an unfriend.
+                # We also set the accepted back to false.
+                # This can be a denied request or an unfriend.
                 friend_from.accepted = False
                 friend_befriend.accepted = False
                 # TODO: Add message that they are unfriended?
@@ -63,7 +64,6 @@ class DenyRequest(Resource):
             db.session.add(friend_befriend)
             db.session.commit()
 
-            # Emit on the room of the befriend person. If that person is online he will see the request
             socket_response = {
                 "from": user_from.username,
             }
