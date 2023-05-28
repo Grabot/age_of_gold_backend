@@ -35,10 +35,10 @@ class SendMessageGuild(Resource):
         now = datetime.utcnow()
 
         message_body = json_data["message"]
-        guild_name = json_data["guild_name"]
-        guild_id = 0
+        # guild_name = json_data["guild_name"]
+        # guild_id = 0
         # TODO: Add guild functionality with rooms
-        room = "guild_room_%s" % guild_id
+        # room = "guild_room_%s" % guild_id
         socket_response = {
             "user_name": user.username,
             "message": message_body,
