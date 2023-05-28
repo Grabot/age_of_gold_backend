@@ -1,3 +1,14 @@
 [flake8]
 ignore = E402
-max-line-length = 88
+max-line-length = 100
+exclude =
+    migrations
+    __pycache__
+    manage.py
+    settings.py
+    env
+    .env
+    venv
+per-file-ignores =
+    ./app/__init__.py:F401
+    ./app/models/__init__.py:F401
