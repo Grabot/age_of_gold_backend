@@ -11,6 +11,8 @@ repos:
     -   id: check-ast
     -   id: debug-statements
     -   id: check-toml
+    -   id: check-json
+    -   id: check-xml
 -   repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
