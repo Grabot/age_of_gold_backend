@@ -54,6 +54,4 @@ class UpdatePassword(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    UpdatePassword, "/api/v1.0/password/update", endpoint="update_password"
-)
+api.add_resource(UpdatePassword, "/api/v1.0/password/update", endpoint="update_password")

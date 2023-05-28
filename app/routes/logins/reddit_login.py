@@ -60,9 +60,7 @@ def reddit_login(app):
             "Authorization": authorization,
         }
 
-        token_response = requests.post(
-            access_base_url, headers=headers, data=token_post_data
-        )
+        token_response = requests.post(access_base_url, headers=headers, data=token_post_data)
 
         reddit_response_json = token_response.json()
 
@@ -73,9 +71,7 @@ def reddit_login(app):
         }
         authorization_url = DevelopmentConfig.REDDIT_USER
 
-        authorization_response = requests.get(
-            authorization_url, headers=headers_authorization
-        )
+        authorization_response = requests.get(authorization_url, headers=headers_authorization)
 
         reddit_user = authorization_response.json()
 
@@ -99,9 +95,7 @@ def reddit_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace(
-                "/login/reddit/callback", "/worldaccess"
-            )
+            world_url = request.base_url.replace("/login/reddit/callback", "/worldaccess")
             world_url_params = world_url + "?" + url_params
             # Send user to the world
             return redirect(world_url_params)

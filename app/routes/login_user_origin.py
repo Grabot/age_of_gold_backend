@@ -28,14 +28,10 @@ def login_user_origin(users_name, users_email, origin):
         print("new user")
         # If not than we create a new entry in the User table and then log in.
         # The last verification is to check if username is not taken
-        new_user = User.query.filter(
-            func.lower(User.username) == func.lower(users_name)
-        ).first()
+        new_user = User.query.filter(func.lower(User.username) == func.lower(users_name)).first()
         if new_user is None:
             print("really new user!")
-            user = User(
-                username=users_name, email=users_email, password_hash="", origin=origin
-            )
+            user = User(username=users_name, email=users_email, password_hash="", origin=origin)
             db.session.add(user)
             db.session.commit()
             return user

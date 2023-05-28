@@ -37,22 +37,14 @@ class GetPersonalMessages(Resource):
             return get_failed_response("an error occurred")
 
         to_user = json_data["from_user"]
-        user_to = User.query.filter(
-            func.lower(User.username) == func.lower(to_user)
-        ).first()
+        user_to = User.query.filter(func.lower(User.username) == func.lower(to_user)).first()
         if not user_to:
             return get_failed_response("user not found")
         # We only retrieve the last 60 messages because we think there is no reason to scroll further back,
         # unless the user wants to
         personal_messages = (
-            PersonalMessage.query.filter_by(
-                user_id=user_from.id, receiver_id=user_to.id
-            )
-            .union(
-                PersonalMessage.query.filter_by(
-                    user_id=user_to.id, receiver_id=user_from.id
-                )
-            )
+            PersonalMessage.query.filter_by(user_id=user_from.id, receiver_id=user_to.id)
+            .union(PersonalMessage.query.filter_by(user_id=user_to.id, receiver_id=user_from.id))
             .order_by(PersonalMessage.timestamp.desc())
             .paginate(page=int(page), per_page=60, error_out=False)
             .items
@@ -60,9 +52,7 @@ class GetPersonalMessages(Resource):
 
         messages = [m.serialize for m in personal_messages]
 
-        get_message_response = make_response(
-            {"result": True, "messages": messages}, 200
-        )
+        get_message_response = make_response({"result": True, "messages": messages}, 200)
         return get_message_response
 
 

@@ -34,9 +34,7 @@ class GetTileInfo(Resource):
         if not tile:
             return get_failed_response("error occurred")
 
-        get_tile_info_response = make_response(
-            {"result": True, "tile": tile.serialize_full}, 200
-        )
+        get_tile_info_response = make_response({"result": True, "tile": tile.serialize_full}, 200)
         return get_tile_info_response
 
 

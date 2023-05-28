@@ -26,9 +26,7 @@ class GetAvatar(Resource):
     def post(self):
         json_data = request.get_json(force=True)
         user_name = json_data["user_name"]
-        user_avatar = User.query.filter(
-            func.lower(User.username) == func.lower(user_name)
-        ).first()
+        user_avatar = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
         if not user_avatar:
             return get_failed_response("user not found")
 
@@ -45,9 +43,7 @@ class GetAvatar(Resource):
             with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
 
-            avatar_response = make_response(
-                {"result": True, "avatar": image_as_base64}, 200
-            )
+            avatar_response = make_response({"result": True, "avatar": image_as_base64}, 200)
 
             return avatar_response
 

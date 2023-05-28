@@ -40,9 +40,7 @@ class ChangeAvatar(Resource):
 
         # Turn base64 string to PIL image file
         new_avatar_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar)))
-        new_avatar_small_pil = Image.open(
-            io.BytesIO(base64.b64decode(new_avatar_small))
-        )
+        new_avatar_small_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar_small)))
 
         # Get the file name and path
         file_folder = Config.UPLOAD_FOLDER

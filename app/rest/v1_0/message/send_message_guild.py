@@ -62,6 +62,4 @@ class SendMessageGuild(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    SendMessageGuild, "/api/v1.0/send/message/guild", endpoint="send_message_guild"
-)
+api.add_resource(SendMessageGuild, "/api/v1.0/send/message/guild", endpoint="send_message_guild")

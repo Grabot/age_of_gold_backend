@@ -47,9 +47,7 @@ class GetAvatarUser(Resource):
             with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()
 
-            avatar_response = make_response(
-                {"result": True, "avatar": image_as_base64}, 200
-            )
+            avatar_response = make_response({"result": True, "avatar": image_as_base64}, 200)
 
             return avatar_response
 

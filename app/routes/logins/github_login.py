@@ -54,9 +54,7 @@ def github_login(app):
         }
         authorization_url = DevelopmentConfig.GITHUB_USER
 
-        authorization_response = requests.get(
-            authorization_url, headers=headers_authorization
-        )
+        authorization_response = requests.get(authorization_url, headers=headers_authorization)
 
         github_user = authorization_response.json()
 
@@ -80,9 +78,7 @@ def github_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace(
-                "/login/github/callback", "/worldaccess"
-            )
+            world_url = request.base_url.replace("/login/github/callback", "/worldaccess")
             world_url_params = world_url + "?" + url_params
             return redirect(world_url_params)
         else:

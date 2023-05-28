@@ -65,6 +65,4 @@ class SendMessageLocal(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    SendMessageLocal, "/api/v1.0/send/message/local", endpoint="send_message_local"
-)
+api.add_resource(SendMessageLocal, "/api/v1.0/send/message/local", endpoint="send_message_local")

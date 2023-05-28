@@ -31,14 +31,10 @@ class Register(Resource):
             return get_failed_response("Invalid request")
 
         if (
-            User.query.filter(
-                func.lower(User.username) == func.lower(user_name)
-            ).first()
+            User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
             is not None
         ):
-            return get_failed_response(
-                "User is already taken, please choose a different one."
-            )
+            return get_failed_response("User is already taken, please choose a different one.")
 
         if (
             User.query.filter_by(origin=0)
@@ -46,9 +42,7 @@ class Register(Resource):
             .first()
             is not None
         ):
-            return get_failed_response(
-                "This email has already been used to create an account"
-            )
+            return get_failed_response("This email has already been used to create an account")
 
         user = User(username=user_name, email=email, origin=0)
         avatar = AvatarProcess(user.avatar_filename(), Config.UPLOAD_FOLDER)

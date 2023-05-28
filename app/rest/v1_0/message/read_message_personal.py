@@ -33,15 +33,11 @@ class ReadPersonalMessages(Resource):
             return get_failed_response("an error occurred")
 
         read_user = json_data["read_user"]
-        user_read = User.query.filter(
-            func.lower(User.username) == func.lower(read_user)
-        ).first()
+        user_read = User.query.filter(func.lower(User.username) == func.lower(read_user)).first()
         if not user_read:
             return get_failed_response("user not found")
 
-        friend = Friend.query.filter_by(
-            user_id=user_from.id, friend_id=user_read.id
-        ).first()
+        friend = Friend.query.filter_by(user_id=user_from.id, friend_id=user_read.id).first()
         if not friend:
             return get_failed_response("something went wrong")
 
@@ -51,9 +47,7 @@ class ReadPersonalMessages(Resource):
         db.session.add(friend)
         db.session.commit()
 
-        get_message_response = make_response(
-            {"result": True, "message": "success"}, 200
-        )
+        get_message_response = make_response({"result": True, "message": "success"}, 200)
         return get_message_response
 
 

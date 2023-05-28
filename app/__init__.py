@@ -22,9 +22,7 @@ google_client = WebApplicationClient(DevelopmentConfig.GOOGLE_CLIENT_ID)
 
 def create_app():
     app = Flask(__name__)
-    CORS(
-        app, supports_credentials=True, resources={r"/api/*": {"origins": allow_origin}}
-    )
+    CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": allow_origin}})
     app.config.from_object(DevelopmentConfig)
     app.config["SQLALCHEMY_MAX_OVERFLOW"] = 0
     app.config["SQLALCHEMY_POOL_SIZE"] = 1000

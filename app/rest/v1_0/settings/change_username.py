@@ -33,19 +33,12 @@ class ChangeUsername(Resource):
 
         new_username = json_data["username"]
         if (
-            User.query.filter(
-                func.lower(User.username) == func.lower(new_username)
-            ).first()
+            User.query.filter(func.lower(User.username) == func.lower(new_username)).first()
             is not None
         ):
-            return get_failed_response(
-                "User is already taken, please choose a different one."
-            )
+            return get_failed_response("User is already taken, please choose a different one.")
 
-        print(
-            "Everything went fine, going to change %s to %s"
-            % (user.username, new_username)
-        )
+        print("Everything went fine, going to change %s to %s" % (user.username, new_username))
         user.set_new_username(new_username)
         db.session.add(user)
         db.session.commit()
@@ -62,6 +55,4 @@ class ChangeUsername(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    ChangeUsername, "/api/v1.0/change/username", endpoint="change_username"
-)
+api.add_resource(ChangeUsername, "/api/v1.0/change/username", endpoint="change_username")

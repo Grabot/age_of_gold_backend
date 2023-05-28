@@ -75,9 +75,7 @@ class DenyRequest(Resource):
                 namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
             )
 
-            deny_request_response = make_response(
-                {"result": True, "message": "success"}, 200
-            )
+            deny_request_response = make_response({"result": True, "message": "success"}, 200)
             return deny_request_response
 
 

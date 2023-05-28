@@ -173,9 +173,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         next_line = line.get_next()
         # We are going to split the chosen line somewhere and attempt to
         # calculate the new resulting plane split using the chosen angle
-        line_length_choice = _rand.uniform(
-            _index + min_line_length, line.get_length() + _index
-        )
+        line_length_choice = _rand.uniform(_index + min_line_length, line.get_length() + _index)
         line_length_choice -= _index
         _index += 1
 
@@ -188,9 +186,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
 
         # Sin(a_1) = Opp/Hyp
         # First we don't know the angle, but we know the Opp and Hyp
-        angle_1 = math.degrees(
-            math.asin((line.end[1] - line.start[1]) / line.get_length())
-        )
+        angle_1 = math.degrees(math.asin((line.end[1] - line.start[1]) / line.get_length()))
 
         # Sin(a_1) = Opp/Hyp
         # Now we know the angle and the Hyp
@@ -225,15 +221,11 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         t2_ang_3 = 180 - t2_ang_1 - t2_ang_2
 
         t2_mid = Line(next_line.end, test_point_b_1).get_length()
-        t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(
-            math.radians(t2_ang_2)
-        )
+        t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(math.radians(t2_ang_2))
 
         change_line = next_line.get_next()
         angle_c_1 = math.degrees(
-            math.asin(
-                (change_line.end[1] - change_line.start[1]) / change_line.get_length()
-            )
+            math.asin((change_line.end[1] - change_line.start[1]) / change_line.get_length())
         )
 
         test_point_c_1 = change_line.start
@@ -364,9 +356,7 @@ class AvatarProcess(multiprocessing.Process):
         square_numbers = random.randint(min_squares, max_squares)
 
         for x in range(0, square_numbers):
-            plane_1, plane_2, chosen_plane = add_square_clean(
-                random, width, height, planes, index
-            )
+            plane_1, plane_2, chosen_plane = add_square_clean(random, width, height, planes, index)
             if plane_1 is None and plane_2 is None and chosen_plane is None:
                 break
             else:
@@ -380,9 +370,7 @@ class AvatarProcess(multiprocessing.Process):
             points = []
             for line in plane.get_all_lines():
                 points.append((line.start[0] + width, line.start[1] + height))
-            plane_colour = tuple(
-                int(plane.colour.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)
-            )
+            plane_colour = tuple(int(plane.colour.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
             draw.polygon(points, plane_colour, outline="black", width=2)
 
         del draw

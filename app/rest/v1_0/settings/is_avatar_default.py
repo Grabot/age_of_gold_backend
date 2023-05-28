@@ -45,6 +45,4 @@ class IsAvatarDefault(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    IsAvatarDefault, "/api/v1.0/get/avatar/default", endpoint="get_avatar_default"
-)
+api.add_resource(IsAvatarDefault, "/api/v1.0/get/avatar/default", endpoint="get_avatar_default")

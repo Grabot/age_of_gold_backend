@@ -31,15 +31,11 @@ class GetUser(Resource):
             return get_failed_response("back to login")
 
         user_name = json_data["user_name"]
-        user_get = User.query.filter(
-            func.lower(User.username) == func.lower(user_name)
-        ).first()
+        user_get = User.query.filter(func.lower(User.username) == func.lower(user_name)).first()
         if not user_get:
             return get_failed_response("user not found")
 
-        get_user_response = make_response(
-            {"result": True, "user": user_get.serialize_get}, 200
-        )
+        get_user_response = make_response({"result": True, "user": user_get.serialize_get}, 200)
         return get_user_response
 
 

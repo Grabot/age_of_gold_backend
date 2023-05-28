@@ -106,9 +106,7 @@ def google_login(app):
             url_params = urlencode(params)
 
             # Send user to the world
-            world_url = request.base_url.replace(
-                "/login/google/callback", "/worldaccess"
-            )
+            world_url = request.base_url.replace("/login/google/callback", "/worldaccess")
             world_url_params = world_url + "?" + url_params
             print("redirected to the url: %s" % world_url_params)
             return redirect(world_url_params)

@@ -67,9 +67,7 @@ class AcceptRequest(Resource):
             namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
         )
 
-        accept_request_response = make_response(
-            {"result": True, "message": "success"}, 200
-        )
+        accept_request_response = make_response({"result": True, "message": "success"}, 200)
         return accept_request_response
 
 

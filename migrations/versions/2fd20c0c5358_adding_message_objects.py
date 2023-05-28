@@ -26,9 +26,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     with op.batch_alter_table("GlobalMessage", schema=None) as batch_op:
-        batch_op.create_index(
-            batch_op.f("ix_GlobalMessage_timestamp"), ["timestamp"], unique=False
-        )
+        batch_op.create_index(batch_op.f("ix_GlobalMessage_timestamp"), ["timestamp"], unique=False)
 
     op.create_table(
         "PersonalMessage",

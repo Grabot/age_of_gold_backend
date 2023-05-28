@@ -100,9 +100,7 @@ def go_right(q, r, q_for_tiles, r_for_tiles):
         hexagon = Hexagon(q=q, r=r)
         db.session.add(hexagon)
         db.session.commit()
-        print(
-            "created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id)
-        )
+        print("created hexagon (right) with q: %s r: %s and id: %s" % (q, r, hexagon.id))
 
         tiles = get_tiles(hexagon.id, q_for_tiles, r_for_tiles)
         for tile in tiles:

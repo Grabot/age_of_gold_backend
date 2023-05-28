@@ -34,10 +34,7 @@ class AddFriend(Resource):
             return get_failed_response("an error occurred")
 
         user_name = json_data["user_name"]
-        print(
-            "friend %s is going to add %s as a new friend!"
-            % (user_from.username, user_name)
-        )
+        print("friend %s is going to add %s as a new friend!" % (user_from.username, user_name))
         user_befriend = User.query.filter(
             func.lower(User.username) == func.lower(user_name)
         ).first()
@@ -110,9 +107,7 @@ class AddFriend(Resource):
                 namespace=DevelopmentConfig.API_SOCK_NAMESPACE,
             )
 
-            add_friend_response = make_response(
-                {"result": True, "message": "success"}, 200
-            )
+            add_friend_response = make_response({"result": True, "message": "success"}, 200)
             return add_friend_response
 
 

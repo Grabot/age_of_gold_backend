@@ -39,9 +39,7 @@ class Friend(db.Model):
         return {
             "id": self.id,
             "friend": friend_detail,
-            "last_time_activity": self.last_time_activity.strftime(
-                "%Y-%m-%dT%H:%M:%S.%f"
-            ),
+            "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "unread_messages": self.unread_messages,
             "ignored": self.ignored,
             "accepted": self.accepted,

@@ -33,9 +33,7 @@ class GetGlobalMessages(Resource):
 
         messages = [m.serialize for m in global_messages]
 
-        get_message_response = make_response(
-            {"result": True, "messages": messages}, 200
-        )
+        get_message_response = make_response({"result": True, "messages": messages}, 200)
         return get_message_response
 
     def put(self, page):

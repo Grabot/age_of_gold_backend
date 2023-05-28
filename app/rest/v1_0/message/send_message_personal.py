@@ -38,16 +38,12 @@ class SendMessagePersonal(Resource):
 
         message_body = json_data["message"]
         to_user = json_data["to_user"].lower()
-        user_send = User.query.filter(
-            func.lower(User.username) == func.lower(to_user)
-        ).first()
+        user_send = User.query.filter(func.lower(User.username) == func.lower(to_user)).first()
         if not user_send:
             return get_failed_response("user not found")
 
         # There are 2 friend objects, but right now we just want the object belonging to who we're sending it to.
-        friend_send = Friend.query.filter_by(
-            user_id=user_send.id, friend_id=from_user.id
-        ).first()
+        friend_send = Friend.query.filter_by(user_id=user_send.id, friend_id=from_user.id).first()
         if not friend_send:
             # If there is no friend object we will create both of them, add an unread message to who we're messaging
             friend_send = user_send.befriend(from_user)

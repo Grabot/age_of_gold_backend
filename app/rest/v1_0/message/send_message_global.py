@@ -68,6 +68,4 @@ class SendMessageGlobal(Resource):
 
 
 api = Api(app_api)
-api.add_resource(
-    SendMessageGlobal, "/api/v1.0/send/message/global", endpoint="send_message_global"
-)
+api.add_resource(SendMessageGlobal, "/api/v1.0/send/message/global", endpoint="send_message_global")
