@@ -1,5 +1,8 @@
 from flask import Blueprint
 
+app_api = Blueprint("api", __name__)
+
+
 from app.rest import map_rest, test
 from app.rest.v1_0 import (
     email,
@@ -16,5 +19,3 @@ from app.rest.v1_0 import (
     tile_change,
     token_login,
 )
-
-app_api = Blueprint("api", __name__)
