@@ -41,6 +41,7 @@ class SendMessageGuild(Resource):
         # room = "guild_room_%s" % guild_id
         socket_response = {
             "user_name": user.username,
+            "sender_id": user.id,
             "message": message_body,
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
         }

@@ -35,11 +35,13 @@ class SendMessageGlobal(Resource):
 
         message_body = json_data["message"]
         users_username = user.username
+        users_id = user.id
 
         now = datetime.utcnow()
 
         socket_response = {
             "user_name": users_username,
+            "sender_id": users_id,
             "message": message_body,
             "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
         }
@@ -52,7 +54,7 @@ class SendMessageGlobal(Resource):
         )
 
         new_global_message = GlobalMessage(
-            body=message_body, sender_name=users_username, timestamp=now
+            body=message_body, sender_name=users_username, sender_id=users_id, timestamp=now
         )
         db.session.add(new_global_message)
         db.session.commit()

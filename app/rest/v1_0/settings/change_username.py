@@ -3,6 +3,7 @@ from flask_restful import Api, Resource
 from sqlalchemy import func
 
 from app import db
+from app.models.message.global_message import GlobalMessage
 from app.models.user import User
 from app.rest import app_api
 from app.rest.rest_util import get_failed_response
@@ -40,6 +41,14 @@ class ChangeUsername(Resource):
 
         print("Everything went fine, going to change %s to %s" % (user.username, new_username))
         user.set_new_username(new_username)
+        # update global messages
+        message_update = (
+            GlobalMessage.update()
+            .values(sender_name=new_username)
+            .where(GlobalMessage.sender_id == user.id)
+        )
+        db.session.add(message_update)
+
         db.session.add(user)
         db.session.commit()
 
