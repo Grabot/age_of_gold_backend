@@ -1,47 +1,12 @@
 import os
-from typing import List, Union
 
-from pydantic import AnyHttpUrl, BaseSettings, validator
+from dotenv import load_dotenv
+
+# loads the environment variable file
+load_dotenv()
 
 
-class Settings(BaseSettings):
-    API_V1_STR: str = "/api/v1"
-    # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
-    # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000", \
-    # "http://localhost:8080", "http://local.dockertoolbox.tiangolo.com"]'
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
-
-    POSTGRES_URL = os.environ["POSTGRES_URL"]
-    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
-    POSTGRES_USER = os.environ["POSTGRES_USER"]
-    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-    POSTGRES_DB = os.environ["POSTGRES_DB"]
-
-    REDIS_URL = os.environ["REDIS_URL"]
-    REDIS_PORT = os.environ["REDIS_PORT"]
-
-    PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
-
-    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
-        user=POSTGRES_USER,
-        pw=POSTGRES_PASSWORD,
-        url=POSTGRES_URL,
-        port=POSTGRES_PORT,
-        db=POSTGRES_DB,
-    )
-
-    REDIS_URL = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
-
-    SQLALCHEMY_DATABASE_URI = DB_URL
-
+class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get("SECRET_KEY") or "you-will-never-guess"
 
@@ -95,8 +60,27 @@ class Settings(BaseSettings):
     BASE_URL = os.environ.get("BASE_URL")
     UPLOAD_FOLDER = "static/uploads/"
 
-    class Config:
-        case_sensitive = True
 
+class DevelopmentConfig(Config):
+    POSTGRES_URL = os.environ["POSTGRES_URL"]
+    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
+    POSTGRES_USER = os.environ["POSTGRES_USER"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+    POSTGRES_DB = os.environ["POSTGRES_DB"]
 
-settings = Settings()
+    REDIS_URL = os.environ["REDIS_URL"]
+    REDIS_PORT = os.environ["REDIS_PORT"]
+
+    PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
+
+    DB_URL = "postgresql+psycopg2://{user}:{pw}@{url}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        pw=POSTGRES_PASSWORD,
+        url=POSTGRES_URL,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
+    )
+
+    REDIS_URL = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
+
+    SQLALCHEMY_DATABASE_URI = DB_URL

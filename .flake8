@@ -10,15 +10,20 @@ exclude =
     .env
     venv
 per-file-ignores =
-    ./app/__init__.py:F401
-    ./app/models/__init__.py:F401
-    ./app/models/message/__init__.py:F401
-    ./app/rest/__init__.py:F401
-    ./app/rest/v1_0/email/__init__.py:F401
-    ./app/rest/v1_0/message/__init__.py:F401
-    ./app/rest/v1_0/settings/__init__.py:F401
-    ./app/rest/v1_0/social/__init__.py:F401
-    ./app/routes/__init__.py:F401
-    ./app/sock/__init__.py:F401
-    ./app/util/email/reset_password_email.py:E501
-    ./app/util/email/verification_email.py:E501
+    ./app/app/api/api_v1/__init__.py:F401
+    ./app/app/api/api_v1/user_access/__init__.py:F401
+    ./app/app/api/util/email/reset_password_email.py:E501
+    ./app/app/api/util/email/verification_email.py:E501
+    ./app/app/models/__init__.py:F401
+    ./app_old/__init__.py:F401
+    ./app_old/models/__init__.py:F401
+    ./app_old/models/message/__init__.py:F401
+    ./app_old/rest/__init__.py:F401
+    ./app_old/rest/v1_0/email/__init__.py:F401
+    ./app_old/rest/v1_0/message/__init__.py:F401
+    ./app_old/rest/v1_0/settings/__init__.py:F401
+    ./app_old/rest/v1_0/social/__init__.py:F401
+    ./app_old/routes/__init__.py:F401
+    ./app_old/sock/__init__.py:F401
+    ./app_old/util/email/reset_password_email.py:E501
+    ./app_old/util/email/verification_email.py:E501
