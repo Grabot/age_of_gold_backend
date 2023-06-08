@@ -1,4 +1,5 @@
 import json
+import time
 
 from flask import request
 from flask_restful import Api, Resource
@@ -245,6 +246,8 @@ class MapRest(Resource):
 
     # noinspection PyMethodMayBeStatic
     def post(self):
+        start_time = time.time()
+        print("create map!")
         json_data = request.get_json(force=True)
         print("post map: %s" % json_data)
         hexagon = Hexagon.query.filter_by(q=0, r=0).first()
@@ -284,7 +287,10 @@ class MapRest(Resource):
                 [q, r, q_for_tiles, r_for_tiles] = go_right_down(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_left(q, r, q_for_tiles, r_for_tiles)
                 [_, _, _, _] = go_right(q, r, q_for_tiles, r_for_tiles)
-
+            end_time = time.time()
+            total_time = end_time - start_time
+            print(f"it took: {total_time}")
+            return {"result": True, "message": "map created successfully"}
         else:
             return {"result": True, "message": "map already created"}
 

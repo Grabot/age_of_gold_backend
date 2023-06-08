@@ -12,8 +12,8 @@ exclude =
 per-file-ignores =
     ./app/app/api/api_v1/__init__.py:F401
     ./app/app/api/api_v1/user_access/__init__.py:F401
-    ./app/app/api/util/email/reset_password_email.py:E501
-    ./app/app/api/util/email/verification_email.py:E501
+    ./app/util/email/reset_password_email.py:E501
+    ./app/util/email/verification_email.py:E501
     ./app/app/models/__init__.py:F401
     ./app_old/__init__.py:F401
     ./app_old/models/__init__.py:F401
@@ -27,3 +27,9 @@ per-file-ignores =
     ./app_old/sock/__init__.py:F401
     ./app_old/util/email/reset_password_email.py:E501
     ./app_old/util/email/verification_email.py:E501
+    ./app/app/api/api_v1/map/__init__.py:F401
+    ./app/app/models/friend.py:F821
+    ./app/app/models/hexagon.py:F821
+    ./app/app/models/tile.py:F821
+    ./app/app/models/user.py:F821
+    app/migrations/env.py:F401

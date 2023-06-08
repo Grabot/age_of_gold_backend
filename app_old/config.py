@@ -81,6 +81,6 @@ class DevelopmentConfig(Config):
         db=POSTGRES_DB,
     )
 
-    REDIS_URL = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
+    REDIS_URI = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
 
     SQLALCHEMY_DATABASE_URI = DB_URL

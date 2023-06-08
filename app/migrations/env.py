@@ -29,7 +29,7 @@ target_metadata.naming_convention = {
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
+from app import models
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

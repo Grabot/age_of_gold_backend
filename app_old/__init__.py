@@ -29,7 +29,7 @@ def create_app():
     app.config["SQLALCHEMY_RECORD_QUERIES"] = False
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
-    socks.init_app(app, message_queue=DevelopmentConfig.REDIS_URL)
+    socks.init_app(app, message_queue=DevelopmentConfig.REDIS_URI)
     migrate.init_app(app, db)
     mail.init_app(app)
 

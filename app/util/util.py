@@ -81,8 +81,13 @@ def get_user_tokens(user: User, access_expiration=3600, refresh_expiration=36000
     # Create a refresh token that lasts longer that the user can use to generate a new access token
     refresh_token = user.generate_refresh_token(refresh_expiration).decode("ascii")
     # Only store the access token, refresh token is kept client side
+    print("setting token")
+    print(access_token)
+    print(refresh_token)
+    print(token_expiration)
     user.set_token(access_token)
     user.set_token_expiration(token_expiration)
+    print("set tokens on user object")
     return [access_token, refresh_token]
 
 
