@@ -26,10 +26,12 @@ class HexagonListRequest(BaseModel):
 async def get_hexagon(
     hexagon_list_request: HexagonListRequest, response: Response, db: AsyncSession = Depends(get_db)
 ) -> dict:
+    print("starting get_hexagon")
     map_size = settings.map_size
     is_wrapped = False
     hex_retrieve = []
     hex_retrieve_wrapped = []
+    print(f"hexagon list request: {hexagon_list_request}")
     for hexagon in hexagon_list_request.hexagons:
         hex_q = hexagon.q
         hex_r = hexagon.r

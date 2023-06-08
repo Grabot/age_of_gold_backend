@@ -15,7 +15,7 @@ class Tile(SQLModel, table=True):
     hexagon_id: int = Field(foreign_key="Hexagon.id")
     q: int
     r: int
-    type: str
+    type: int
     last_changed_by: Optional[int] = Field(foreign_key="User.id")
     last_changed_time: Optional[datetime]
 

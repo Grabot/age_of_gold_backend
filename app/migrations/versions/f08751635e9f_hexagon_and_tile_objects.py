@@ -1,8 +1,8 @@
 """Hexagon and Tile objects
 
-Revision ID: 562a3ef81dcb
+Revision ID: f08751635e9f
 Revises: d59cee3a9f40
-Create Date: 2023-06-08 13:49:30.577065
+Create Date: 2023-06-08 19:42:10.533922
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "562a3ef81dcb"
+revision = "f08751635e9f"
 down_revision = "d59cee3a9f40"
 branch_labels = None
 depends_on = None
@@ -33,7 +33,7 @@ def upgrade() -> None:
         sa.Column("hexagon_id", sa.Integer(), nullable=False),
         sa.Column("q", sa.Integer(), nullable=False),
         sa.Column("r", sa.Integer(), nullable=False),
-        sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("type", sa.Integer(), nullable=False),
         sa.Column("last_changed_by", sa.Integer(), nullable=True),
         sa.Column("last_changed_time", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(

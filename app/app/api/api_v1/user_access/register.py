@@ -65,10 +65,11 @@ async def register_user(
     # Refresh user so we can get the id.
     await db.refresh(user)
 
+    # Return the user with no friend information because they have none yet.
     return {
         "result": True,
         "message": "user created successfully.",
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "user": user.serialize,
+        "user": user.serialize_get,
     }

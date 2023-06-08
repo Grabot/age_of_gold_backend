@@ -102,3 +102,11 @@ class User(SQLModel, table=True):
             "followers": self.get_followers_ids(),
             "tile_lock": self.tile_lock.strftime("%Y-%m-%dT%H:%M:%S.%f"),
         }
+
+    @property
+    def serialize_get(self):
+        # get user details without personal information
+        return {
+            "id": self.id,
+            "username": self.username,
+        }
