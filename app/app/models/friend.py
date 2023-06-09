@@ -51,3 +51,15 @@ class Friend(SQLModel, table=True):
             "friend": self.friend,
             "follower": self.follower,
         }
+
+    @property
+    def serialize_minimal(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            "unread_messages": self.unread_messages,
+            "ignored": self.ignored,
+            "accepted": self.accepted,
+            "requested": self.requested,
+        }

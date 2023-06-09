@@ -39,7 +39,6 @@ async def login_user(
             .where(User.origin == 0)
             .where(func.lower(User.email) == email.lower())
             .options(selectinload(User.friends))
-            .options(selectinload(User.followers))
         )
         results = await db.execute(statement)
         result_user = results.first()
@@ -49,7 +48,6 @@ async def login_user(
             .where(User.origin == 0)
             .where(func.lower(User.username) == user_name.lower())
             .options(selectinload(User.friends))
-            .options(selectinload(User.followers))
         )
         results = await db.execute(statement)
         result_user = results.first()
@@ -59,7 +57,11 @@ async def login_user(
     if not result_user:
         return get_failed_response("user name or email not found", response)
 
+    print("user login?")
+    print(f"user {result_user.User}")
     user = result_user.User
+    print(f"serialize1 {user.serialize_get}")
+    print(f"serialize2 {user.serialize}")
     return_user = copy(user.serialize)
 
     if not user.verify_password(password):

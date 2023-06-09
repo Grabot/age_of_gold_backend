@@ -8,13 +8,9 @@ asyncpg==0.27.0
 passlib==1.7.4
 Authlib==1.2.0
 oauthlib==3.2.2
-# remove after socket tests?
 python-socketio==5.8.0
-python-socketio[client]==5.8.0
-python-socketio[asyncio_client]==5.8.0
-fastapi-socketio==0.0.10
 websockets==11.0.3
-broadcaster==0.2.0
 asyncio-redis==0.16.0
-jinja2==3.1.2
 redis==4.5.5
+Pillow==9.5.0
+fastapi-pagination==0.12.4

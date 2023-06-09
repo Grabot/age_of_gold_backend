@@ -1,8 +1,11 @@
 import time
+from typing import Optional
 
 from authlib.jose import jwt
 from authlib.jose.errors import DecodeError
 from config import settings
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from app.models import User
 
@@ -64,14 +67,20 @@ def refresh_user_token(access_token, refresh_token):
     #     return None
 
 
-def check_token(token):
-    # TODO: Fix this for new User object
-    return None
-    # user = User.query.filter_by(token=token).first()
-    # if user is None or user.token_expiration < int(time.time()):
-    #     return None
-    # else:
-    #     return user
+async def check_token(db: AsyncSession, token) -> Optional[User]:
+    print(f"checking token! {token}")
+    user_statement = select(User).filter_by(token=token)
+    results = await db.execute(user_statement)
+    result = results.first()
+    if result is None:
+        return None
+    print(f"found a user {result}")
+    user = result.User
+    print(f"found a user {user}")
+    if user.token_expiration < int(time.time()):
+        return None
+    else:
+        return user
 
 
 def get_user_tokens(user: User, access_expiration=3600, refresh_expiration=36000):

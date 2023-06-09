@@ -1,10 +1,12 @@
 from typing import Optional
 
+from config import settings
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from util.avatar.generate_avatar import AvatarProcess
 from util.util import get_user_tokens
 
 from app.api.api_v1 import api_router_v1
@@ -58,6 +60,8 @@ async def register_user(
         )
 
     user = User(username=user_name, email=email, origin=0)
+    avatar = AvatarProcess(user.avatar_filename(), settings.UPLOAD_FOLDER)
+    avatar.start()
     user.hash_password(password)
     [access_token, refresh_token] = get_user_tokens(user)
     db.add(user)
