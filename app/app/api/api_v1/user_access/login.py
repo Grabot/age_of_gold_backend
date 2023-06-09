@@ -57,11 +57,7 @@ async def login_user(
     if not result_user:
         return get_failed_response("user name or email not found", response)
 
-    print("user login?")
-    print(f"user {result_user.User}")
-    user = result_user.User
-    print(f"serialize1 {user.serialize_get}")
-    print(f"serialize2 {user.serialize}")
+    user: User = result_user.User
     return_user = copy(user.serialize)
 
     if not user.verify_password(password):

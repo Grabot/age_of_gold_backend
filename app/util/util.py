@@ -5,6 +5,7 @@ from authlib.jose import jwt
 from authlib.jose.errors import DecodeError
 from config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.models import User
@@ -67,9 +68,12 @@ def refresh_user_token(access_token, refresh_token):
     #     return None
 
 
-async def check_token(db: AsyncSession, token) -> Optional[User]:
+async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[User]:
     print(f"checking token! {token}")
-    user_statement = select(User).filter_by(token=token)
+    if retrieve_full:
+        user_statement = select(User).filter_by(token=token).options(selectinload(User.friends))
+    else:
+        user_statement = select(User).filter_by(token=token)
     results = await db.execute(user_statement)
     result = results.first()
     if result is None:

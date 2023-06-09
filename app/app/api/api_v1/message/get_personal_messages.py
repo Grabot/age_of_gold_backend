@@ -27,10 +27,7 @@ async def get_personal_message(
     get_message_personal_request: GetMessagePersonalRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    print("get personal messages")
-    print(f"header {request}")
     auth_token = get_auth_token(request.headers.get("Authorization"))
-    print(f"token {auth_token}")
     if auth_token == "":
         get_failed_response_messages()
 
@@ -44,7 +41,6 @@ async def get_personal_message(
     result = results.first()
     if result is None:
         return None
-    print(f"found a user {result}")
     user_get = result.User
     print("Executing Query!!!!")
 
