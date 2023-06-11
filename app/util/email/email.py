@@ -1,9 +1,27 @@
+import asyncio
 import multiprocessing
+from typing import List
 
-from flask_mail import Message
+from config import settings
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from pydantic import BaseModel, EmailStr
 
-from app_old import mail
-from app_old.config import Config
+
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
+
+
+conf = ConnectionConfig(
+    MAIL_USERNAME="Age of Gold",
+    MAIL_PASSWORD=settings.MAIL_PASSWORD,
+    MAIL_FROM=settings.MAIL_USERNAME,
+    MAIL_PORT=settings.MAIL_PORT,
+    MAIL_SERVER=settings.MAIL_SERVER,
+    MAIL_STARTTLS=False,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
+)
 
 
 class EmailProcess(multiprocessing.Process):
@@ -15,13 +33,15 @@ class EmailProcess(multiprocessing.Process):
 
     def run(self):
         print("sending email: %s" % self.email)
-        sender = Config.MAIL_USERNAME
         recipients = [self.email]
-        send_email(self.email_subject, sender, recipients, self.html_body)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(send_email(self.email_subject, recipients, self.html_body))
         print("done sending")
 
 
-def send_email(subject, sender, recipients, html_body):
-    msg = Message(subject, sender=sender, recipients=recipients)
-    msg.html = html_body
-    mail.send(msg)
+async def send_email(subject, recipients, html_body):
+    message = MessageSchema(
+        subject=subject, recipients=recipients, body=html_body, subtype=MessageType.html
+    )
+    fm = FastMail(conf)
+    await fm.send_message(message)
