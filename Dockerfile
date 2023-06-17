@@ -3,7 +3,7 @@ FROM python:3.10.6-slim-bullseye
 WORKDIR /app
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
-COPY . /app/.
+COPY app /app/.
 COPY pyproject.toml /app/pyproject.toml
 COPY .env ./
 
@@ -17,4 +17,3 @@ RUN mkdir -p static/uploads
 EXPOSE 5000
 #CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
 #CMD ["python3", "main.py"]
-ENTRYPOINT ["/bin/sh", "boot.sh"]

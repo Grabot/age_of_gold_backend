@@ -1,8 +1,8 @@
-from celery_worker.tasks import task_add
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
+from tasks import task_add
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db

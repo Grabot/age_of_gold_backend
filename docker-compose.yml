@@ -4,7 +4,9 @@ services:
   age_of_api:
     container_name: age_of_api
     build:
+      context: .
       dockerfile: Dockerfile
+    env_file: .env
     networks:
       - default
     ports:
@@ -12,6 +14,8 @@ services:
     restart: always
     volumes:
       - ${SHARED_DIR}:/app/static/uploads/
+      - ./app/migrations:/app/migrations
+    command: "/bin/sh boot.sh"
     depends_on:
       - age_of_db
     links:
@@ -44,3 +48,23 @@ services:
       - 6379:6379
     command:
       - redis-server
+
+  rabbit:
+    image: "bitnami/rabbitmq:3.7"
+    ports:
+      - "4369:4369"
+      - "5672:5672"
+      - "25672:25672"
+      - "15672:15672"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - rabbit
+      - redis
+    volumes:
+      - "./:/app"
+    command: "poetry run celery -A app.tasks worker -l info -Q test-queue -c 1"
