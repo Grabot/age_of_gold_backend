@@ -47,6 +47,10 @@ class User(SQLModel, table=True):
         },
     )
 
+    tiles_changed: List["Tile"] = Relationship(
+        back_populates="user_changed",
+    )
+
     __table_args__ = (Index("user_index", "email", "origin", unique=True),)
 
     def get_tile_lock(self):
@@ -83,7 +87,7 @@ class User(SQLModel, table=True):
 
     def befriend(self, user):
         # Only call if the Friend object is not present yet.
-        friend = Friend(user_id=self.id, friend_id=user.id)
+        friend = Friend(user_id=self.id, friend_id=user.id, friend_name=user.username)
         return friend
 
     async def is_friend(self, db: AsyncSession, user):

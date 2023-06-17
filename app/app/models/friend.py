@@ -29,6 +29,9 @@ class Friend(SQLModel, table=True):
             "primaryjoin": "Friend.friend_id == User.id",
         },
     )
+    # Store the name of the friend on the friend object
+    friend_name: str
+    friend_name: str
 
     last_time_activity: datetime = Field(default=datetime.utcnow())
     unread_messages: int = Field(default=0)
@@ -42,12 +45,13 @@ class Friend(SQLModel, table=True):
     def serialize(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
+            "friend_id": self.friend_id,
             "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "unread_messages": self.unread_messages,
             "ignored": self.ignored,
             "accepted": self.accepted,
             "requested": self.requested,
+            "friend_name": self.friend_name,
             "friend": self.friend,
             "follower": self.follower,
         }
@@ -56,10 +60,11 @@ class Friend(SQLModel, table=True):
     def serialize_minimal(self):
         return {
             "id": self.id,
-            "user_id": self.user_id,
+            "friend_id": self.friend_id,
             "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "unread_messages": self.unread_messages,
             "ignored": self.ignored,
             "accepted": self.accepted,
             "requested": self.requested,
+            "friend_name": self.friend_name,
         }

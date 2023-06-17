@@ -3,7 +3,6 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sockets.sockets import sio
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from util.util import check_token, get_auth_token
@@ -15,7 +14,7 @@ from app.models import Friend, User
 
 
 class AcceptRequest(BaseModel):
-    user_name: str
+    user_id: int
 
 
 @api_router_v1.post("/accept/request", status_code=200)
@@ -25,7 +24,7 @@ async def accept_friend(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print(f"accept friend request with {accept_request.user_name}")
+    print(f"accept friend request with {accept_request.user_id}")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -35,8 +34,8 @@ async def accept_friend(
     if not user_from:
         get_failed_response("An error occurred", response)
 
-    user_name = accept_request.user_name
-    user_statement = select(User).where(func.lower(User.username) == user_name.lower())
+    user_id = accept_request.user_id
+    user_statement = select(User).where(User.id == user_id)
     results = await db.execute(user_statement)
     result = results.first()
 
@@ -71,7 +70,7 @@ async def accept_friend(
     await db.commit()
 
     socket_response = {
-        "from": user_from.username,
+        "from": user_from.serialize_minimal,
     }
     room_to = "room_%s" % user_befriend.id
     await sio.emit(

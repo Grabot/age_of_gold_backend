@@ -4,7 +4,6 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sockets.sockets import sio
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from util.util import check_token, get_auth_token
@@ -18,7 +17,7 @@ from app.models.message import PersonalMessage
 
 class SendMessagePersonalRequest(BaseModel):
     message: str
-    to_user: str
+    user_id: int
 
 
 @api_router_v1.post("/send/message/personal", status_code=200)
@@ -37,9 +36,9 @@ async def send_personal_message(
         return get_failed_response("an error occurred", response)
 
     message_body = send_message_personal_request.message
-    to_user = send_message_personal_request.to_user
-    # TODO: user the user id instead of username
-    statement_user_receive = select(User).where(func.lower(User.username) == to_user.lower())
+    user_id = send_message_personal_request.user_id
+
+    statement_user_receive = select(User).where(User.id == user_id)
     user_receive_results = await db.execute(statement_user_receive)
     user_receive_result = user_receive_results.first()
     if not user_receive_result:

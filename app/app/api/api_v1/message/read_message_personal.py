@@ -1,6 +1,5 @@
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from util.util import check_token, get_auth_token
@@ -12,7 +11,7 @@ from app.models import Friend, User
 
 
 class ReadMessagePersonalRequest(BaseModel):
-    user_read: str
+    user_read_id: int
 
 
 @api_router_v1.post("/read/message/personal", status_code=200)
@@ -30,9 +29,9 @@ async def read_personal_message(
     if not user_request:
         get_failed_response("an error occurred", response)
 
-    read_user = read_message_personal_request.user_read
+    read_user_id = read_message_personal_request.user_read_id
 
-    statement_user_read = select(User).where(func.lower(User.username) == read_user.lower())
+    statement_user_read = select(User).where(User.id == read_user_id)
     user_read_results = await db.execute(statement_user_read)
     user_read_result = user_read_results.first()
     if not user_read_result:

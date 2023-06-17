@@ -18,7 +18,7 @@ def get_failed_response_messages():
 
 
 class GetMessagePersonalRequest(BaseModel):
-    user_get: str
+    user_get_id: int
 
 
 @api_router_v1.post("/get/message/personal", response_model=Page[PersonalMessage], status_code=200)
@@ -35,8 +35,8 @@ async def get_personal_message(
     if not user_request:
         get_failed_response_messages()
 
-    get_user = get_message_personal_request.user_get
-    user_statement = select(User).filter_by(username=get_user)
+    get_user_id = get_message_personal_request.user_get_id
+    user_statement = select(User).filter_by(id=get_user_id)
     results = await db.execute(user_statement)
     result = results.first()
     if result is None:
