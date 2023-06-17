@@ -1,8 +1,11 @@
 import socketio
-from config import settings
+from config.config import settings
 from util.util import get_wraparounds
 
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
+sio = socketio.AsyncServer(
+    async_mode="asgi", client_manager=mgr, cors_allowed_origins="*"
+)
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
 

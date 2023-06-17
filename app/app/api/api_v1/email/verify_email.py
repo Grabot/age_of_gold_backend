@@ -1,7 +1,7 @@
 import time
 from typing import Optional
 
-from config import settings
+from config.config import settings
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +23,9 @@ class VerifyEmailRequest(BaseModel):
 
 @api_router_v1.post("/email/verification", status_code=200)
 async def verify_email_post(
-    verify_email_request: VerifyEmailRequest, response: Response, db: AsyncSession = Depends(get_db)
+    verify_email_request: VerifyEmailRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
 ) -> dict:
     access_token = verify_email_request.access_token
     decoded_token = decode_token(access_token)

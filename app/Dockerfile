@@ -1,11 +1,17 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.10.6-slim-bullseye
 
-COPY requirements.txt /app/requirements.txt
 WORKDIR /app
+ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 COPY . /app/.
+COPY pyproject.toml /app/pyproject.toml
 COPY .env ./
+
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-dev
+
 RUN mkdir -p static/uploads
 
 EXPOSE 5000

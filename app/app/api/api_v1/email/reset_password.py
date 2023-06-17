@@ -1,6 +1,6 @@
 import time
 
-from config import settings
+from config.config import settings
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -27,7 +27,11 @@ async def reset_password(
 ) -> dict:
     email = password_reset_request.email
 
-    statement = select(User).where(User.origin == 0).where(func.lower(User.email) == email.lower())
+    statement = (
+        select(User)
+        .where(User.origin == 0)
+        .where(func.lower(User.email) == email.lower())
+    )
     results = await db.execute(statement)
     result_user = results.first()
     if not result_user:

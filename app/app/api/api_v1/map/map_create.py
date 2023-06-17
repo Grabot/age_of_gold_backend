@@ -1,7 +1,7 @@
 import json
 import time
 
-from config import settings
+from config.config import settings
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -58,7 +58,7 @@ async def create_map(db: AsyncSession = Depends(get_db)) -> dict:
             [_, _, _, _] = await go_right(db, q, r, q_tiles, r_tiles)
         end_time = time.time()
         total_time = end_time - start_time
-        print(f"it took: {total_time}")
+        print(f"it took: {total_time} seconds")
         return {"results": "true"}
     else:
         return {"result": True, "message": "map already created"}

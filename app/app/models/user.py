@@ -6,7 +6,7 @@ from hashlib import md5
 from typing import List, Optional
 
 from authlib.jose import jwt
-from config import settings
+from config.config import settings
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy import Index
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -83,7 +83,9 @@ class User(SQLModel, table=True):
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
-        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(digest, size)
+        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
+            digest, size
+        )
 
     def befriend(self, user):
         # Only call if the Friend object is not present yet.
@@ -93,7 +95,9 @@ class User(SQLModel, table=True):
     async def is_friend(self, db: AsyncSession, user):
         # TODO: Test if it works!
         if user:
-            friend_statement = select(Friend).filter_by(user_id=self.id, friend_id=user.id)
+            friend_statement = select(Friend).filter_by(
+                user_id=self.id, friend_id=user.id
+            )
             results = await db.execute(friend_statement)
             friend = results.first()
             if friend:
@@ -162,7 +166,7 @@ class User(SQLModel, table=True):
 
         file_path = os.path.join(file_folder, "%s.png" % file_name)
         if not os.path.isfile(file_path):
-            return ""
+            return None
         else:
             with open(file_path, "rb") as fd:
                 image_as_base64 = base64.encodebytes(fd.read()).decode()

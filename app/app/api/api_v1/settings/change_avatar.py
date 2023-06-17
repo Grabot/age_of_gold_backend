@@ -4,7 +4,7 @@ import os
 import stat
 from typing import Optional
 
-from config import settings
+from config.config import settings
 from fastapi import Depends, Request, Response
 from PIL import Image
 from pydantic import BaseModel

@@ -3,7 +3,7 @@ from typing import Optional
 
 from authlib.jose import jwt
 from authlib.jose.errors import DecodeError
-from config import settings
+from config.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -69,7 +69,6 @@ def refresh_user_token(access_token, refresh_token):
 
 
 async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[User]:
-    print(f"checking token! {token}")
     if retrieve_full:
         print("getting full retrieval!")
         user_statement = (
@@ -84,9 +83,7 @@ async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[
     result = results.first()
     if result is None:
         return None
-    print(f"found a user {result}")
     user = result.User
-    print(f"found a user {user}")
     if user.token_expiration < int(time.time()):
         return None
     else:

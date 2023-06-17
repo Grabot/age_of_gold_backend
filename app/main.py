@@ -1,5 +1,5 @@
 import uvicorn
-from config import settings
+from config.config import settings
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination

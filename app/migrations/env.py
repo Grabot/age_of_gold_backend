@@ -67,10 +67,21 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = os.getenv("DB_ASYNC_CONNECTION_STR")
-    print("url check: %s" % url)
+    POSTGRES_URL = os.environ["POSTGRES_URL"]
+    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
+    POSTGRES_USER = os.environ["POSTGRES_USER"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+    POSTGRES_DB = os.environ["POSTGRES_DB"]
+    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        pw=POSTGRES_PASSWORD,
+        url=POSTGRES_URL,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
+    )
+    print("url check: %s" % DB_URL)
     context.configure(
-        url=url,
+        url=DB_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -86,7 +97,9 @@ def do_run_migrations(connection) -> None:
 
     with context.begin_transaction():
         context.configure(
-            connection=connection, target_metadata=target_metadata, include_object=filter_db_objects
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=filter_db_objects,
         )
         context.run_migrations()
 
@@ -94,9 +107,20 @@ def do_run_migrations(connection) -> None:
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     config_section = config.get_section(config.config_ini_section)
-    url = os.getenv("DB_ASYNC_CONNECTION_STR")
-    print("url check 2: %s" % url)
-    config_section["sqlalchemy.url"] = url
+    POSTGRES_URL = os.environ["POSTGRES_URL"]
+    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
+    POSTGRES_USER = os.environ["POSTGRES_USER"]
+    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
+    POSTGRES_DB = os.environ["POSTGRES_DB"]
+    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        pw=POSTGRES_PASSWORD,
+        url=POSTGRES_URL,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
+    )
+    print("url check 2: %s" % DB_URL)
+    config_section["sqlalchemy.url"] = DB_URL
 
     connectable = AsyncEngine(
         engine_from_config(

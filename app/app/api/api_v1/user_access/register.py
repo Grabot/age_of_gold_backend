@@ -1,6 +1,6 @@
 from typing import Optional
 
-from config import settings
+from config.config import settings
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -49,7 +49,11 @@ async def register_user(
 
     print("starting second statement")
     # Also not loading the friends and followers here, just checking if the email is taken.
-    statement = select(User).where(User.origin == 0).where(func.lower(User.email) == email.lower())
+    statement = (
+        select(User)
+        .where(User.origin == 0)
+        .where(func.lower(User.email) == email.lower())
+    )
     results = await db.execute(statement)
     result = results.first()
 
@@ -60,14 +64,15 @@ async def register_user(
         )
 
     user = User(username=user_name, email=email, origin=0)
-    avatar = AvatarProcess(user.avatar_filename(), settings.UPLOAD_FOLDER)
-    avatar.start()
     user.hash_password(password)
     [access_token, refresh_token] = get_user_tokens(user)
     db.add(user)
     await db.commit()
     # Refresh user so we can get the id.
     await db.refresh(user)
+
+    avatar = AvatarProcess(user.avatar_filename(), user.id, settings.UPLOAD_FOLDER)
+    avatar.start()
 
     # Return the user with no friend information because they have none yet.
     return {

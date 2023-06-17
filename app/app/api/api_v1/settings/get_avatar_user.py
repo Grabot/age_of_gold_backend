@@ -2,7 +2,7 @@ import base64
 import os
 from typing import Optional
 
-from config import settings
+from config.config import settings
 from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from util.util import check_token, get_auth_token
