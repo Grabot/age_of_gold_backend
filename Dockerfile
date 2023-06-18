@@ -5,7 +5,6 @@ ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
 COPY app /app/.
 COPY pyproject.toml /app/pyproject.toml
-COPY .env ./
 
 RUN pip3 install --no-cache-dir --upgrade pip && \
     pip3 install --no-cache-dir poetry && \
