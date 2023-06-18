@@ -37,5 +37,5 @@ jobs:
         with:
           file: ./Dockerfile
           context: .
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
           tags: mverleg/age_of_gold:latest,mverleg/age_of_gold:${{ steps.date.outputs.date }},mverleg/age_of_gold:${{ steps.date.outputs.date }}_${{ github.run_number }}
