@@ -19,6 +19,7 @@ RUN poetry install --no-dev
 
 # add other project files
 COPY app /app/.
+COPY .pre-commit-config.yaml .flake8 /app/
 RUN mkdir -p static/uploads
 
 # test & lint
