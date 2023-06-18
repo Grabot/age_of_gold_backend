@@ -3,12 +3,12 @@ from typing import Optional
 
 from authlib.jose import jwt
 from authlib.jose.errors import DecodeError
-from config.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
-from app.models import Friend, User
+from app.config.config import settings
+from app.models import User
 
 
 def get_wraparounds(q, r):
@@ -34,49 +34,47 @@ def get_wraparounds(q, r):
     return [q, wrap_q, r, wrap_r]
 
 
-def refresh_user_token(access_token, refresh_token):
+async def refresh_user_token(db: AsyncSession, access_token, refresh_token):
     # The access token should be active
-    # TODO: fix this for new User object
-    return None
-    # user = User.query.filter_by(token=access_token).first()
-    #
-    # if user is None:
-    #     print("access token not active")
-    #     return None
-    #
-    # access = None
-    # refresh = None
-    # try:
-    #     access = jwt.decode(access_token, DevelopmentConfig.jwk)
-    #     refresh = jwt.decode(refresh_token, DevelopmentConfig.jwk)
-    # except DecodeError:
-    #     print("decode error, big fail!")
-    #     return None
-    #
-    # if not access or not refresh:
-    #     print("big fail!")
-    #     return None
-    #
-    # if refresh["exp"] < int(time.time()):
-    #     print("refresh token not active")
-    #     return None
-    # # It all needs to match before you send back new tokens
-    # if user.id == access["id"] and user.username == refresh["user_name"]:
-    #     print("it's all good! Send more tokens")
-    #     return user
-    # else:
-    #     return None
+    user_statement = select(User).filter_by(token=access_token)
+    results = await db.execute(user_statement)
+    result = results.first()
+    if result is None:
+        return None
+    user = result.User
+
+    if user is None:
+        print("access token not active")
+        return None
+
+    access = None
+    refresh = None
+    try:
+        access = jwt.decode(access_token, settings.jwk)
+        refresh = jwt.decode(refresh_token, settings.jwk)
+    except DecodeError:
+        print("decode error, big fail!")
+        return None
+
+    if not access or not refresh:
+        print("big fail!")
+        return None
+
+    if refresh["exp"] < int(time.time()):
+        print("refresh token not active")
+        return None
+    # It all needs to match before you send back new tokens
+    if user.id == access["id"] and user.username == refresh["user_name"]:
+        print("it's all good! Send more tokens")
+        return user
+    else:
+        return None
 
 
 async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[User]:
     if retrieve_full:
         print("getting full retrieval!")
-        user_statement = (
-            select(User)
-            .filter_by(token=token)
-            .options(selectinload(User.friends))
-            .options(selectinload(Friend.friend))
-        )
+        user_statement = select(User).filter_by(token=token).options(selectinload(User.friends))
     else:
         user_statement = select(User).filter_by(token=token)
     results = await db.execute(user_statement)

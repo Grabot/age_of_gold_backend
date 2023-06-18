@@ -17,7 +17,15 @@ class Settings(BaseSettings):
 
     PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
 
-    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
+    ASYNC_DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        pw=POSTGRES_PASSWORD,
+        url=POSTGRES_URL,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
+    )
+
+    SYNC_DB_URL = "postgresql://{user}:{pw}@{url}:{port}/{db}".format(
         user=POSTGRES_USER,
         pw=POSTGRES_PASSWORD,
         url=POSTGRES_URL,
@@ -27,17 +35,13 @@ class Settings(BaseSettings):
 
     REDIS_URI = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
 
-    SQLALCHEMY_DATABASE_URI = DB_URL
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.environ.get("SECRET_KEY") or "you-will-never-guess"
 
     # Configuration
     GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
     GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-    GOOGLE_DISCOVERY_URL = (
-        "https://accounts.google.com/.well-known/openid-configuration"
-    )
+    GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
     GITHUB_AUTHORIZE = "https://github.com/login/oauth/authorize"
     GITHUB_ACCESS = "https://github.com/login/oauth/access_token"

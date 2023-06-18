@@ -1,5 +1,4 @@
 import math
-import multiprocessing
 import os
 import random
 import stat
@@ -173,9 +172,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         next_line = line.get_next()
         # We are going to split the chosen line somewhere and attempt to
         # calculate the new resulting plane split using the chosen angle
-        line_length_choice = _rand.uniform(
-            _index + min_line_length, line.get_length() + _index
-        )
+        line_length_choice = _rand.uniform(_index + min_line_length, line.get_length() + _index)
         line_length_choice -= _index
         _index += 1
 
@@ -188,9 +185,7 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
 
         # Sin(a_1) = Opp/Hyp
         # First we don't know the angle, but we know the Opp and Hyp
-        angle_1 = math.degrees(
-            math.asin((line.end[1] - line.start[1]) / line.get_length())
-        )
+        angle_1 = math.degrees(math.asin((line.end[1] - line.start[1]) / line.get_length()))
 
         # Sin(a_1) = Opp/Hyp
         # Now we know the angle and the Hyp
@@ -225,15 +220,11 @@ def add_square_clean(_rand, _width, _height, _planes, _index):
         t2_ang_3 = 180 - t2_ang_1 - t2_ang_2
 
         t2_mid = Line(next_line.end, test_point_b_1).get_length()
-        t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(
-            math.radians(t2_ang_2)
-        )
+        t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(math.radians(t2_ang_2))
 
         change_line = next_line.get_next()
         angle_c_1 = math.degrees(
-            math.asin(
-                (change_line.end[1] - change_line.start[1]) / change_line.get_length()
-            )
+            math.asin((change_line.end[1] - change_line.start[1]) / change_line.get_length())
         )
 
         test_point_c_1 = change_line.start
@@ -335,76 +326,54 @@ def background_square_clean(_rand, _width, _height, _index):
     return background_plane
 
 
-class AvatarProcess(multiprocessing.Process):
-    def __init__(self, file_name, user_id, file_path):
-        super(AvatarProcess, self).__init__()
-        self.file_name = file_name
-        self.user_id = user_id
-        self.file_path = file_path
+def generate_avatar(file_name, file_path):
+    # Code repurposed from https://github.com/Grabot/Stijl
+    # The email hash will be the seed of the avatar generation
+    random.seed(file_name)
+    # Because this will be the default image we will add an indicator that it is the default.
+    file_name += "_default"
+    planes = []
+    # Add an index so that we can pick new colours from the same list
+    # using the same seed and get a new one every time.
+    index = 0
+    # We want the resulting image to be 250x250
+    # We initially make it slightly bigger to avoid black corners on the image from outer lines
+    width = 252
+    height = 252
+    background_plane = background_square_clean(random, width, height, index)
+    index += 1
+    planes.append(background_plane)
 
-    def run(self):
-        # Code repurposed from https://github.com/Grabot/Stijl
-        # The email hash will be the seed of the avatar generation
-        random.seed(self.file_name)
-        # Because this will be the default image we will add an indicator that it is the default.
-        self.file_name += "_default"
-        planes = []
-        # Add an index so that we can pick new colours from the same list
-        # using the same seed and get a new one every time.
-        index = 0
-        # We want the resulting image to be 250x250
-        # We initially make it slightly bigger to avoid black corners on the image from outer lines
-        width = 252
-        height = 252
-        background_plane = background_square_clean(random, width, height, index)
-        index += 1
-        planes.append(background_plane)
+    min_squares = 15
+    max_squares = 30
+    square_numbers = random.randint(min_squares, max_squares)
 
-        min_squares = 15
-        max_squares = 30
-        square_numbers = random.randint(min_squares, max_squares)
+    for x in range(0, square_numbers):
+        plane_1, plane_2, chosen_plane = add_square_clean(random, width, height, planes, index)
+        if plane_1 is None and plane_2 is None and chosen_plane is None:
+            break
+        else:
+            del planes[chosen_plane]
+            planes.append(plane_1)
+            planes.append(plane_2)
 
-        for x in range(0, square_numbers):
-            plane_1, plane_2, chosen_plane = add_square_clean(
-                random, width, height, planes, index
-            )
-            if plane_1 is None and plane_2 is None and chosen_plane is None:
-                break
-            else:
-                del planes[chosen_plane]
-                planes.append(plane_1)
-                planes.append(plane_2)
+    im = Image.new("RGBA", (width * 2, height * 2))
+    draw = ImageDraw.Draw(im, "RGBA")
+    for plane in planes:
+        points = []
+        for line in plane.get_all_lines():
+            points.append((line.start[0] + width, line.start[1] + height))
+        plane_colour = tuple(int(plane.colour.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
+        draw.polygon(points, plane_colour, outline="black", width=2)
 
-        im = Image.new("RGBA", (width * 2, height * 2))
-        draw = ImageDraw.Draw(im, "RGBA")
-        for plane in planes:
-            points = []
-            for line in plane.get_all_lines():
-                points.append((line.start[0] + width, line.start[1] + height))
-            plane_colour = tuple(
-                int(plane.colour.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4)
-            )
-            draw.polygon(points, plane_colour, outline="black", width=2)
+    del draw
 
-        del draw
+    bound_x = int(width / 2) + 1
+    bound_y = int(height / 2) + 1
+    # subtract 2 again to make it 250x250
+    box = (bound_x, bound_y, bound_x + width - 2, bound_y + height - 2)
+    im2 = im.crop(box)
 
-        bound_x = int(width / 2) + 1
-        bound_y = int(height / 2) + 1
-        # subtract 2 again to make it 250x250
-        box = (bound_x, bound_y, bound_x + width - 2, bound_y + height - 2)
-        im2 = im.crop(box)
-
-        file = os.path.join(self.file_path, "%s.png" % self.file_name)
-        im2.save(file)
-        os.chmod(file, stat.S_IRWXO)
-        #
-        # async def emit_success_avatar():
-        #     room = "room_%s" % self.user_id
-        #     sleep(5)
-        #     print(f"emitting on room {room} that the avatar is done in this async function!")
-        #     await sio.emit(
-        #         "message_event",
-        #         "avatar created!",
-        #     )
-        #
-        # asyncio.run(emit_success_avatar())
+    file = os.path.join(file_path, "%s.png" % file_name)
+    im2.save(file)
+    os.chmod(file, stat.S_IRWXO)

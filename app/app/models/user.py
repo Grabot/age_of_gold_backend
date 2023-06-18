@@ -6,12 +6,12 @@ from hashlib import md5
 from typing import List, Optional
 
 from authlib.jose import jwt
-from config.config import settings
 from passlib.apps import custom_app_context as pwd_context
 from sqlalchemy import Index
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import Field, Relationship, SQLModel, select
 
+from app.config.config import settings
 from app.models import Friend
 
 
@@ -83,9 +83,7 @@ class User(SQLModel, table=True):
 
     def avatar(self, size):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
-        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
-            digest, size
-        )
+        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(digest, size)
 
     def befriend(self, user):
         # Only call if the Friend object is not present yet.
@@ -95,9 +93,7 @@ class User(SQLModel, table=True):
     async def is_friend(self, db: AsyncSession, user):
         # TODO: Test if it works!
         if user:
-            friend_statement = select(Friend).filter_by(
-                user_id=self.id, friend_id=user.id
-            )
+            friend_statement = select(Friend).filter_by(user_id=self.id, friend_id=user.id)
             results = await db.execute(friend_statement)
             friend = results.first()
             if friend:
@@ -203,4 +199,11 @@ class User(SQLModel, table=True):
             "id": self.id,
             "username": self.username,
             "avatar": self.get_user_avatar(False),
+        }
+
+    @property
+    def serialize_no_avatar(self):
+        return {
+            "id": self.id,
+            "username": self.username,
         }

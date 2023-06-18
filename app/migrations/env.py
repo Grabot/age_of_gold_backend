@@ -8,6 +8,8 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
+from app.config.config import settings
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -29,7 +31,6 @@ target_metadata.naming_convention = {
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app import models
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -67,21 +68,8 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    POSTGRES_URL = os.environ["POSTGRES_URL"]
-    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
-    POSTGRES_USER = os.environ["POSTGRES_USER"]
-    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-    POSTGRES_DB = os.environ["POSTGRES_DB"]
-    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
-        user=POSTGRES_USER,
-        pw=POSTGRES_PASSWORD,
-        url=POSTGRES_URL,
-        port=POSTGRES_PORT,
-        db=POSTGRES_DB,
-    )
-    print("url check: %s" % DB_URL)
     context.configure(
-        url=DB_URL,
+        url=settings.ASYNC_DB_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -107,20 +95,7 @@ def do_run_migrations(connection) -> None:
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     config_section = config.get_section(config.config_ini_section)
-    POSTGRES_URL = os.environ["POSTGRES_URL"]
-    POSTGRES_PORT = os.environ["POSTGRES_PORT"]
-    POSTGRES_USER = os.environ["POSTGRES_USER"]
-    POSTGRES_PASSWORD = os.environ["POSTGRES_PASSWORD"]
-    POSTGRES_DB = os.environ["POSTGRES_DB"]
-    DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
-        user=POSTGRES_USER,
-        pw=POSTGRES_PASSWORD,
-        url=POSTGRES_URL,
-        port=POSTGRES_PORT,
-        db=POSTGRES_DB,
-    )
-    print("url check 2: %s" % DB_URL)
-    config_section["sqlalchemy.url"] = DB_URL
+    config_section["sqlalchemy.url"] = settings.ASYNC_DB_URL
 
     connectable = AsyncEngine(
         engine_from_config(

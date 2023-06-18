@@ -2,9 +2,10 @@ import asyncio
 import multiprocessing
 from typing import List
 
-from config.config import settings
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from pydantic import BaseModel, EmailStr
+
+from app.config.config import settings
 
 
 class EmailSchema(BaseModel):
@@ -35,9 +36,7 @@ class EmailProcess(multiprocessing.Process):
         print("sending email: %s" % self.email)
         recipients = [self.email]
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(
-            send_email(self.email_subject, recipients, self.html_body)
-        )
+        loop.run_until_complete(send_email(self.email_subject, recipients, self.html_body))
         print("done sending")
 
 

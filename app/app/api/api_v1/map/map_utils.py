@@ -1,8 +1,8 @@
 import json
 
-from config.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config.config import settings
 from app.models import Hexagon, Tile
 
 

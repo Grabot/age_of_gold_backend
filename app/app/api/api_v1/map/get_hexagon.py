@@ -1,16 +1,16 @@
 from typing import List
 
-from config.config import settings
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import tuple_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from util.util import get_wraparounds
 
 from app.api.api_v1 import api_router_v1
+from app.config.config import settings
 from app.database import get_db
 from app.models import Hexagon
+from app.util.util import get_wraparounds
 
 
 class HexagonRequest(BaseModel):
@@ -38,12 +38,7 @@ async def get_hexagon(
         hex_q = hexagon.q
         hex_r = hexagon.r
         # If the hex is out of the map bounds we want it to loop around
-        if (
-            hex_q < -map_size
-            or hex_q > map_size
-            or hex_r < -map_size
-            or hex_r > map_size
-        ):
+        if hex_q < -map_size or hex_q > map_size or hex_r < -map_size or hex_r > map_size:
             [hex_q, wrap_q, hex_r, wrap_r] = get_wraparounds(hex_q, hex_r)
 
             hex_retrieve_wrapped.append([hex_q, hex_r, wrap_q, wrap_r])
@@ -52,9 +47,7 @@ async def get_hexagon(
     print(f"hex_retrieve {hex_retrieve}")
     hexes_return = []
     if hex_retrieve:
-        statement_hexes = select(Hexagon).filter(
-            tuple_(Hexagon.q, Hexagon.r).in_(hex_retrieve)
-        )
+        statement_hexes = select(Hexagon).filter(tuple_(Hexagon.q, Hexagon.r).in_(hex_retrieve))
         results = await db.execute(statement_hexes)
         hexes = results.all()
         for hex in hexes:

@@ -3,16 +3,16 @@ from typing import Optional
 
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
-from sockets.sockets import sio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from util.util import check_token, get_auth_token
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Friend, User
 from app.models.message import PersonalMessage
+from app.sockets.sockets import sio
+from app.util.util import check_token, get_auth_token
 
 
 class SendMessagePersonalRequest(BaseModel):

@@ -4,17 +4,17 @@ import os
 import stat
 from typing import Optional
 
-from config.config import settings
 from fastapi import Depends, Request, Response
 from PIL import Image
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from util.util import check_token, get_auth_token
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
+from app.config.config import settings
 from app.database import get_db
 from app.models import User
+from app.util.util import check_token, get_auth_token
 
 
 class ChangeAvatarRequest(BaseModel):

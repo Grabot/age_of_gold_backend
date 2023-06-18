@@ -1,11 +1,11 @@
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from util.util import check_token, get_user_tokens
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
+from app.util.util import check_token, get_user_tokens
 
 
 class LoginTokenRequest(BaseModel):

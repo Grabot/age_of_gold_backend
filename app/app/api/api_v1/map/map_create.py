@@ -1,12 +1,12 @@
 import json
 import time
 
-from config.config import settings
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
+from app.config.config import settings
 from app.database import get_db
 from app.models import Hexagon
 

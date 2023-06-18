@@ -2,9 +2,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
-from tasks import task_add
 
 from app.api.api_v1 import api_router_v1
+from app.celery_worker.tasks import task_generate_avatar
 from app.database import get_db
 from app.models import Hexagon
 
@@ -32,5 +32,5 @@ def add_user(count: int, delay: int):
     add database using Celery. Uses Redis as Broker
     and Postgres as Backend.
     """
-    task = task_add.delay(count, delay)
+    task = task_generate_avatar.delay(count, delay)
     return {"task_id": task.id}

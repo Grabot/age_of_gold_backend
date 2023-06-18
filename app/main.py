@@ -1,11 +1,11 @@
 import uvicorn
-from config.config import settings
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
-from sockets.sockets import sio_app
 
 from app.api import api_v1
+from app.config.config import settings
+from app.sockets.sockets import sio_app
 
 app = FastAPI()
 
