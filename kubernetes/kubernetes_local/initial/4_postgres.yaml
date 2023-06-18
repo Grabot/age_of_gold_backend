@@ -29,13 +29,13 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
         - name: postgres
-          image: postgres:15.2
+          image: postgres:latest
           ports:
             - name: tcp-5432
               containerPort: 5432
           envFrom:
             - secretRef:
-                name: flask-secret
+                name: fastapi-secret
           env:
             - name: POSTGRES_PORT
               value: "5432"
@@ -51,13 +51,6 @@ spec:
           volumeMounts:
             - name: data-storage-volume
               mountPath: /var/lib/postgresql/data
-#          resources:
-#            requests:
-#              cpu: "500m"
-#              memory: "5Gi"
-#            limits:
-#              cpu: "1"
-#              memory: "10Gi"
       volumes:
         - name: data-storage-volume
           persistentVolumeClaim:

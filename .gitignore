@@ -130,11 +130,8 @@ dmypy.json
 
 .idea/
 
-kubernetes/flask_secret_production.yaml
-kubernetes/age_of_gold.yaml
-
 _ignore
 _ignore/*
 
-kubernetes_production
-kubernetes_production/*
+kubernetes/kubernetes_production
+kubernetes/kubernetes_production/*
