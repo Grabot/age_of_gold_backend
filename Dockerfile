@@ -6,16 +6,22 @@ ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 COPY app /app/.
 COPY pyproject.toml /app/pyproject.toml
 
-RUN pip3 install --no-cache-dir --upgrade pip && \
+# static dependencies
+RUN apt-get update &&\
+    apt install -y git &&\
+    pip3 install --no-cache-dir --upgrade pip && \
     pip3 install --no-cache-dir poetry && \
     pip3 install --no-cache-dir pre-commit && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-dev
+    poetry config virtualenvs.create false
+
+RUN poetry install --no-dev
 
 RUN mkdir -p static/uploads
 
-RUN pre-commit run --all-files
+RUN git init &&\
+    pre-commit run --all-files
 
 EXPOSE 5000
+
 #ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
 ENTRYPOINT ["python3", "main.py"]
