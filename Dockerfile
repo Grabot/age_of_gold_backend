@@ -14,5 +14,5 @@ RUN pip3 install --no-cache-dir --upgrade pip && \
 RUN mkdir -p static/uploads
 
 EXPOSE 5000
-#CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
-#CMD ["python3", "main.py"]
+#ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+ENTRYPOINT ["python3", "main.py"]
