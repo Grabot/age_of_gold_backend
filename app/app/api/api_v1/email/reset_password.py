@@ -8,10 +8,10 @@ from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
+from app.celery_worker.tasks import task_send_email
 from app.config.config import settings
 from app.database import get_db
 from app.models import User
-from app.util.email.email import EmailProcess
 from app.util.email.reset_password_email import reset_password_email
 
 
@@ -41,9 +41,10 @@ async def reset_password(
     print("attempting to send an email to %s" % email)
     subject = "Age of Gold - Change your password"
     body = reset_password_email.format(base_url=settings.BASE_URL, token=reset_token)
-    p = EmailProcess(email, subject, body)
-    p.start()
-    print("thread started")
+
+    task = task_send_email.delay(user.username, user.email, subject, body)
+    print(f"send forgotten password email! {task}")
+
     user.set_token(reset_token)
     user.set_token_expiration(token_expiration)
     db.add(user)

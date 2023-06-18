@@ -135,3 +135,6 @@ kubernetes/age_of_gold.yaml
 
 _ignore
 _ignore/*
+
+kubernetes_production
+kubernetes_production/*

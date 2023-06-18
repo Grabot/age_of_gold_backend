@@ -8,17 +8,16 @@ from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
+from app.celery_worker.tasks import task_send_email
 from app.config.config import settings
 from app.database import get_db
 from app.models import User
-from app.util.email.email import EmailProcess
 from app.util.email.verification_email import verification_email
 from app.util.util import check_token, decode_token, get_auth_token
 
 
 class VerifyEmailRequest(BaseModel):
     access_token: str
-    new_password: str
 
 
 @api_router_v1.post("/email/verification", status_code=200)
@@ -82,8 +81,9 @@ async def verify_email_get(
     reset_token = user_request.generate_auth_token(expiration_time).decode("ascii")
     subject = "Age of Gold - Verify your email"
     body = verification_email.format(base_url=settings.BASE_URL, token=reset_token)
-    p = EmailProcess(user_request.email, subject, body)
-    p.start()
+
+    task = task_send_email.delay(user_request.username, user_request.email, subject, body)
+    print(f"send forgotten password email! {task}")
 
     return {
         "result": True,

@@ -20,7 +20,6 @@ per-file-ignores =
     ./app/app/models/hexagon.py:F821
     ./app/app/models/tile.py:F821
     ./app/app/models/user.py:F821
-    app/migrations/env.py:F401
     ./app/api/api_v1/__init__.py:F401
     ./app/api/api_v1/map/__init__.py:F401
     ./app/api/api_v1/message/__init__.py:F401

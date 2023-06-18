@@ -36,7 +36,7 @@ def get_wraparounds(q, r):
 
 async def refresh_user_token(db: AsyncSession, access_token, refresh_token):
     # The access token should be active
-    user_statement = select(User).filter_by(token=access_token)
+    user_statement = select(User).filter_by(token=access_token).options(selectinload(User.friends))
     results = await db.execute(user_statement)
     result = results.first()
     if result is None:

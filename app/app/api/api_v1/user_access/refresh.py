@@ -35,7 +35,7 @@ async def refresh_user(
             "message": "user logged in successfully.",
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "user": user.serialize_no_avatar,
+            "user": user.serialize,
         }
 
         return login_response

@@ -15,8 +15,6 @@ class Settings(BaseSettings):
     REDIS_URL = os.environ["REDIS_URL"]
     REDIS_PORT = os.environ["REDIS_PORT"]
 
-    PASSWORD_AGE_OF_GOLD = os.environ["PASSWORD_AGE_OF_GOLD"]
-
     ASYNC_DB_URL = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
         user=POSTGRES_USER,
         pw=POSTGRES_PASSWORD,
@@ -85,6 +83,7 @@ class Settings(BaseSettings):
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS") is not None
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_SENDERNAME = os.environ.get("MAIL_SENDERNAME")
     BASE_URL = os.environ.get("BASE_URL")
     UPLOAD_FOLDER = "static/uploads/"
 
