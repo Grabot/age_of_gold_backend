@@ -4,9 +4,7 @@ This is the backend of the Age of GOLD project. Here we will store the hexagonal
 
 ## Run in dev
 
-Start a ephemeral database (keep running):
-
-    docker run --name postgres-dev -ePOSTGRES_DB=aog -ePOSTGRES_PASSWORD=S3cr37 -d postgres
+Some services need to be running and configured; you can start them with docker-compose.
 
 Build the AoG image:
 
@@ -14,4 +12,5 @@ Build the AoG image:
 
 Run the image you just built:
 
-    docker run -ePOSTGRES_URL=localhost -ePOSTGRES_PORT=5000 -ePOSTGRES_DB=aog -ePOSTGRES_USER=postgres -ePOSTGRES_PASSWORD=S3cr37 -it aog
+    docker run -it aog
+
