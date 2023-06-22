@@ -4,7 +4,6 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.celery_worker.tasks import task_generate_avatar
 from app.database import get_db
 from app.models import Hexagon
 
@@ -23,14 +22,3 @@ async def get_test(db: AsyncSession = Depends(get_db)) -> dict:
     print(f"hexagon: {hexagon.Hexagon}")
     print(f"hexagon: {hexagon.Hexagon.tiles}")
     return {"results": "true"}
-
-
-@api_router_v1.post("/users/{count}/{delay}", status_code=201)
-def add_user(count: int, delay: int):
-    """
-    Get random user data from randomuser.me/api and
-    add database using Celery. Uses Redis as Broker
-    and Postgres as Backend.
-    """
-    task = task_generate_avatar.delay(count, delay)
-    return {"task_id": task.id}

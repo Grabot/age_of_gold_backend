@@ -14,7 +14,7 @@ from app.util.util import check_token, get_auth_token
 
 
 class SearchFriendRequest(BaseModel):
-    user_name: str
+    username: str
 
 
 @api_router_v1.post("/search/friend", status_code=200)
@@ -33,7 +33,7 @@ async def search_friend(
     if not user:
         get_failed_response("An error occurred", response)
 
-    user_name = search_friend_request.user_name
+    user_name = search_friend_request.username
     user_statement = select(User).where(func.lower(User.username) == user_name.lower())
     results = await db.execute(user_statement)
     result = results.first()
