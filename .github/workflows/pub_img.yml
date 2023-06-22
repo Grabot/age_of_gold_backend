@@ -37,4 +37,4 @@ jobs:
           file: ./Dockerfile
           context: .
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: Grabot/age_of_gold:latest,Grabot/age_of_gold:${{ steps.date.outputs.date }},Grabot/age_of_gold:${{ steps.date.outputs.date }}_${{ github.run_number }}
+          tags: grabot/age_of_gold:latest,grabot/age_of_gold:${{ steps.date.outputs.date }},grabot/age_of_gold:${{ steps.date.outputs.date }}_${{ github.run_number }}
