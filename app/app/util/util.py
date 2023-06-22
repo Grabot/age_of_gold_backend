@@ -63,7 +63,7 @@ async def refresh_user_token(db: AsyncSession, access_token, refresh_token):
     if refresh["exp"] < int(time.time()):
         print("refresh token not active")
         return None
-    # It all needs to match before you send back new tokens
+    # It all needs to match before you accept the login
     if user.id == access["id"] and user.username == refresh["user_name"]:
         print("it's all good! Send more tokens")
         return user
@@ -88,20 +88,16 @@ async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[
         return user
 
 
-def get_user_tokens(user: User, access_expiration=3600, refresh_expiration=36000):
+def get_user_tokens(user: User, access_expiration=10800, refresh_expiration=259200):
     # Create an access_token that the user can use to do user authentication
     token_expiration = int(time.time()) + access_expiration
     access_token = user.generate_auth_token(access_expiration).decode("ascii")
     # Create a refresh token that lasts longer that the user can use to generate a new access token
+    # right now choose 3 hours and 3 days for access and refresh token.
     refresh_token = user.generate_refresh_token(refresh_expiration).decode("ascii")
     # Only store the access token, refresh token is kept client side
-    print("setting token")
-    print(access_token)
-    print(refresh_token)
-    print(token_expiration)
     user.set_token(access_token)
     user.set_token_expiration(token_expiration)
-    print("set tokens on user object")
     return [access_token, refresh_token]
 
 

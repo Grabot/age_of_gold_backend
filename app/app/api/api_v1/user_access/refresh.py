@@ -19,23 +19,23 @@ async def refresh_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("refresh?")
     access_token = refresh_request.access_token
     refresh_token = refresh_request.refresh_token
 
     user = await refresh_user_token(db, access_token, refresh_token)
     if not user:
         return get_failed_response("An error occurred", response)
-    else:
-        [access_token, refresh_token] = get_user_tokens(user)
-        db.add(user)
-        await db.commit()
-        login_response = {
-            "result": True,
-            "message": "user logged in successfully.",
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user": user.serialize,
-        }
 
-        return login_response
+    [access_token, refresh_token] = get_user_tokens(user)
+    db.add(user)
+    await db.commit()
+
+    login_response = {
+        "result": True,
+        "message": "user logged in successfully.",
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": user.serialize,
+    }
+
+    return login_response
