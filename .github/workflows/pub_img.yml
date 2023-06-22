@@ -1,0 +1,41 @@
+
+# GENERATED: This file is automatically updated by 'Bump dependencies', local changes will be overwritten!
+
+# Note: it is not safe to run this workflow multiple times concurrently.
+
+name: 'Docker image'
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'master'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build_image:
+    name: Build base image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: mverleg
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          file: ./Dockerfile
+          context: .
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: mverleg/age_of_gold:latest,mverleg/age_of_gold:${{ steps.date.outputs.date }},mverleg/age_of_gold:${{ steps.date.outputs.date }}_${{ github.run_number }}
