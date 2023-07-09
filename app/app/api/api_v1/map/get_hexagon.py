@@ -28,12 +28,10 @@ async def get_hexagon(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("starting get_hexagon")
     map_size = settings.map_size
     is_wrapped = False
     hex_retrieve = []
     hex_retrieve_wrapped = []
-    print(f"hexagon list request: {hexagon_list_request}")
     for hexagon in hexagon_list_request.hexagons:
         hex_q = hexagon.q
         hex_r = hexagon.r
@@ -44,7 +42,6 @@ async def get_hexagon(
             hex_retrieve_wrapped.append([hex_q, hex_r, wrap_q, wrap_r])
             is_wrapped = True
         hex_retrieve.append([hex_q, hex_r])
-    print(f"hex_retrieve {hex_retrieve}")
     hexes_return = []
     if hex_retrieve:
         statement_hexes = select(Hexagon).filter(tuple_(Hexagon.q, Hexagon.r).in_(hex_retrieve))

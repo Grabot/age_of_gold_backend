@@ -31,7 +31,6 @@ class Friend(SQLModel, table=True):
     )
     # Store the name of the friend on the friend object
     friend_name: str
-    friend_name: str
 
     last_time_activity: datetime = Field(default=datetime.utcnow())
     unread_messages: int = Field(default=0)

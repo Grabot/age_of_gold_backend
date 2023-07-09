@@ -2,7 +2,7 @@
 ignore = E402, W503, E203
 max-line-length = 100
 exclude =
-    migrations
+    app/migrations
     __pycache__
     manage.py
     settings.py
@@ -28,3 +28,5 @@ per-file-ignores =
     ./app/app/api/api_v1/email/__init__.py:F401
     ./app/app/api/api_v1/settings/__init__.py:F401
     ./app/app/api/api_v1/social/__init__.py:F401
+    ./app/migrations/*:F401
+    ./app/app/models/guild.py:F821

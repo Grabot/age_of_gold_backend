@@ -47,6 +47,8 @@ class User(SQLModel, table=True):
         },
     )
 
+    guild: Optional["Guild"] = Relationship(back_populates="guild_member")
+
     tiles_changed: List["Tile"] = Relationship(
         back_populates="user_changed",
     )
