@@ -4,6 +4,7 @@ from json import loads
 from logging.config import fileConfig
 
 from alembic import context
+from celery.backends.database.session import ResultModelBase
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
@@ -19,15 +20,16 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = SQLModel.metadata
+target_metadata = [SQLModel.metadata, ResultModelBase.metadata]
 
-target_metadata.naming_convention = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)" "s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
+for meta in target_metadata:
+    meta.naming_convention = {
+        "ix": "ix_%(column_0_label)s",
+        "uq": "uq_%(table_name)s_%(column_0_name)s",
+        "ck": "ck_%(table_name)s_%(constraint_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)" "s_%(referred_table_name)s",
+        "pk": "pk_%(table_name)s",
+    }
 
 # add your model's MetaData object here
 # for 'autogenerate' support

@@ -30,3 +30,4 @@ per-file-ignores =
     ./app/app/api/api_v1/settings/__init__.py:F401
     ./app/app/api/api_v1/social/__init__.py:F401
     ./app/app/models/guild.py:F821
+    ./app/migrations/env.py:F401

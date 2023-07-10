@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from sqlalchemy import ARRAY, Column, Integer
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -23,7 +24,7 @@ class Guild(SQLModel, table=True):
     guild_name: str
     guild_crest: Optional[str]
 
-    member_ids: List[int] = Field(default=[])
+    member_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
 
     @property
     def serialize(self):

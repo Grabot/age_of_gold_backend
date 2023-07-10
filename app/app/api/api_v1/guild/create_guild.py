@@ -24,6 +24,7 @@ async def create_guild(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    print("start guild create")
     user_id = create_guild_request.user_id
     guild_name = create_guild_request.guild_name
     guild_crest = create_guild_request.guild_crest
@@ -38,7 +39,7 @@ async def create_guild(
             "Guild name is already taken, please choose a different one.", response
         )
 
-    guild = Guild(user_id=user_id, guild_name=guild_name, guild_crest=guild_crest)
+    guild = Guild(user_id=user_id, guild_name=guild_name, guild_crest=guild_crest, member_ids=[])
     db.add(guild)
     await db.commit()
     # Refresh guild so we can get the id.
