@@ -26,8 +26,3 @@ RUN mkdir -p static/uploads
 RUN git init &&\
     git checkout -b ci &&\
     pre-commit run --all-files
-
-EXPOSE 5000
-
-#ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
-ENTRYPOINT ["python3", "main.py"]

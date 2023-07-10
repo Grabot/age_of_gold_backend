@@ -12,6 +12,7 @@ exclude =
 per-file-ignores =
     ./app/app/api/api_v1/__init__.py:F401
     ./app/app/api/api_v1/user_access/__init__.py:F401
+    ./app/app/api/api_v1/guild/__init__.py:F401
     ./app/app/util/email/reset_password_email.py:E501
     ./app/app/util/email/verification_email.py:E501
     ./app/app/models/__init__.py:F401
