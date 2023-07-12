@@ -28,7 +28,7 @@ async def get_avatar_user(
     if not user_avatar:
         get_failed_response("An error occurred", response)
 
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     if user_avatar.is_default():
         file_name = user_avatar.avatar_filename_default()
     else:

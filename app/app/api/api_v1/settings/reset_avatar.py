@@ -32,7 +32,7 @@ async def reset_avatar(
     db.add(user_avatar)
     await db.commit()
 
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = user_avatar.avatar_filename_default()
     file_path = os.path.join(file_folder, "%s.png" % file_name)
 

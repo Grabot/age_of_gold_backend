@@ -45,7 +45,7 @@ async def change_avatar(
     new_avatar_small_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar_small)))
 
     # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = user.avatar_filename()
     file_name_small = user.avatar_filename() + "_small"
     # Store the image under the same hash but without the "default".
