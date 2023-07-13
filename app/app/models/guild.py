@@ -21,9 +21,6 @@ class Guild(SQLModel, table=True):
     user_id: int = Field(foreign_key="User.id")
     guild_member: "User" = Relationship(
         back_populates="guild",
-        sa_relationship_kwargs={
-            "primaryjoin": "Guild.user_id == User.id",
-        },
     )
 
     guild_name: str

@@ -47,7 +47,10 @@ class User(SQLModel, table=True):
         },
     )
 
-    guild: Optional["Guild"] = Relationship(back_populates="guild_member")
+    guild: Optional["Guild"] = Relationship(
+        back_populates="guild_member",
+        sa_relationship_kwargs={"uselist": False},
+    )
 
     tiles_changed: List["Tile"] = Relationship(
         back_populates="user_changed",
@@ -183,7 +186,7 @@ class User(SQLModel, table=True):
             "tile_lock": self.tile_lock.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "friends": self.get_friend_ids(),
             "avatar": self.get_user_avatar(True),
-            "guild": self.guild[0].serialize if self.guild else None,
+            "guild": self.guild.serialize if self.guild else None,
         }
 
     @property
