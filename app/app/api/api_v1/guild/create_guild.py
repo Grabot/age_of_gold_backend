@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from PIL import Image
 from pydantic import BaseModel
-from sqlalchemy import func
+from sqlalchemy import desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -59,14 +59,30 @@ async def create_guild(
 
     member_rank = [user_id, 0]
 
+    print("going to select")
+    statement_guild_id = select(Guild).order_by(desc(Guild.guild_id)).limit(1)
+    print(f"select statement: {statement_guild_id}")
+    results_guild_id = await db.execute(statement_guild_id)
+    print(f"result statement: {results_guild_id}")
+    result_guild_id = results_guild_id.first()
+    print(f"result of guild id: {result_guild_id}")
+    guild_id = 0
+    if result_guild_id is not None:
+        max_guild = result_guild_id.Guild
+        guild_id = max_guild.guild_id + 1
+
+    print(f"guild_id: {guild_id}")
+
     crest_default = True
     if guild_crest is not None:
         crest_default = False
     guild = Guild(
+        guild_id=guild_id,
         user_id=user_id,
         guild_name=guild_name,
         member_ids=[member_rank],
         default_crest=crest_default,
+        accepted=True,
     )
     db.add(guild)
 

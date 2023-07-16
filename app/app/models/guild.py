@@ -17,10 +17,15 @@ class Guild(SQLModel, table=True):
 
     __tablename__ = "Guild"
     id: Optional[int] = Field(default=None, primary_key=True)
+    guild_id: int = Field(index=True)
 
     user_id: int = Field(foreign_key="User.id")
     guild_member: "User" = Relationship(
         back_populates="guild",
+        sa_relationship_kwargs={
+            "uselist": False,
+            "primaryjoin": "and_(User.id==Guild.user_id, Guild.accepted==True)",
+        },
     )
 
     guild_name: str
@@ -29,6 +34,10 @@ class Guild(SQLModel, table=True):
     # members of the guild with their guild rank.
     # So [[1, 0], [2, 1]] would mean that user 1 is the guild leader and user 2 is a member
     member_ids: List[List[int]] = Field(default=[[]], sa_column=Column(ARRAY(Integer())))
+
+    accepted: bool = Field(default=False)
+    # Indicates if a request is made
+    requested: Optional[bool] = Field(default=None)
 
     def crest_filename(self):
         return md5(self.guild_name.lower().encode("utf-8")).hexdigest()
@@ -52,9 +61,11 @@ class Guild(SQLModel, table=True):
     @property
     def serialize(self):
         return {
-            "id": self.id,
+            "guild_id": self.guild_id,
             "user_id": self.user_id,
             "guild_name": self.guild_name,
             "guild_crest": self.get_guild_crest(),
             "members": self.member_ids,
+            "accepted": self.accepted,
+            "requested": self.requested,
         }

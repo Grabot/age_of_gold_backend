@@ -49,7 +49,10 @@ class User(SQLModel, table=True):
 
     guild: Optional["Guild"] = Relationship(
         back_populates="guild_member",
-        sa_relationship_kwargs={"uselist": False},
+        sa_relationship_kwargs={
+            "uselist": False,
+            "primaryjoin": "and_(User.id==Guild.user_id, Guild.accepted==True)",
+        },
     )
 
     tiles_changed: List["Tile"] = Relationship(
