@@ -33,3 +33,6 @@ per-file-ignores =
     ./app/migrations/env.py:F401
     ./app/app/api/api_v1/guild/get_send_requests_guild.py:E712
     ./app/app/api/api_v1/guild/get_received_requests_guild.py:E712
+    ./app/app/api/api_v1/guild/accept_guild_request.py:E712
+    ./app/app/api/api_v1/guild/get_requests_got.py:E712
+    ./app/app/api/api_v1/guild/get_requests_send.py:E712

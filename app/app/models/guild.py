@@ -24,7 +24,7 @@ class Guild(SQLModel, table=True):
         back_populates="guild",
         sa_relationship_kwargs={
             "uselist": False,
-            "primaryjoin": "and_(User.id==Guild.user_id, Guild.accepted==True)",
+            "primaryjoin": "User.id==Guild.user_id",
         },
     )
 

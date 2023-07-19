@@ -47,17 +47,30 @@ async def new_member(
         return get_failed_response("no user found", response)
 
     found_user: User = result.User
-    guild = Guild(
-        user_id=found_user.id,
-        guild_id=guild_to_join.guild_id,
-        guild_name=guild_to_join.guild_name,
-        member_ids=guild_to_join.member_ids,
-        default_crest=guild_to_join.default_crest,
-        accepted=False,
-        requested=False,
+
+    statement_guild_user = (
+        select(Guild)
+        .where(Guild.user_id == found_user.id)
+        .where(Guild.guild_id == guild_to_join.guild_id)
     )
-    db.add(guild)
-    await db.commit()
+    results_guild_user = await db.execute(statement_guild_user)
+    result_guild_user = results_guild_user.first()
+
+    if result_guild_user is not None:
+        print("guild query user")
+        # TODO?
+    else:
+        guild = Guild(
+            user_id=found_user.id,
+            guild_id=guild_to_join.guild_id,
+            guild_name=guild_to_join.guild_name,
+            member_ids=guild_to_join.member_ids,
+            default_crest=guild_to_join.default_crest,
+            requested=False,
+            accepted=False,
+        )
+        db.add(guild)
+        await db.commit()
 
     return {
         "result": True,
