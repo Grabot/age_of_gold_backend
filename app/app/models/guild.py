@@ -69,3 +69,14 @@ class Guild(SQLModel, table=True):
             "accepted": self.accepted,
             "requested": self.requested,
         }
+
+    @property
+    def serialize_minimal(self):
+        # The guild without the member and crest information
+        return {
+            "guild_id": self.guild_id,
+            "user_id": self.user_id,
+            "guild_name": self.guild_name,
+            "accepted": self.accepted,
+            "requested": self.requested,
+        }

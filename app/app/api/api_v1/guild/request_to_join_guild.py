@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.api.api_v1.guild.accept_guild_request import join_guild
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import User
@@ -73,11 +72,9 @@ async def request_to_join_guild(
     results_guild_user_not_request = await db.execute(statement_guild_user_not_request)
     result_guild_user_not_request = results_guild_user_not_request.first()
     if result_guild_user_not_request is not None:
-        # The guild requested this user already, now the user requests the guild we can accept it.
-        guild_to_join: Guild = result_guild_user_not_request.Guild
-        await join_guild(db, user.id, guild_to_join)
-        # TODO: Automatic accept, check how this could work.
-        return get_failed_response("You're now part of the guild!", response)
+        # The guild requested this user already, it should not be possible to request.
+        # On the frontend it should have caught the request and send an acceptation instead.
+        return get_failed_response("An error occurred", response)
 
     guild = Guild(
         user_id=user.id,
@@ -160,11 +157,9 @@ async def new_member(
     results_user_guild_request = await db.execute(statement_user_guild_request)
     result_user_guild_request = results_user_guild_request.first()
     if result_user_guild_request is not None:
-        # The user requested the guild already, now the guild requests the user so we can accept it.
-        guild_to_join: Guild = result_user_guild_request.Guild
-        await join_guild(db, user_id, guild_to_join)
-        # TODO: Automatic accept, check how this could work.
-        return get_failed_response("The user is now part of your guild", response)
+        # The user requested this guild already, it should not be possible to request.
+        # On the frontend it should have caught the request and send an acceptation instead.
+        return get_failed_response("An error occurred", response)
 
     guild_to_join: Guild = result_guild[0].Guild
 

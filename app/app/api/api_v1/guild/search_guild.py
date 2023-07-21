@@ -34,7 +34,11 @@ async def search_guild(
         get_failed_response("An error occurred", response)
 
     guild_name = search_guild_request.guild_name
-    guild_statement = select(Guild).where(func.lower(Guild.guild_name) == guild_name.lower())
+    guild_statement = (
+        select(Guild)
+        .where(func.lower(Guild.guild_name) == guild_name.lower())
+        .where(Guild.accepted == True)
+    )
     results = await db.execute(guild_statement)
     result = results.first()
 

@@ -46,9 +46,7 @@ async def get_requests_user_send(
 
     guild_requests = []
     for guild_requested in result:
-        print(f"guild {guild_requested}")
         guild = guild_requested.Guild
-        print(f"guild {guild}")
         guild_requests.append(guild.serialize)
 
     return {
@@ -59,6 +57,7 @@ async def get_requests_user_send(
 
 class ReceivedRequest(BaseModel):
     guild_id: int
+    minimal: bool
 
 
 # The requests made by a guild to users
@@ -93,11 +92,15 @@ async def get_requests_guild_send(
     if not result:
         return get_failed_response("no requests found", response)
 
+    minimal = received_request.minimal
     guild_requests = []
     for guilds in result:
         guild = guilds.Guild
         user_requested = guild.guild_member
-        guild_requests.append(user_requested.serialize_minimal)
+        if minimal:
+            guild_requests.append(user_requested.serialize_no_detail)
+        else:
+            guild_requests.append(user_requested.serialize_get)
 
     return {
         "result": True,

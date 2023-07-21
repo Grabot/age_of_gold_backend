@@ -54,6 +54,16 @@ class User(SQLModel, table=True):
             "primaryjoin": "and_(User.id==Guild.user_id, Guild.accepted==True)",
         },
     )
+    # If Guild.requested is False it means the guild has requested the user to join
+    guild_requests: Optional["Guild"] = Relationship(
+        back_populates="guild_member",
+        sa_relationship_kwargs={
+            "primaryjoin": "and_("
+            "User.id==Guild.user_id, "
+            "Guild.accepted==False, "
+            "Guild.requested==False)",
+        },
+    )
 
     tiles_changed: List["Tile"] = Relationship(
         back_populates="user_changed",

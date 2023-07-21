@@ -14,9 +14,14 @@ from app.models.guild import Guild
 from app.util.util import check_token, get_auth_token
 
 
+class ReceivedUserGotRequest(BaseModel):
+    minimal: bool
+
+
 # The requests of a user to guilds that come from the guild
 @api_router_v1.post("/guild/requests/user/got", status_code=200)
 async def get_requests_user_got(
+    received_user_got_request: ReceivedUserGotRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -44,10 +49,15 @@ async def get_requests_user_got(
     if not result:
         return get_failed_response("no requests found", response)
 
+    minimal = received_user_got_request.minimal
     guild_requests = []
     for guilds in result:
         guild = guilds.Guild
-        guild_requests.append(guild.serialize)
+        if minimal:
+            # If we just want to know if there are invites we don't need the crests for instance.
+            guild_requests.append(guild.serialize_minimal)
+        else:
+            guild_requests.append(guild.serialize)
 
     return {
         "result": True,
@@ -55,14 +65,14 @@ async def get_requests_user_got(
     }
 
 
-class ReceivedRequest(BaseModel):
+class ReceivedGuildGotRequest(BaseModel):
     guild_id: int
 
 
 # The responses gotten by a guild from users made by users
 @api_router_v1.post("/guild/requests/guild/got", status_code=200)
 async def get_requests_guild_got(
-    received_request: ReceivedRequest,
+    received_guild_got_request: ReceivedGuildGotRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -78,7 +88,7 @@ async def get_requests_guild_got(
     if not user:
         get_failed_response("An error occurred", response)
 
-    guild_id = received_request.guild_id
+    guild_id = received_guild_got_request.guild_id
     guild_statement = (
         select(Guild)
         .where(Guild.guild_id == guild_id)
