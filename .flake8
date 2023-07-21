@@ -31,8 +31,8 @@ per-file-ignores =
     ./app/app/api/api_v1/social/__init__.py:F401
     ./app/app/models/guild.py:F821
     ./app/migrations/env.py:F401
-    ./app/app/api/api_v1/guild/get_send_requests_guild.py:E712
-    ./app/app/api/api_v1/guild/get_received_requests_guild.py:E712
-    ./app/app/api/api_v1/guild/accept_guild_request.py:E712
     ./app/app/api/api_v1/guild/get_requests_got.py:E712
     ./app/app/api/api_v1/guild/get_requests_send.py:E712
+    ./app/app/api/api_v1/guild/accept_guild_request.py:E712
+    ./app/app/api/api_v1/guild/cancel_guild_request.py:E712
+    ./app/app/api/api_v1/guild/request_to_join_guild.py:E712

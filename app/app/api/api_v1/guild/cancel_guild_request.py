@@ -12,13 +12,13 @@ from app.models import Guild, User
 from app.util.util import check_token, get_auth_token
 
 
-class CancelGuildRequestRequest(BaseModel):
+class CancelGuildRequestUserRequest(BaseModel):
     guild_id: int
 
 
-@api_router_v1.post("/guild/request/cancel", status_code=200)
-async def cancel_guild_request(
-    cancel_guild_request_request: CancelGuildRequestRequest,
+@api_router_v1.post("/guild/request/cancel/user", status_code=200)
+async def cancel_guild_request_user(
+    cancel_guild_request_user_request: CancelGuildRequestUserRequest,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -33,9 +33,59 @@ async def cancel_guild_request(
     if not user:
         get_failed_response("An error occurred", response)
 
-    guild_id = cancel_guild_request_request.guild_id
+    guild_id = cancel_guild_request_user_request.guild_id
     guild_statement = (
-        select(Guild).where(Guild.guild_id == guild_id).where(Guild.user_id == user.id)
+        select(Guild)
+        .where(Guild.guild_id == guild_id)
+        .where(Guild.user_id == user.id)
+        .where(Guild.requested == True)
+    )
+    results = await db.execute(guild_statement)
+    result = results.first()
+
+    if not result:
+        return get_failed_response("no guild request found", response)
+
+    found_guild: Guild = result.Guild
+    if found_guild is not None:
+        await db.delete(found_guild)
+        await db.commit()
+
+    return {
+        "result": True,
+        "message": "cancelled request",
+    }
+
+
+class CancelGuildRequestGuildRequest(BaseModel):
+    guild_id: int
+    user_id: int
+
+
+@api_router_v1.post("/guild/request/cancel/guild", status_code=200)
+async def cancel_guild_request_guild(
+    cancel_guild_request_guild_request: CancelGuildRequestGuildRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    print("start guild cancel request")
+    auth_token = get_auth_token(request.headers.get("Authorization"))
+
+    if auth_token == "":
+        get_failed_response("An error occurred", response)
+
+    user: Optional[User] = await check_token(db, auth_token, True)
+    if not user:
+        get_failed_response("An error occurred", response)
+
+    user_id = cancel_guild_request_guild_request.user_id
+    guild_id = cancel_guild_request_guild_request.guild_id
+    guild_statement = (
+        select(Guild)
+        .where(Guild.guild_id == guild_id)
+        .where(Guild.user_id == user_id)
+        .where(Guild.requested == False)
     )
     results = await db.execute(guild_statement)
     result = results.first()

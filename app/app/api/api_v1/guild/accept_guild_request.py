@@ -12,13 +12,52 @@ from app.models import Guild, User
 from app.util.util import check_token, get_auth_token
 
 
-class GuildAcceptRequest(BaseModel):
+async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
+    print("accepting guild request!")
+    # First remove all Guild objects of the users, meaning all requests made by the user
+    # or sent to the user will be removed. This is because the user has accepted a request
+    guild_statement = select(Guild).where(Guild.user_id == user_id).where(Guild.accepted == False)
+    results_guild_user = await db.execute(guild_statement)
+    result_guild_user = results_guild_user.all()
+
+    for guild_request in result_guild_user:
+        print(f"going to remove: {guild_request.Guild}")
+        await db.delete(guild_request.Guild)
+
+    print("removed!")
+    member_ids = guild_to_join.member_ids
+    member_rank = [user_id, 4]
+    member_ids.append(member_rank)
+    print(f"member ids: {member_ids}")
+
+    update_guild_members = (
+        update(Guild)
+        .values(member_ids=member_ids)
+        .where(Guild.guild_id == guild_to_join.guild_id)
+        .where(Guild.accepted == True)
+    )
+    await db.execute(update_guild_members)
+
+    guild = Guild(
+        user_id=user_id,
+        guild_id=guild_to_join.guild_id,
+        guild_name=guild_to_join.guild_name,
+        member_ids=member_ids,
+        default_crest=guild_to_join.default_crest,
+        requested=None,  # no longer important.
+        accepted=True,
+    )
+    db.add(guild)
+    await db.commit()
+
+
+class GuildAcceptRequestGuild(BaseModel):
     guild_id: int
 
 
-@api_router_v1.post("/guild/request/accept", status_code=200)
-async def accept_guild_request(
-    guild_accept_request: GuildAcceptRequest,
+@api_router_v1.post("/guild/request/accept/guild", status_code=200)
+async def accept_guild_request_guild(
+    guild_accept_request_guild: GuildAcceptRequestGuild,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
@@ -37,19 +76,7 @@ async def accept_guild_request(
         # The user cannot accept a request if it's part of a guild, something went wrong.
         get_failed_response("An error occurred", response)
 
-    print("accepting guild request!")
-    # First remove all Guild objects of the users, meaning all requests made by the user
-    # or sent to the user will be removed. This is because the user has accepted a request
-    guild_statement = select(Guild).where(Guild.user_id == user.id)
-    results_guild_user = await db.execute(guild_statement)
-    result_guild_user = results_guild_user.all()
-
-    for guild_request in result_guild_user:
-        print(f"going to remove: {guild_request.Guild}")
-        await db.delete(guild_request.Guild)
-
-    print("removed!")
-    guild_id = guild_accept_request.guild_id
+    guild_id = guild_accept_request_guild.guild_id
     statement_guild = select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
     results_guild = await db.execute(statement_guild)
     users_guild = results_guild.all()
@@ -59,31 +86,52 @@ async def accept_guild_request(
 
     print("guild query fine. Got all guild members")
     guild_to_join: Guild = users_guild[0].Guild
+    await join_guild(db, user.id, guild_to_join)
 
-    member_ids = guild_to_join.member_ids
-    member_rank = [user.id, 4]
-    member_ids.append(member_rank)
-    print(f"member ids: {member_ids}")
+    return {"result": True, "message": "guild join"}
 
-    update_guild_members = (
-        update(Guild)
-        .values(member_ids=member_ids)
-        .where(Guild.guild_id == guild_id)
-        .where(Guild.accepted == True)
-    )
-    results = await db.execute(update_guild_members)
-    print("update guild members: %s" % results)
 
-    guild = Guild(
-        user_id=user.id,
-        guild_id=guild_to_join.guild_id,
-        guild_name=guild_to_join.guild_name,
-        member_ids=member_ids,
-        default_crest=guild_to_join.default_crest,
-        requested=None,  # no longer important.
-        accepted=True,
-    )
-    db.add(guild)
-    await db.commit()
+class GuildAcceptRequestUser(BaseModel):
+    user_id: int
+    guild_id: int
+
+
+@api_router_v1.post("/guild/request/accept/user", status_code=200)
+async def accept_guild_request_user(
+    guild_accept_request_user: GuildAcceptRequestUser,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    auth_token = get_auth_token(request.headers.get("Authorization"))
+
+    if auth_token == "":
+        get_failed_response("An error occurred", response)
+
+    user: Optional[User] = await check_token(db, auth_token, True)
+    if not user:
+        get_failed_response("An error occurred", response)
+
+    print("Initial check user")
+    # Check if the user is part of a guild. This should not be the case.
+    user_id = guild_accept_request_user.user_id
+    user_statement = select(Guild).where(Guild.user_id == user_id).where(Guild.accepted == True)
+    results_user = await db.execute(user_statement)
+    result_user = results_user.first()
+
+    if result_user is not None:
+        return get_failed_response("An error occurred", response)
+
+    guild_id = guild_accept_request_user.guild_id
+    statement_guild = select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
+    results_guild = await db.execute(statement_guild)
+    users_guild = results_guild.all()
+
+    if users_guild is None:
+        return get_failed_response("an error occurred", response)
+
+    print("guild query fine. Got all guild members")
+    guild_to_join: Guild = users_guild[0].Guild
+    await join_guild(db, user_id, guild_to_join)
 
     return {"result": True, "message": "guild join"}
