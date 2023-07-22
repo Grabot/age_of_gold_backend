@@ -49,6 +49,7 @@ async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
     )
     db.add(guild)
     await db.commit()
+    return guild
 
 
 class GuildAcceptRequestGuild(BaseModel):
@@ -86,9 +87,9 @@ async def accept_guild_request_guild(
 
     print("guild query fine. Got all guild members")
     guild_to_join: Guild = users_guild[0].Guild
-    await join_guild(db, user.id, guild_to_join)
+    new_guild = await join_guild(db, user.id, guild_to_join)
 
-    return {"result": True, "message": "guild join"}
+    return {"result": True, "guild": new_guild.serialize}
 
 
 class GuildAcceptRequestUser(BaseModel):

@@ -14,6 +14,7 @@ from app.util.util import check_token, get_auth_token
 
 class CancelGuildRequestUserRequest(BaseModel):
     guild_id: int
+    user_id: int
 
 
 @api_router_v1.post("/guild/request/cancel/user", status_code=200)
@@ -29,15 +30,16 @@ async def cancel_guild_request_user(
     if auth_token == "":
         get_failed_response("An error occurred", response)
 
-    user: Optional[User] = await check_token(db, auth_token, True)
+    user: Optional[User] = await check_token(db, auth_token)
     if not user:
         get_failed_response("An error occurred", response)
 
     guild_id = cancel_guild_request_user_request.guild_id
+    user_id = cancel_guild_request_user_request.user_id
     guild_statement = (
         select(Guild)
         .where(Guild.guild_id == guild_id)
-        .where(Guild.user_id == user.id)
+        .where(Guild.user_id == user_id)
         .where(Guild.requested == True)
     )
     results = await db.execute(guild_statement)
@@ -47,9 +49,11 @@ async def cancel_guild_request_user(
         return get_failed_response("no guild request found", response)
 
     found_guild: Guild = result.Guild
-    if found_guild is not None:
-        await db.delete(found_guild)
-        await db.commit()
+    if found_guild is None:
+        return get_failed_response("something went wrong", response)
+
+    await db.delete(found_guild)
+    await db.commit()
 
     return {
         "result": True,
@@ -94,9 +98,11 @@ async def cancel_guild_request_guild(
         return get_failed_response("no guild request found", response)
 
     found_guild: Guild = result.Guild
-    if found_guild is not None:
-        await db.delete(found_guild)
-        await db.commit()
+    if found_guild is None:
+        return get_failed_response("something went wrong", response)
+
+    await db.delete(found_guild)
+    await db.commit()
 
     return {
         "result": True,
