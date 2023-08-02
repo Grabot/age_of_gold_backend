@@ -21,10 +21,10 @@ async def get_global_message(request: Request, db: AsyncSession = Depends(get_db
     auth_token = get_auth_token(request.headers.get("Authorization"))
     print(f"token {auth_token}")
     if auth_token == "":
-        get_failed_response_messages()
+        return get_failed_response_messages()
 
     user = await check_token(db, auth_token)
     if not user:
-        get_failed_response_messages()
+        return get_failed_response_messages()
 
     return await paginate(db, select(GlobalMessage).order_by(desc(GlobalMessage.timestamp)))

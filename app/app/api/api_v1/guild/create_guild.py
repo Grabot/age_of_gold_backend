@@ -20,6 +20,17 @@ from app.models.guild import Guild
 from app.util.util import check_token, get_auth_token
 
 
+def save_guild_crest(guild: Guild, guild_crest: str):
+    guild_crest_image = Image.open(io.BytesIO(base64.b64decode(guild_crest)))
+    # Get the file name and path
+    file_folder = settings.UPLOAD_FOLDER_CRESTS
+    file_name = guild.crest_filename()
+    # Store the image under the same hash but without the "default".
+    file_path = os.path.join(file_folder, "%s.png" % file_name)
+    guild_crest_image.save(file_path)
+    os.chmod(file_path, stat.S_IRWXO)
+
+
 class CreateGuildRequest(BaseModel):
     user_id: int
     guild_name: str
@@ -41,11 +52,11 @@ async def create_guild(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     statement_guild_name = select(Guild).where(func.lower(Guild.guild_name) == guild_name.lower())
     results_guild_name = await db.execute(statement_guild_name)
@@ -91,15 +102,7 @@ async def create_guild(
     await db.refresh(guild)
 
     if guild_crest is not None:
-        guild_crest_image = Image.open(io.BytesIO(base64.b64decode(guild_crest)))
-        # Get the file name and path
-        file_folder = settings.UPLOAD_FOLDER_CRESTS
-        file_name = guild.crest_filename()
-        # Store the image under the same hash but without the "default".
-        file_path = os.path.join(file_folder, "%s.png" % file_name)
-        guild_crest_image.save(file_path)
-        os.chmod(file_path, stat.S_IRWXO)
-
+        save_guild_crest(guild, guild_crest)
     # Return the guild without the crest because it's present at the client. Only send id.
     return {
         "result": True,

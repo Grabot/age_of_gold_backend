@@ -26,7 +26,7 @@ async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
 
     print("removed!")
     member_ids = guild_to_join.member_ids
-    member_rank = [user_id, 4]
+    member_rank = [user_id, 3]
     member_ids.append(member_rank)
     print(f"member ids: {member_ids}")
 
@@ -66,16 +66,16 @@ async def accept_guild_request_guild(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token, True)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     users_guild = user.guild
     if users_guild is not None:
         # The user cannot accept a request if it's part of a guild, something went wrong.
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     guild_id = guild_accept_request_guild.guild_id
     statement_guild = select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
@@ -107,11 +107,11 @@ async def accept_guild_request_user(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token, True)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     print("Initial check user")
     # Check if the user is part of a guild. This should not be the case.

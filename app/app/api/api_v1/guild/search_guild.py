@@ -27,11 +27,11 @@ async def search_guild(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     guild_name = search_guild_request.guild_name
     guild_statement = (

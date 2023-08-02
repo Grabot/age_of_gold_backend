@@ -28,11 +28,11 @@ async def cancel_guild_request_user(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     guild_id = cancel_guild_request_user_request.guild_id
     user_id = cancel_guild_request_user_request.user_id
@@ -77,11 +77,11 @@ async def cancel_guild_request_guild(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token, True)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_id = cancel_guild_request_guild_request.user_id
     guild_id = cancel_guild_request_guild_request.guild_id

@@ -28,11 +28,11 @@ async def accept_friend(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_from: Optional[User] = await check_token(db, auth_token)
     if not user_from:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_id = accept_request.user_id
     user_statement = select(User).where(User.id == user_id)

@@ -38,3 +38,6 @@ per-file-ignores =
     ./app/app/api/api_v1/guild/request_to_join_guild.py:E712
     ./app/app/api/api_v1/guild/search_guild.py:E712
     ./app/app/api/api_v1/guild/leave_guild.py:E712
+    ./app/app/api/api_v1/guild/change_guild_crest.py:E712
+    ./app/app/api/api_v1/guild/change_guild_member_rank.py:E712
+    ./app/app/api/api_v1/guild/remove_guild_member.py:E712

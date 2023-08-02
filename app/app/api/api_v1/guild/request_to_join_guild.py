@@ -28,11 +28,11 @@ async def request_to_join_guild(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token, True)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     print("user found")
     guild_user = user.guild
@@ -110,11 +110,11 @@ async def new_member(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_id = new_member_request.user_id
     guild_id = new_member_request.guild_id

@@ -23,11 +23,11 @@ async def read_personal_message(
 ):
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
-        get_failed_response("an error occurred", response)
+        return get_failed_response("an error occurred", response)
 
     user_request = await check_token(db, auth_token)
     if not user_request:
-        get_failed_response("an error occurred", response)
+        return get_failed_response("an error occurred", response)
 
     read_user_id = read_message_personal_request.user_read_id
 

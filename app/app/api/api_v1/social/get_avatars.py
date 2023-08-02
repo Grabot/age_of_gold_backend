@@ -26,11 +26,11 @@ async def get_avatars(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_request: Optional[User] = await check_token(db, auth_token)
     if not user_request:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     print(f"going to filter the following list of avatars: {get_avatars_request.avatars}")
     statement_hexes = select(User).filter(User.id.in_(get_avatars_request.avatars))
