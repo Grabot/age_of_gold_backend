@@ -28,7 +28,7 @@ async def handle_message_event(sid, *args, **kwargs):
 @sio.on("join")
 async def handle_join(sid, *args, **kwargs):
     data = args[0]
-    user_id = data["userId"]
+    user_id = data["user_id"]
     if user_id != -1:
         room = "room_%s" % user_id
         print("joined room: %s" % room)
@@ -36,6 +36,20 @@ async def handle_join(sid, *args, **kwargs):
         await sio.emit(
             "message_event",
             "User has entered room %s" % room,
+            room=room,
+        )
+
+
+@sio.on("join_guild")
+async def handle_join_guild(sid, *args, **kwargs):
+    data = args[0]
+    guild_id = data["guild_id"]
+    if guild_id != -1:
+        room = "guild_%s" % guild_id
+        sio.enter_room(sid, room)
+        await sio.emit(
+            "message_event",
+            "Guild member has entered their guild room %s" % room,
             room=room,
         )
 

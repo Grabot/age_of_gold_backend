@@ -54,7 +54,8 @@ async def change_guild_member_rank(
 
     if current_member[1] >= change_member[1]:
         return get_failed_response(
-            "No permission to change the rank of someone higher than you", response
+            "No permission to change the rank of someone with a higher or similar rank to you",
+            response,
         )
     if current_member[1] >= new_rank:
         return get_failed_response(

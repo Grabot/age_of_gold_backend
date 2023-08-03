@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, Request, Response
@@ -9,6 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Guild, User
+from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
 
 
@@ -49,6 +51,23 @@ async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
     )
     db.add(guild)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response = {
+        "member": {
+            "user_id": user_id,
+            "rank": 3,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_to_join.guild_id}"
+    await sio.emit(
+        "guild_new_member",
+        socket_response,
+        room=guild_room,
+    )
+
     return guild
 
 
