@@ -98,13 +98,14 @@ async def create_guild(
     db.add(guild)
 
     await db.commit()
-    # Refresh guild so we can get the id.
-    await db.refresh(guild)
+
+    print(f"guild created guild id {guild.id} user id {guild.user_id}")
 
     if guild_crest is not None:
         save_guild_crest(guild, guild_crest)
+    # no need for a socket call because you have the picture locally already
     # Return the guild without the crest because it's present at the client. Only send id.
     return {
         "result": True,
-        "message": f"{guild.id}",
+        "message": f"{guild_id}",
     }

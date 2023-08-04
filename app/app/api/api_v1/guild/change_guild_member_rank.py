@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, Request, Response
@@ -9,6 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Guild, User
+from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
 
 
@@ -97,6 +99,22 @@ async def change_guild_member_rank(
     )
     await db.execute(update_guild_members)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response = {
+        "member_changed": {
+            "user_id": changed_member_id,
+            "new_rank": new_rank,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "member_changed_rank",
+        socket_response,
+        room=guild_room,
+    )
 
     return {
         "result": True,

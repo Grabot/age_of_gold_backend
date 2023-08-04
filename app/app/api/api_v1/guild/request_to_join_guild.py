@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, Request, Response
@@ -8,8 +9,8 @@ from sqlmodel import select
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
-from app.models import User
-from app.models.guild import Guild
+from app.models import Guild, User
+from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
 
 
@@ -46,7 +47,7 @@ async def request_to_join_guild(
     results_guild = await db.execute(statement_guild)
     result_guild = results_guild.all()
 
-    if result_guild is None:
+    if result_guild is None or result_guild == []:
         return get_failed_response("an error occurred", response)
 
     guild_to_join: Guild = result_guild[0].Guild
@@ -87,6 +88,21 @@ async def request_to_join_guild(
     )
     db.add(guild)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response = {
+        "member_requested": {
+            "user_id": user.id,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "member_request_to_join",
+        socket_response,
+        room=guild_room,
+    )
 
     return {
         "result": True,
@@ -130,10 +146,12 @@ async def new_member(
 
     # Get the guild objects
     statement_guild = select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
+    print(f"guild statement {statement_guild}")
     results_guild = await db.execute(statement_guild)
     result_guild = results_guild.all()
+    print(f"result guild: {result_guild}")
 
-    if result_guild is None:
+    if result_guild is None or result_guild == []:
         return get_failed_response("an error occurred", response)
 
     statement_user_guild_not_request = (
@@ -174,6 +192,32 @@ async def new_member(
     )
     db.add(guild)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response_guild = {
+        "member_asked": {
+            "user_id": user_id,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "member_asked_to_join",
+        socket_response_guild,
+        room=guild_room,
+    )
+
+    socket_response_user = {
+        "guild": guild_to_join.serialize_minimal,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+    member_asked_room = f"room_{user_id}"
+    await sio.emit(
+        "guild_requested_to_join",
+        socket_response_user,
+        room=member_asked_room,
+    )
 
     return {
         "result": True,

@@ -57,7 +57,7 @@ async def handle_join_guild(sid, *args, **kwargs):
 @sio.on("leave")
 async def handle_leave(sid, *args, **kwargs):
     data = args[0]
-    user_id = data["userId"]
+    user_id = data["user_id"]
     if user_id != -1:
         room = "room_%s" % user_id
         sio.leave_room(sid, room)

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, Request, Response
@@ -10,6 +11,7 @@ from app.api.api_v1.guild.create_guild import save_guild_crest
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Guild, User
+from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
 
 
@@ -76,6 +78,19 @@ async def change_guild_crest(
 
     if guild_crest is not None:
         save_guild_crest(check_guild, guild_crest)
+
+    now = datetime.utcnow()
+    socket_response = {
+        "guild_avatar": guild_crest,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "guild_crest_changed",
+        socket_response,
+        room=guild_room,
+    )
 
     return {
         "result": True,

@@ -101,7 +101,7 @@ async def accept_guild_request_guild(
     results_guild = await db.execute(statement_guild)
     users_guild = results_guild.all()
 
-    if users_guild is None:
+    if users_guild is None or users_guild == []:
         return get_failed_response("an error occurred", response)
 
     print("guild query fine. Got all guild members")
@@ -147,7 +147,7 @@ async def accept_guild_request_user(
     results_guild = await db.execute(statement_guild)
     users_guild = results_guild.all()
 
-    if users_guild is None:
+    if users_guild is None or users_guild == []:
         return get_failed_response("an error occurred", response)
 
     print("guild query fine. Got all guild members")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, Request, Response
@@ -9,6 +10,7 @@ from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Guild, User
+from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
 
 
@@ -54,6 +56,32 @@ async def cancel_guild_request_user(
 
     await db.delete(found_guild)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response_guild = {
+        "member_cancelled": {
+            "user_id": user_id,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "guild_request_cancelled",
+        socket_response_guild,
+        room=guild_room,
+    )
+
+    socket_response_user = {
+        "guild_id": guild_id,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+    member_asked_room = f"room_{user_id}"
+    await sio.emit(
+        "guild_request_denied",
+        socket_response_user,
+        room=member_asked_room,
+    )
 
     return {
         "result": True,
@@ -103,6 +131,32 @@ async def cancel_guild_request_guild(
 
     await db.delete(found_guild)
     await db.commit()
+
+    now = datetime.utcnow()
+    socket_response_guild = {
+        "member_cancelled": {
+            "user_id": user_id,
+        },
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+
+    guild_room = f"guild_{guild_id}"
+    await sio.emit(
+        "guild_request_cancelled",
+        socket_response_guild,
+        room=guild_room,
+    )
+
+    socket_response_user = {
+        "guild_id": guild_id,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+    member_cancelled_room = f"room_{user_id}"
+    await sio.emit(
+        "guild_request_denied",
+        socket_response_user,
+        room=member_cancelled_room,
+    )
 
     return {
         "result": True,
