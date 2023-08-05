@@ -45,7 +45,7 @@ async def handle_join_guild(sid, *args, **kwargs):
     data = args[0]
     guild_id = data["guild_id"]
     if guild_id != -1:
-        room = "guild_%s" % guild_id
+        room = f"guild_{guild_id}"
         print("joined guild room %s" % room)
         sio.enter_room(sid, room)
         await sio.emit(
@@ -75,7 +75,7 @@ async def handle_leave_guild(sid, *args, **kwargs):
     data = args[0]
     guild_id = data["guild_id"]
     if guild_id != -1:
-        room = "guild_%s" % guild_id
+        room = f"guild_{guild_id}"
         sio.leave_room(sid, room)
         print("left guild room %s" % room)
         await sio.emit(

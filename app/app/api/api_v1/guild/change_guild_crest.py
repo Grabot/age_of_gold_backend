@@ -58,20 +58,14 @@ async def change_guild_crest(
         print("new crest is default, but previous was not!!!!")
         # We are updating the crest to be the default, so update the member objects
         update_guild_members = (
-            update(Guild)
-            .values(default_crest=True)
-            .where(Guild.guild_id == guild_id)
-            .where(Guild.accepted == True)
+            update(Guild).values(default_crest=True).where(Guild.guild_id == guild_id)
         )
         await db.execute(update_guild_members)
         await db.commit()
     elif guild_crest is not None and check_guild.default_crest:
         print("new crest is an image, but previous was default!!!!")
         update_guild_members = (
-            update(Guild)
-            .values(default_crest=False)
-            .where(Guild.guild_id == guild_id)
-            .where(Guild.accepted == True)
+            update(Guild).values(default_crest=False).where(Guild.guild_id == guild_id)
         )
         await db.execute(update_guild_members)
         await db.commit()

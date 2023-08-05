@@ -42,7 +42,6 @@ async def get_personal_message(
     if result is None:
         return None
     user_get = result.User
-    print("Executing Query!!!!")
 
     return await paginate(
         db,
