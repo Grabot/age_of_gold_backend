@@ -154,4 +154,16 @@ async def accept_guild_request_user(
     guild_to_join: Guild = users_guild[0].Guild
     await join_guild(db, user_id, guild_to_join)
 
+    now = datetime.utcnow()
+    socket_response_user = {
+        "guild": guild_to_join.serialize_minimal,
+        "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+    }
+    member_accepted_room = f"room_{user_id}"
+    await sio.emit(
+        "guild_accepted_member",
+        socket_response_user,
+        room=member_accepted_room,
+    )
+
     return {"result": True, "message": "guild join"}

@@ -48,3 +48,43 @@ async def search_guild(
     found_guild: Guild = result.Guild
 
     return {"result": True, "guild": found_guild.serialize}
+
+
+class GetGuildRequest(BaseModel):
+    guild_id: int
+    user_id: int
+
+
+@api_router_v1.post("/guild/get", status_code=200)
+async def get_guild(
+    get_guild_request: GetGuildRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    auth_token = get_auth_token(request.headers.get("Authorization"))
+
+    if auth_token == "":
+        return get_failed_response("An error occurred", response)
+
+    user: Optional[User] = await check_token(db, auth_token)
+    if not user:
+        return get_failed_response("An error occurred", response)
+
+    guild_id = get_guild_request.guild_id
+    user_id = get_guild_request.user_id
+    guild_statement = (
+        select(Guild)
+        .where(Guild.guild_id == guild_id)
+        .where(Guild.user_id == user_id)
+        .where(Guild.accepted == True)
+    )
+    results = await db.execute(guild_statement)
+    result = results.first()
+
+    if not result:
+        return get_failed_response("no guilds found", response)
+
+    found_guild: Guild = result.Guild
+
+    return {"result": True, "guild": found_guild.serialize}
