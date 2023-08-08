@@ -1,8 +1,8 @@
 """adding guild messages
 
-Revision ID: f6d69102260a
+Revision ID: 7761d1685d6b
 Revises: 1c588af12699
-Create Date: 2023-08-05 15:23:02.621001
+Create Date: 2023-08-08 08:41:22.425388
 
 """
 import sqlalchemy as sa
@@ -10,7 +10,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "f6d69102260a"
+revision = "7761d1685d6b"
 down_revision = "1c588af12699"
 branch_labels = None
 depends_on = None
@@ -23,8 +23,8 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("body", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("guild_id", sa.Integer(), nullable=False),
-        sa.Column("sender_name", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-        sa.Column("sender_id", sa.Integer(), nullable=True),
+        sa.Column("sender_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("sender_id", sa.Integer(), nullable=False),
         sa.Column("timestamp", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
             ["sender_id"], ["User.id"], name=op.f("fk_GuildMessage_sender_id_User")

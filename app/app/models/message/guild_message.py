@@ -10,8 +10,8 @@ class GuildMessage(SQLModel, table=True):
 
     body: str
     guild_id: int = Field(index=True)
-    sender_name: Optional[str]  # If it's None it is an event message
-    sender_id: Optional[int] = Field(default=None, foreign_key="User.id")
+    sender_name: str
+    sender_id: int = Field(foreign_key="User.id")
     timestamp: datetime = Field(index=True, default=datetime.utcnow())
 
     @property
