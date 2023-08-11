@@ -70,7 +70,7 @@ async def accept_friend(
     await db.commit()
 
     socket_response = {
-        "from": user_from.serialize_minimal,
+        "from": user_from.serialize_no_detail,
     }
     room_to = "room_%s" % user_befriend.id
     await sio.emit(

@@ -83,7 +83,7 @@ async def add_friend(
         db.add(friend_befriend)
         await db.commit()
         socket_response = {
-            "from": user_from.serialize_minimal,
+            "from": user_from.serialize_no_detail,
         }
         room_to = "room_%s" % user_befriend.id
         await sio.emit(
@@ -102,7 +102,7 @@ async def add_friend(
         await db.commit()
         # Emit on the room of the person. If that person is online they will see the request
         socket_response = {
-            "from": user_from.serialize_minimal,
+            "from": user_from.serialize_no_detail,
         }
         room_to = "room_%s" % user_befriend.id
         await sio.emit(

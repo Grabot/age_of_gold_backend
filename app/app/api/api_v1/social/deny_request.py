@@ -55,7 +55,6 @@ async def deny_friend(
     result_deny_befriend = results_deny_befriend.first()
 
     if not result_deny_from or not result_deny_befriend:
-        # They both have to exist if you're accepting one
         return get_failed_response("something went wrong", response)
     else:
         friend_from: Friend = result_deny_from.Friend
@@ -69,7 +68,6 @@ async def deny_friend(
             # This can be a denied request or an unfriend.
             friend_from.accepted = False
             friend_befriend.accepted = False
-            # TODO: Add message that they are unfriended?
         db.add(friend_from)
         db.add(friend_befriend)
         await db.commit()
