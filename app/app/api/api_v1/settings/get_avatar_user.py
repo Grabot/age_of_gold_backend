@@ -22,13 +22,13 @@ async def get_avatar_user(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_avatar: Optional[User] = await check_token(db, auth_token)
     if not user_avatar:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     if user_avatar.is_default():
         file_name = user_avatar.avatar_filename_default()
     else:

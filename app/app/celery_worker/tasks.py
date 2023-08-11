@@ -11,7 +11,7 @@ celery_app = Celery("tasks", broker=settings.REDIS_URI, backend=f"db+{settings.S
 @celery_app.task
 def task_generate_avatar(avatar_filename: str, user_id: int):
     print("going to generate avatar")
-    generate_avatar(avatar_filename, settings.UPLOAD_FOLDER)
+    generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
 
     base_url = settings.BASE_URL
     api_prefix = settings.API_V1_STR

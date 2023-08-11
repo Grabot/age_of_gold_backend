@@ -22,17 +22,17 @@ async def reset_avatar(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_avatar: Optional[User] = await check_token(db, auth_token)
     if not user_avatar:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_avatar.set_default_avatar(True)
     db.add(user_avatar)
     await db.commit()
 
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = user_avatar.avatar_filename_default()
     file_path = os.path.join(file_folder, "%s.png" % file_name)
 

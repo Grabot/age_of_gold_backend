@@ -29,11 +29,11 @@ async def get_personal_message(
 ):
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
-        get_failed_response_messages()
+        return get_failed_response_messages()
 
     user_request = await check_token(db, auth_token)
     if not user_request:
-        get_failed_response_messages()
+        return get_failed_response_messages()
 
     get_user_id = get_message_personal_request.user_get_id
     user_statement = select(User).filter_by(id=get_user_id)
@@ -42,7 +42,6 @@ async def get_personal_message(
     if result is None:
         return None
     user_get = result.User
-    print("Executing Query!!!!")
 
     return await paginate(
         db,

@@ -28,11 +28,11 @@ async def deny_friend(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_from: Optional[User] = await check_token(db, auth_token)
     if not user_from:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_id = deny_request.user_id
     user_statement = select(User).where(User.id == user_id)
@@ -55,7 +55,6 @@ async def deny_friend(
     result_deny_befriend = results_deny_befriend.first()
 
     if not result_deny_from or not result_deny_befriend:
-        # They both have to exist if you're accepting one
         return get_failed_response("something went wrong", response)
     else:
         friend_from: Friend = result_deny_from.Friend
@@ -69,7 +68,6 @@ async def deny_friend(
             # This can be a denied request or an unfriend.
             friend_from.accepted = False
             friend_befriend.accepted = False
-            # TODO: Add message that they are unfriended?
         db.add(friend_from)
         db.add(friend_befriend)
         await db.commit()

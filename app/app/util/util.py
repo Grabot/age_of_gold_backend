@@ -36,7 +36,12 @@ def get_wraparounds(q, r):
 
 async def refresh_user_token(db: AsyncSession, access_token, refresh_token):
     # The access token should be active
-    user_statement = select(User).filter_by(token=access_token).options(selectinload(User.friends))
+    user_statement = (
+        select(User)
+        .filter_by(token=access_token)
+        .options(selectinload(User.friends))
+        .options(selectinload(User.guild))
+    )
     results = await db.execute(user_statement)
     result = results.first()
     if result is None:
@@ -74,7 +79,12 @@ async def refresh_user_token(db: AsyncSession, access_token, refresh_token):
 async def check_token(db: AsyncSession, token, retrieve_full=False) -> Optional[User]:
     if retrieve_full:
         print("getting full retrieval!")
-        user_statement = select(User).filter_by(token=token).options(selectinload(User.friends))
+        user_statement = (
+            select(User)
+            .filter_by(token=token)
+            .options(selectinload(User.friends))
+            .options(selectinload(User.guild))
+        )
     else:
         user_statement = select(User).filter_by(token=token)
     results = await db.execute(user_statement)

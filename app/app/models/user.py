@@ -47,6 +47,14 @@ class User(SQLModel, table=True):
         },
     )
 
+    guild: Optional["Guild"] = Relationship(
+        back_populates="guild_member",
+        sa_relationship_kwargs={
+            "uselist": False,
+            "primaryjoin": "and_(User.id==Guild.user_id, Guild.accepted==True)",
+        },
+    )
+
     tiles_changed: List["Tile"] = Relationship(
         back_populates="user_changed",
     )
@@ -158,7 +166,7 @@ class User(SQLModel, table=True):
                 file_name = self.avatar_filename()
             else:
                 file_name = self.avatar_filename_small()
-        file_folder = settings.UPLOAD_FOLDER
+        file_folder = settings.UPLOAD_FOLDER_AVATARS
 
         file_path = os.path.join(file_folder, "%s.png" % file_name)
         if not os.path.isfile(file_path):
@@ -181,6 +189,7 @@ class User(SQLModel, table=True):
             "tile_lock": self.tile_lock.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "friends": self.get_friend_ids(),
             "avatar": self.get_user_avatar(True),
+            "guild": self.guild.serialize if self.guild else None,
         }
 
     @property
@@ -202,7 +211,7 @@ class User(SQLModel, table=True):
         }
 
     @property
-    def serialize_no_avatar(self):
+    def serialize_no_detail(self):
         return {
             "id": self.id,
             "username": self.username,

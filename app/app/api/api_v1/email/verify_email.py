@@ -71,11 +71,11 @@ async def verify_email_get(
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_request: Optional[User] = await check_token(db, auth_token)
     if not user_request:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     expiration_time = 18000  # 5 hours
     reset_token = user_request.generate_auth_token(expiration_time).decode("ascii")

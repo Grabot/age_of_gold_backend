@@ -51,16 +51,10 @@ async def send_personal_message(
     friend_send_results = await db.execute(friend_send_statement)
     friend_send_result = friend_send_results.first()
     if not friend_send_result:
-        print("no friends yet")
         friend_send = user_send.befriend(user_receive)
         friend_receive = user_receive.befriend(user_send)
         db.add(friend_receive)
-        print("added friends")
-    else:
-        print("friend object found")
-        friend_send: Friend = friend_send_result.Friend
-
-    db.add(friend_send)
+        db.add(friend_send)
 
     now = datetime.utcnow()
 

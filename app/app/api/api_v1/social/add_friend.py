@@ -28,11 +28,11 @@ async def add_friend(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_from: Optional[User] = await check_token(db, auth_token)
     if not user_from:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user_id = add_friend_request.user_id
     user_statement = select(User).where(User.id == user_id)
@@ -83,7 +83,7 @@ async def add_friend(
         db.add(friend_befriend)
         await db.commit()
         socket_response = {
-            "from": user_from.serialize_minimal,
+            "from": user_from.serialize_no_detail,
         }
         room_to = "room_%s" % user_befriend.id
         await sio.emit(
@@ -102,7 +102,7 @@ async def add_friend(
         await db.commit()
         # Emit on the room of the person. If that person is online they will see the request
         socket_response = {
-            "from": user_from.serialize_minimal,
+            "from": user_from.serialize_no_detail,
         }
         room_to = "room_%s" % user_befriend.id
         await sio.emit(

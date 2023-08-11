@@ -32,11 +32,11 @@ async def change_avatar(
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     user: Optional[User] = await check_token(db, auth_token)
     if not user:
-        get_failed_response("An error occurred", response)
+        return get_failed_response("An error occurred", response)
 
     new_avatar = change_avatar_request.avatar
     new_avatar_small = change_avatar_request.avatar_small
@@ -45,7 +45,7 @@ async def change_avatar(
     new_avatar_small_pil = Image.open(io.BytesIO(base64.b64decode(new_avatar_small)))
 
     # Get the file name and path
-    file_folder = settings.UPLOAD_FOLDER
+    file_folder = settings.UPLOAD_FOLDER_AVATARS
     file_name = user.avatar_filename()
     file_name_small = user.avatar_filename() + "_small"
     # Store the image under the same hash but without the "default".
