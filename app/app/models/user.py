@@ -1,5 +1,6 @@
 import base64
 import os
+import secrets
 import time
 from datetime import datetime, timedelta
 from hashlib import md5
@@ -25,6 +26,7 @@ class User(SQLModel, table=True):
     username: str = Field(default=None, index=True, unique=True)
     email: str
     password_hash: str
+    salt: str
     about_me: Optional[str] = Field(default=None)
     last_seen: datetime = Field(default=datetime.utcnow())
     origin: int
@@ -71,17 +73,17 @@ class User(SQLModel, table=True):
         return self.tile_lock <= datetime.utcnow()
 
     def hash_password(self, password):
-        self.password_hash = pwd_context.hash(password)
+        salt = secrets.token_hex(8)
+        self.salt = salt
+        self.password_hash = pwd_context.hash(password + salt)
 
     def verify_password(self, password):
-        print("going to verify")
         # If the user has any other origin than regular it should not get here
         # because the verification is does elsewhere. So if it does, we return False
-        print("origin: %s" % self.origin)
         if self.origin != 0:
             return False
         else:
-            return pwd_context.verify(password, self.password_hash)
+            return pwd_context.verify(password + self.salt, self.password_hash)
 
     def set_token(self, token):
         self.token = token
