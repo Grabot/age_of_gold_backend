@@ -1,7 +1,11 @@
 import requests
 from celery import Celery
+from sqlalchemy.orm import Session
+from sqlmodel import select
 
+from app import database
 from app.config.config import settings
+from app.models import UserToken
 from app.util.avatar.generate_avatar import generate_avatar
 from app.util.email.send_email import send_email
 
@@ -35,5 +39,21 @@ def task_send_email(username: str, recipients: str, subject: str, body: str):
         subject,
         body,
     )
+
+    return {"success": True}
+
+
+@celery_app.task
+def task_remove_expired_tokens():
+    with Session(database.engine_sync) as session:
+        statement = select(UserToken)
+        results = session.execute(statement)
+        result = results.all()
+
+        for token in result:
+            user_token: UserToken = token.UserToken
+            if user_token.refresh_is_expired():
+                session.delete(user_token)
+        session.commit()
 
     return {"success": True}

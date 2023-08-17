@@ -50,6 +50,7 @@ async def reset_password(
     task = task_send_email.delay(user.username, user.email, subject, body)
     print(f"send forgotten password email! {task}")
 
+    print("creating user token 2")
     user_token = UserToken(
         user_id=user.id,
         access_token=reset_token,

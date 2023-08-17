@@ -76,6 +76,7 @@ async def verify_email_get(
     task = task_send_email.delay(user_request.username, user_request.email, subject, body)
     print(f"send verify email email! {task}")
 
+    print("creating user token 1")
     user_token = UserToken(
         user_id=user_request.id,
         access_token=reset_token,
