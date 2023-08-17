@@ -61,11 +61,13 @@ async def register_user(
 
     user = User(username=user_name, email=email, origin=0)
     user.hash_password(password)
-    [access_token, refresh_token] = get_user_tokens(user)
     db.add(user)
-    await db.commit()
     # Refresh user so we can get the id.
+    await db.commit()
     await db.refresh(user)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
 
     task = task_generate_avatar.delay(user.avatar_filename(), user.id)
     print(f"running avatar generation! {task}")
@@ -75,8 +77,8 @@ async def register_user(
     return {
         "result": True,
         "message": "user created successfully.",
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "access_token": user_token.access_token,
+        "refresh_token": user_token.refresh_token,
         "user": user.serialize_no_detail,
     }
 

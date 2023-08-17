@@ -1,1 +1,1 @@
-from . import login, refresh, register, token_login
+from . import login, logout, refresh, register, token_login

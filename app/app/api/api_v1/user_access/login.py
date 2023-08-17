@@ -64,18 +64,18 @@ async def login_user(
 
     if not user.verify_password(password):
         return get_failed_response("password not correct", response)
-    print("verification was successful!")
+
     # Valid login, we refresh the token for this user.
-    [access_token, refresh_token] = get_user_tokens(user)
-    db.add(user)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
     await db.commit()
 
     # We don't refresh the user object because we know all we want to know
     login_response = {
         "result": True,
         "message": "user logged in successfully.",
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "access_token": user_token.access_token,
+        "refresh_token": user_token.refresh_token,
         "user": return_user,
     }
 

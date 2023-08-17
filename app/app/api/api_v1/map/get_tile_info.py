@@ -26,6 +26,7 @@ async def get_tile_info(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     auth_token = get_auth_token(request.headers.get("Authorization"))
+    print(f"tile info test {auth_token}")
 
     if auth_token == "":
         return get_failed_response("An error occurred", response)
