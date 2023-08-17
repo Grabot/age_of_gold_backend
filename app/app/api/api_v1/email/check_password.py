@@ -1,26 +1,36 @@
-from fastapi import Depends, Response
+import time
+
+from authlib.jose import jwt
+from authlib.jose.errors import DecodeError
+from fastapi import Response
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
-from app.database import get_db
-from app.util.util import check_token
+from app.config.config import settings
 
 
 class PasswordCheckRequest(BaseModel):
     access_token: str
+    refresh_token: str
 
 
 @api_router_v1.post("/password/check", status_code=200)
 async def check_password(
     password_check_request: PasswordCheckRequest,
     response: Response,
-    db: AsyncSession = Depends(get_db),
 ) -> dict:
-    user = await check_token(db, password_check_request.access_token, False)
-    if not user:
-        return get_failed_response("user not found", response)
+    access_token = password_check_request.access_token
+    refresh_token = password_check_request.refresh_token
+
+    try:
+        _ = jwt.decode(access_token, settings.jwk)
+        refresh = jwt.decode(refresh_token, settings.jwk)
+    except DecodeError:
+        return get_failed_response("invalid token", response)
+
+    if refresh["exp"] < int(time.time()):
+        return get_failed_response("the link has expired", response)
 
     return {
         "result": True,

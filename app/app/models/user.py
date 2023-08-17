@@ -30,11 +30,11 @@ class User(SQLModel, table=True):
     about_me: Optional[str] = Field(default=None)
     last_seen: datetime = Field(default=datetime.utcnow())
     origin: int
-    token: Optional[str] = Field(default=None, index=True)
-    token_expiration: Optional[int] = Field(default=None)
     tile_lock: datetime = Field(default=datetime.utcnow())
     email_verified: bool = Field(default=False)
     default_avatar: bool = Field(default=True)
+
+    tokens: List["UserToken"] = Relationship(back_populates="user")
 
     friends: List["Friend"] = Relationship(
         back_populates="friend",
@@ -85,12 +85,6 @@ class User(SQLModel, table=True):
         else:
             return pwd_context.verify(password + self.salt, self.password_hash)
 
-    def set_token(self, token):
-        self.token = token
-
-    def set_token_expiration(self, token_expiration):
-        self.token_expiration = token_expiration
-
     def avatar(self, size):
         digest = md5(self.email.lower().encode("utf-8")).hexdigest()
         return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(digest, size)
@@ -113,7 +107,7 @@ class User(SQLModel, table=True):
         else:
             return False
 
-    def generate_auth_token(self, expires_in=3600):
+    def generate_auth_token(self, expires_in=1800):
         # also used for email password reset token
         payload = {
             "id": self.id,
@@ -125,7 +119,7 @@ class User(SQLModel, table=True):
         }
         return jwt.encode(settings.header, payload, settings.jwk)
 
-    def generate_refresh_token(self, expires_in=36000):
+    def generate_refresh_token(self, expires_in=345600):
         payload = {
             "user_name": self.username,
             "iss": settings.JWT_ISS,

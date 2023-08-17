@@ -26,15 +26,15 @@ async def refresh_user(
     if not user:
         return get_failed_response("An error occurred", response)
 
-    [access_token, refresh_token] = get_user_tokens(user)
-    db.add(user)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
     await db.commit()
 
     login_response = {
         "result": True,
         "message": "user logged in successfully.",
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+        "access_token": user_token.access_token,
+        "refresh_token": user_token.refresh_token,
         "user": user.serialize,
     }
 

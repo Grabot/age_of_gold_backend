@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, update
+from sqlmodel import delete, select, update
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
@@ -73,6 +73,17 @@ async def leave_guild(
     await db.execute(update_guild_members)
     await db.delete(guild_to_leave)
     await db.commit()
+
+    # final check if you were the last member of the guild. In that case remove all requests
+    guild_statement = (
+        select(Guild).where(Guild.guild_id == guild_to_leave.guild_id).where(Guild.accepted == True)
+    )
+    results = await db.execute(guild_statement)
+    result = results.first()
+    if not result:
+        delete_guild_objects = delete(Guild).where(Guild.guild_id == guild_to_leave.guild_id)
+        await db.execute(delete_guild_objects)
+        await db.commit()
 
     now = datetime.utcnow()
     socket_response = {

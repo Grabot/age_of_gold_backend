@@ -8,11 +8,12 @@ from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
 from app.database import get_db
 from app.models import User
-from app.util.util import check_token
+from app.util.util import refresh_user_token
 
 
 class PasswordUpdateRequest(BaseModel):
     access_token: str
+    refresh_token: str
     new_password: str
 
 
@@ -22,7 +23,10 @@ async def update_password(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    user: Optional[User] = await check_token(db, password_update_request.access_token, False)
+    access_token = password_update_request.access_token
+    refresh_token = password_update_request.refresh_token
+
+    user: Optional[User] = await refresh_user_token(db, access_token, refresh_token)
     if not user:
         return get_failed_response("user not found", response)
 
