@@ -18,7 +18,7 @@ def remove_expired_tokens():
 
 
 scheduler = AsyncIOScheduler()
-job = scheduler.add_job(remove_expired_tokens, trigger="cron", hour="0", minute="0")
+job = scheduler.add_job(remove_expired_tokens, trigger="cron", hour="0-23", minute="0-59")
 scheduler.start()
 
 

@@ -1,7 +1,9 @@
+import time
+
 import requests
 from celery import Celery
 from sqlalchemy.orm import Session
-from sqlmodel import select
+from sqlmodel import delete
 
 from app import database
 from app.config.config import settings
@@ -46,14 +48,10 @@ def task_send_email(username: str, recipients: str, subject: str, body: str):
 @celery_app.task
 def task_remove_expired_tokens():
     with Session(database.engine_sync) as session:
-        statement = select(UserToken)
-        results = session.execute(statement)
-        result = results.all()
-
-        for token in result:
-            user_token: UserToken = token.UserToken
-            if user_token.refresh_is_expired():
-                session.delete(user_token)
+        delete_expired_tokens = delete(UserToken).where(
+            UserToken.refresh_token_expiration < int(time.time())
+        )
+        session.execute(delete_expired_tokens)
         session.commit()
 
     return {"success": True}

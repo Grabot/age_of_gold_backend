@@ -30,8 +30,6 @@ class User(SQLModel, table=True):
     about_me: Optional[str] = Field(default=None)
     last_seen: datetime = Field(default=datetime.utcnow())
     origin: int
-    # token: Optional[str] = Field(default=None, index=True)  # current active token
-    # token_expiration: Optional[int] = Field(default=None)  # current active token expiration
     tile_lock: datetime = Field(default=datetime.utcnow())
     email_verified: bool = Field(default=False)
     default_avatar: bool = Field(default=True)
