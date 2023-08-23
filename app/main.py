@@ -2,25 +2,13 @@ import os
 import stat
 
 import uvicorn
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
 
 from app.api import api_v1
-from app.celery_worker.tasks import task_remove_expired_tokens
 from app.config.config import settings
 from app.sockets.sockets import sio_app
-
-
-def remove_expired_tokens():
-    task_remove_expired_tokens.delay()
-
-
-scheduler = AsyncIOScheduler()
-job = scheduler.add_job(remove_expired_tokens, trigger="cron", hour="0-23", minute="0-59")
-scheduler.start()
-
 
 app = FastAPI()
 
