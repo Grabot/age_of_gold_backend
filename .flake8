@@ -43,3 +43,4 @@ per-file-ignores =
     ./app/app/api/api_v1/guild/remove_guild_member.py:E712
     ./app/app/api/api_v1/message/send_message_guild.py:E712
     ./app/app/models/user_token.py:F821
+    ./app/app/api/api_v1/message/read_message_guild.py:E712

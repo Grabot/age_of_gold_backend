@@ -45,16 +45,20 @@ async def send_personal_message(
         return get_failed_response("user not found", response)
     user_receive: User = user_receive_result.User
 
-    friend_send_statement = select(Friend).filter_by(
-        user_id=user_send.id, friend_id=user_receive.id
+    friend_receive_statement = select(Friend).filter_by(
+        user_id=user_receive.id, friend_id=user_send.id
     )
-    friend_send_results = await db.execute(friend_send_statement)
-    friend_send_result = friend_send_results.first()
-    if not friend_send_result:
+    friend_receive_results = await db.execute(friend_receive_statement)
+    friend_receive_result = friend_receive_results.first()
+    if not friend_receive_result:
         friend_send = user_send.befriend(user_receive)
         friend_receive = user_receive.befriend(user_send)
-        db.add(friend_receive)
         db.add(friend_send)
+    else:
+        friend_receive = friend_receive_result.Friend
+
+    friend_receive.update_unread_messages()
+    db.add(friend_receive)
 
     now = datetime.utcnow()
 

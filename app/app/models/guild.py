@@ -34,10 +34,17 @@ class Guild(SQLModel, table=True):
     # members of the guild with their guild rank.
     # So [[1, 0], [2, 1]] would mean that user 1 is the guild leader and user 2 is a member
     member_ids: List[List[int]] = Field(default=[[]], sa_column=Column(ARRAY(Integer())))
+    unread_messages: int = Field(default=0)
 
     accepted: bool = Field(default=False)
     # Indicates if a request is made
     requested: Optional[bool] = Field(default=None)
+
+    def update_unread_messages(self):
+        self.unread_messages += 1
+
+    def read_messages(self):
+        self.unread_messages = 0
 
     def crest_filename(self):
         return md5(self.guild_name.lower().encode("utf-8")).hexdigest()
@@ -63,6 +70,7 @@ class Guild(SQLModel, table=True):
         return {
             "guild_id": self.guild_id,
             "user_id": self.user_id,
+            "unread_messages": self.unread_messages,
             "guild_name": self.guild_name,
             "guild_crest": self.get_guild_crest(),
             "members": self.member_ids,
@@ -76,6 +84,7 @@ class Guild(SQLModel, table=True):
         return {
             "guild_id": self.guild_id,
             "user_id": self.user_id,
+            "unread_messages": self.unread_messages,
             "guild_name": self.guild_name,
             "accepted": self.accepted,
             "requested": self.requested,

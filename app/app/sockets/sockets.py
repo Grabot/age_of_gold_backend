@@ -31,7 +31,6 @@ async def handle_join(sid, *args, **kwargs):
     user_id = data["user_id"]
     if user_id != -1:
         room = "room_%s" % user_id
-        print("joined room: %s" % room)
         sio.enter_room(sid, room)
         await sio.emit(
             "message_event",
@@ -46,7 +45,6 @@ async def handle_join_guild(sid, *args, **kwargs):
     guild_id = data["guild_id"]
     if guild_id != -1:
         room = f"guild_{guild_id}"
-        print("joined guild room %s" % room)
         sio.enter_room(sid, room)
         await sio.emit(
             "message_event",
@@ -62,7 +60,6 @@ async def handle_leave(sid, *args, **kwargs):
     if user_id != -1:
         room = "room_%s" % user_id
         sio.leave_room(sid, room)
-        print("left room %s" % room)
         await sio.emit(
             "message_event",
             "User has left room %s" % room,
@@ -77,7 +74,6 @@ async def handle_leave_guild(sid, *args, **kwargs):
     if guild_id != -1:
         room = f"guild_{guild_id}"
         sio.leave_room(sid, room)
-        print("left guild room %s" % room)
         await sio.emit(
             "message_event",
             "User has left room %s" % room,
@@ -100,7 +96,6 @@ async def handle_join_hex(sid, *args, **kwargs):
         "User is looking at hex %s %s and has entered room %s" % (q, r, room),
         room=room,
     )
-    print("joined hex room: %s" % room)
 
 
 @sio.on("leave_hex")
@@ -118,4 +113,3 @@ async def handle_leave_hex(sid, *args, **kwargs):
         "User has left hex room %s" % room,
         room=room,
     )
-    print("left hex room: %s" % room)
