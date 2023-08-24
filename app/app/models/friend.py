@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -32,7 +31,6 @@ class Friend(SQLModel, table=True):
     # Store the name of the friend on the friend object
     friend_name: str
 
-    last_time_activity: datetime = Field(default=datetime.utcnow())
     unread_messages: int = Field(default=0)
     accepted: bool = Field(default=False)
     ignored: bool = Field(default=False)
@@ -40,12 +38,17 @@ class Friend(SQLModel, table=True):
     # If it's filled it determines who made the first move to send the request.
     requested: Optional[bool] = Field(default=None)
 
+    def update_unread_messages(self):
+        self.unread_messages += 1
+
+    def read_messages(self):
+        self.unread_messages = 0
+
     @property
     def serialize(self):
         return {
             "id": self.id,
             "friend_id": self.friend_id,
-            "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "unread_messages": self.unread_messages,
             "ignored": self.ignored,
             "accepted": self.accepted,
@@ -60,7 +63,6 @@ class Friend(SQLModel, table=True):
         return {
             "id": self.id,
             "friend_id": self.friend_id,
-            "last_time_activity": self.last_time_activity.strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "unread_messages": self.unread_messages,
             "ignored": self.ignored,
             "accepted": self.accepted,

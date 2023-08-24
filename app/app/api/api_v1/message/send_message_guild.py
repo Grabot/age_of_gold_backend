@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
+from sqlmodel import update
 
 from app.api.api_v1 import api_router_v1
 from app.api.rest_util import get_failed_response
@@ -38,13 +38,13 @@ async def send_guild_message(
     message_body = send_message_guild_request.message
     guild_id = send_message_guild_request.guild_id
 
-    guild_send_statement = (
-        select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
+    update_guild_members = (
+        update(Guild)
+        .values(unread_messages=Guild.unread_messages + 1)
+        .where(Guild.guild_id == guild_id)
+        .where(Guild.accepted == True)
     )
-    guild_send_results = await db.execute(guild_send_statement)
-    guild_send_result = guild_send_results.first()
-    if not guild_send_result:
-        return get_failed_response("guild not found", response)
+    await db.execute(update_guild_members)
 
     now = datetime.utcnow()
 

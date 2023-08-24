@@ -26,9 +26,7 @@ async def get_guild_message(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    print(f"header {request}")
     auth_token = get_auth_token(request.headers.get("Authorization"))
-    print(f"token {auth_token}")
     if auth_token == "":
         return get_failed_response_messages()
 

@@ -52,7 +52,7 @@ async def read_personal_message(
 
     print("unread messages: %s" % friend.unread_messages)
 
-    friend.unread_messages = 0
+    friend.read_messages()
     db.add(friend)
     await db.commit()
 

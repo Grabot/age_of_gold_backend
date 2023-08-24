@@ -28,7 +28,6 @@ class User(SQLModel, table=True):
     password_hash: str
     salt: str
     about_me: Optional[str] = Field(default=None)
-    last_seen: datetime = Field(default=datetime.utcnow())
     origin: int
     tile_lock: datetime = Field(default=datetime.utcnow())
     email_verified: bool = Field(default=False)
@@ -95,7 +94,6 @@ class User(SQLModel, table=True):
         return friend
 
     async def is_friend(self, db: AsyncSession, user):
-        # TODO: Test if it works!
         if user:
             friend_statement = select(Friend).filter_by(user_id=self.id, friend_id=user.id)
             results = await db.execute(friend_statement)
