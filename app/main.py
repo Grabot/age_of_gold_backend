@@ -9,6 +9,8 @@ from fastapi_pagination import add_pagination
 from app.api import api_v1
 from app.config.config import settings
 from app.sockets.sockets import sio_app
+from contextlib import asynccontextmanager
+
 
 app = FastAPI()
 
@@ -34,14 +36,17 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/", sio_app)
 
 
-@app.on_event("startup")
-def startup_function():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
     if not os.path.exists(settings.UPLOAD_FOLDER_AVATARS):
         os.makedirs(settings.UPLOAD_FOLDER_AVATARS)
         os.chmod(settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXO)
     if not os.path.exists(settings.UPLOAD_FOLDER_CRESTS):
         os.makedirs(settings.UPLOAD_FOLDER_CRESTS)
         os.chmod(settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXO)
+    yield
+    # shutdown
 
 
 if __name__ == "__main__":
