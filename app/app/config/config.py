@@ -84,8 +84,8 @@ class Settings(BaseSettings):
     MAIL_PASSWORD: str = os.environ.get("MAIL_PASSWORD")
     MAIL_SENDERNAME: str = os.environ.get("MAIL_SENDERNAME")
     BASE_URL: str = os.environ.get("BASE_URL")
-    UPLOAD_FOLDER_AVATARS : str= "static/uploads/avatars"
-    UPLOAD_FOLDER_CRESTS: str = "static/uploads/crests"
+    UPLOAD_FOLDER_AVATARS : str= "/app/static/uploads/avatars"
+    UPLOAD_FOLDER_CRESTS: str = "/app/static/uploads/crests"
 
     class Config:
         case_sensitive = True

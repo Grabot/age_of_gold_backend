@@ -1,3 +1,5 @@
+import os
+import stat
 import json
 import time
 
@@ -15,8 +17,18 @@ from .map_utils import get_tiles, go_left, go_left_up, go_right, go_right_down
 
 @api_router_v1.post("/map/create", status_code=200)
 async def create_map(db: AsyncSession = Depends(get_db)) -> dict:
+    # This is an initialization function that has to be called after the first deployment.
     start_time = time.time()
-    print("create map!")
+
+    print("first create folders")
+    if not os.path.exists(settings.UPLOAD_FOLDER_AVATARS):
+        os.makedirs(settings.UPLOAD_FOLDER_AVATARS)
+        os.chmod(settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXO)
+    if not os.path.exists(settings.UPLOAD_FOLDER_CRESTS):
+        os.makedirs(settings.UPLOAD_FOLDER_CRESTS)
+        os.chmod(settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXO)
+
+    print(f"create map of size: {settings.map_size}")
     hexagon_select = select(Hexagon).where(Hexagon.q == 0).where(Hexagon.r == 0)
     results = await db.execute(hexagon_select)
     hexagon = results.first()
