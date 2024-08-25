@@ -31,7 +31,7 @@ async def handle_join(sid, *args, **kwargs):
     user_id = data["user_id"]
     if user_id != -1:
         room = "room_%s" % user_id
-        sio.enter_room(sid, room)
+        await sio.enter_room(sid, room)
         await sio.emit(
             "message_event",
             "User has entered room %s" % room,
@@ -45,7 +45,7 @@ async def handle_join_guild(sid, *args, **kwargs):
     guild_id = data["guild_id"]
     if guild_id != -1:
         room = f"guild_{guild_id}"
-        sio.enter_room(sid, room)
+        await sio.enter_room(sid, room)
         await sio.emit(
             "message_event",
             "Guild member has entered their guild room %s" % room,
@@ -59,7 +59,7 @@ async def handle_leave(sid, *args, **kwargs):
     user_id = data["user_id"]
     if user_id != -1:
         room = "room_%s" % user_id
-        sio.leave_room(sid, room)
+        await sio.leave_room(sid, room)
         await sio.emit(
             "message_event",
             "User has left room %s" % room,
@@ -73,7 +73,7 @@ async def handle_leave_guild(sid, *args, **kwargs):
     guild_id = data["guild_id"]
     if guild_id != -1:
         room = f"guild_{guild_id}"
-        sio.leave_room(sid, room)
+        await sio.leave_room(sid, room)
         await sio.emit(
             "message_event",
             "User has left room %s" % room,
@@ -90,7 +90,7 @@ async def handle_join_hex(sid, *args, **kwargs):
     if q < -map_size or q > map_size or r < -map_size or r > map_size:
         [q, _, r, _] = get_wraparounds(q, r)
     room = "%s_%s" % (q, r)
-    sio.enter_room(sid, room)
+    await sio.enter_room(sid, room)
     await sio.emit(
         "message_event",
         "User is looking at hex %s %s and has entered room %s" % (q, r, room),
@@ -107,7 +107,7 @@ async def handle_leave_hex(sid, *args, **kwargs):
     if q < -map_size or q > map_size or r < -map_size or r > map_size:
         [q, _, r, _] = get_wraparounds(q, r)
     room = "%s_%s" % (q, r)
-    sio.leave_room(sid, room)
+    await sio.leave_room(sid, room)
     await sio.emit(
         "message_event",
         "User has left hex room %s" % room,

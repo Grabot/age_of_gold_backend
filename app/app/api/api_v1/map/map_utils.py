@@ -4,10 +4,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.config import settings
 from app.models import Hexagon, Tile
+import random
 
 
 def create_tile(hexagon_id, q_tile, r_tile):
-    return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=0)
+    # Create a tile with any of the 5 blueish tile types
+    temp = random.randint(0, 4)
+    if temp == 0:
+        return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=2)
+    elif temp == 1:
+        return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=5)
+    elif temp == 2:
+        return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=7)
+    elif temp == 3:
+        return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=8)
+    else:
+        return Tile(q=q_tile, r=r_tile, hexagon_id=hexagon_id, type=14)
 
 
 def get_tiles(hexagon_id, q, r):

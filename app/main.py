@@ -36,18 +36,5 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/", sio_app)
 
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     # startup
-#     if not os.path.exists(settings.UPLOAD_FOLDER_AVATARS):
-#         os.makedirs(settings.UPLOAD_FOLDER_AVATARS)
-#         os.chmod(settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXO)
-#     if not os.path.exists(settings.UPLOAD_FOLDER_CRESTS):
-#         os.makedirs(settings.UPLOAD_FOLDER_CRESTS)
-#         os.chmod(settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXO)
-#     yield
-#     # shutdown
-
-
 if __name__ == "__main__":
     uvicorn.run("main:app", port=5000, host="0.0.0.0", reload=True)
