@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.api.rest_util import get_failed_response
+from app.util.rest_util import get_failed_response
 from app.celery_worker.tasks import task_generate_avatar
 from app.database import get_db
 from app.models import User

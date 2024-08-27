@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
-from app.api.rest_util import get_failed_response
+from app.util.rest_util import get_failed_response
 from app.celery_worker.tasks import task_send_email
 from app.config.config import settings
 from app.database import get_db
@@ -74,9 +74,7 @@ async def verify_email_get(
     )
 
     task = task_send_email.delay(user_request.username, user_request.email, subject, body)
-    print(f"send verify email email! {task}")
 
-    print("creating user token 1")
     user_token = UserToken(
         user_id=user_request.id,
         access_token=reset_token,

@@ -8,7 +8,7 @@ from sqlmodel import select, update
 
 from app.api.api_v1 import api_router_v1
 from app.api.api_v1.guild.create_guild import save_guild_crest
-from app.api.rest_util import get_failed_response
+from app.util.rest_util import get_failed_response
 from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio

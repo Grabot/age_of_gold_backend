@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1.0"
+    API_LOGIN_STR: str = "/login"
 
     POSTGRES_URL: str = os.environ["POSTGRES_URL"]
     POSTGRES_PORT: int = os.environ["POSTGRES_PORT"]
@@ -40,6 +41,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = os.environ.get("GOOGLE_CLIENT_ID", None)
     GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     GOOGLE_DISCOVERY_URL: str = "https://accounts.google.com/.well-known/openid-configuration"
+    GOOGLE_ACCESS_TOKEN_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     GITHUB_AUTHORIZE: str = "https://github.com/login/oauth/authorize"
     GITHUB_ACCESS: str = "https://github.com/login/oauth/access_token"

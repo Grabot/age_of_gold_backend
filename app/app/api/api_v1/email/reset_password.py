@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.api.rest_util import get_failed_response
+from app.util.rest_util import get_failed_response
 from app.celery_worker.tasks import task_send_email
 from app.config.config import settings
 from app.database import get_db
@@ -41,16 +41,13 @@ async def reset_password(
     reset_token = user.generate_auth_token(access_expiration_time).decode("ascii")
     refresh_reset_token = user.generate_refresh_token(refresh_expiration_time).decode("ascii")
 
-    print("attempting to send an email to %s" % email)
     subject = "Age of Gold - Change your password"
     body = reset_password_email.format(
         base_url=settings.BASE_URL, token=reset_token, refresh_token=refresh_reset_token
     )
 
     task = task_send_email.delay(user.username, user.email, subject, body)
-    print(f"send forgotten password email! {task}")
 
-    print("creating user token 2")
     user_token = UserToken(
         user_id=user.id,
         access_token=reset_token,
@@ -61,9 +58,6 @@ async def reset_password(
     db.add(user_token)
     await db.commit()
 
-    print("we have stored a user token")
-    print(f"access token: {reset_token}")
-    print(f"refresh token: {refresh_reset_token}")
     return {
         "result": True,
         "message": "password check was good",
