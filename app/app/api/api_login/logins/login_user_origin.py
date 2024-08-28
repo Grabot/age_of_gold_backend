@@ -30,6 +30,7 @@ async def login_user_origin(
         .where(User.origin == origin)
         .where(func.lower(User.email) == users_email.lower())
         .options(selectinload(User.friends))
+        .options(selectinload(User.guild))
     )
     results_origin = await db.execute(statement_origin)
     result_user_origin = results_origin.first()
