@@ -1,6 +1,3 @@
-import os
-import stat
-
 import uvicorn
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,8 +6,6 @@ from fastapi_pagination import add_pagination
 from app.api import api_v1, api_login
 from app.config.config import settings
 from app.sockets.sockets import sio_app
-from contextlib import asynccontextmanager
-
 
 app = FastAPI()
 

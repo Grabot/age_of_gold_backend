@@ -1,19 +1,16 @@
 from base64 import b64encode
-from typing import Optional
 from urllib.parse import urlencode
 
 import requests
-from fastapi import Depends, Request, status
-from fastapi.responses import RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.api.api_login import api_router_login
 from app.api.api_login.logins.login_user_origin import login_user_origin
 from app.celery_worker.tasks import task_generate_avatar
 from app.config.config import settings
 from app.database import get_db
-from app.models import User
 from app.util.util import get_user_tokens
+from fastapi import Depends, Request, status
+from fastapi.responses import RedirectResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @api_router_login.get("/reddit", status_code=200)
@@ -111,7 +108,7 @@ async def reddit_callback(
         # Send user to the world
         request_base_url = str(request.base_url)
         request_base_url = request_base_url.replace("http://", "https://", 1)
-        world_url = request_base_url + "butterflyaccess"
+        world_url = request_base_url + "worldaccess"
         world_url_params = world_url + "?" + url_params
         return RedirectResponse(world_url_params)
     else:

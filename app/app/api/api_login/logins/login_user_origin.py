@@ -1,14 +1,13 @@
 import re
 from typing import Optional
 
+from app.database import get_db
+from app.models import User
 from fastapi import Depends
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
-
-from app.database import get_db
-from app.models import User
 from sqlalchemy.orm import selectinload
+from sqlmodel import select
 
 
 async def login_user_origin(
