@@ -7,14 +7,14 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1.0"
     API_LOGIN_STR: str = "/login"
 
-    POSTGRES_URL: str = os.environ["POSTGRES_URL"]
-    POSTGRES_PORT: int = os.environ["POSTGRES_PORT"]
-    POSTGRES_USER: str = os.environ["POSTGRES_USER"]
-    POSTGRES_PASSWORD: str = os.environ["POSTGRES_PASSWORD"]
-    POSTGRES_DB: str = os.environ["POSTGRES_DB"]
+    POSTGRES_URL: str = os.environ.get("POSTGRES_URL")
+    POSTGRES_PORT: int = os.environ.get("POSTGRES_PORT")
+    POSTGRES_USER: str = os.environ.get("POSTGRES_USER")
+    POSTGRES_PASSWORD: str = os.environ.get("POSTGRES_PASSWORD")
+    POSTGRES_DB: str = os.environ.get("POSTGRES_DB")
 
-    REDIS_URL: str = os.environ["REDIS_URL"]
-    REDIS_PORT: int = os.environ["REDIS_PORT"]
+    REDIS_URL: str = os.environ.get("REDIS_URL")
+    REDIS_PORT: int = os.environ.get("REDIS_PORT")
 
     ASYNC_DB_URL: str = "postgresql+asyncpg://{user}:{pw}@{url}:{port}/{db}".format(
         user=POSTGRES_USER,

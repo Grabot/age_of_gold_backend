@@ -41,6 +41,7 @@ celery = "5.4.0"
 APScheduler = "3.10.4"
 pydantic-settings = "2.4.0"
 requests = "2.32.3"
+numpy = "2.1.0"
 
 
 [build-system]
