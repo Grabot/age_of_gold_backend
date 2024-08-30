@@ -45,7 +45,7 @@ async def create_map_row(
     hexagon = results.first()
     if not hexagon:
         np.random.seed(0)
-        noise = generate_fractal_noise_2d((2048, 2048), (32, 32), 5)
+        noise = generate_fractal_noise_2d((2048, 2048), (64, 64), 5)
 
         # Find the left most hexagon and create the row going to the right
         q += -1 * (settings.map_size + 1)

@@ -26,7 +26,7 @@ async def create_map(db: AsyncSession = Depends(get_db)) -> dict:
     hexagon = results.first()
     if not hexagon:
         np.random.seed(0)
-        noise = generate_fractal_noise_2d((2048, 2048), (32, 32), 5)
+        noise = generate_fractal_noise_2d((2048, 2048), (64, 64), 5)
         print(f"create map of size: {settings.map_size}")
 
         for row in range(-settings.map_size, settings.map_size+1):
