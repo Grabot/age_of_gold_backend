@@ -12,6 +12,7 @@ from app.models import User
 from app.models.message import GlobalMessage
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class SendMessageGlobalRequest(BaseModel):
@@ -37,7 +38,7 @@ async def send_global_message(
     users_username = user.username
     users_id = user.id
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
 
     socket_response = {
         "body": message_body,

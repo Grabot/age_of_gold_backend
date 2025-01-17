@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class RemoveGuildMemberRequest(BaseModel):
@@ -26,7 +27,6 @@ async def remove_guild_member(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start remove guild member")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -86,7 +86,7 @@ async def remove_guild_member(
     await db.delete(guild_to_leave)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "member_removed": {
             "user_id": remove_member_id,

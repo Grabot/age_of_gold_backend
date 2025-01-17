@@ -26,7 +26,6 @@ async def get_requests_user_got(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild get send requests")
 
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
@@ -77,7 +76,6 @@ async def get_requests_guild_got(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild get got requests")
 
     auth_token = get_auth_token(request.headers.get("Authorization"))
 

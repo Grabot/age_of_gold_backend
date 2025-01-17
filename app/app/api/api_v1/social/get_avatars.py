@@ -32,7 +32,6 @@ async def get_avatars(
     if not user_request:
         return get_failed_response("An error occurred", response)
 
-    print(f"going to filter the following list of avatars: {get_avatars_request.avatars}")
     statement_hexes = select(User).filter(User.id.in_(get_avatars_request.avatars))
     results = await db.execute(statement_hexes)
     users = results.all()

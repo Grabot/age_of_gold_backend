@@ -24,7 +24,6 @@ async def add_friend(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print(f"accept friend request with {add_friend_request.user_id}")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -52,7 +51,6 @@ async def add_friend(
     result_friend_from = results_friend_from.first()
 
     if not result_friend_from:
-        print("they were not friends yet, so going to create the friend objects")
         # not friends yet, create Friend objects, always for both users!
         friend_befriend = user_befriend.befriend(user_from)
         friend_from = user_from.befriend(user_befriend)
@@ -71,10 +69,8 @@ async def add_friend(
 
     # set requested indicator
     if friend_from.requested is True and friend_befriend.requested is False:
-        print("request is already sent!")
         return {"result": True, "message": "request already sent"}
     elif friend_befriend.requested is True and friend_from.requested is False:
-        print("The other person has sent a request")
         # This is if a friend request is send by the other person and now this person sends one
         # Let's assume they both accept to be friends
         friend_from.accepted = True
@@ -94,7 +90,6 @@ async def add_friend(
 
         return {"result": True, "message": "They are now friends"}
     else:
-        print("Successfully sent a request")
         friend_from.requested = True
         friend_befriend.requested = False
         db.add(friend_from)

@@ -1,4 +1,4 @@
-verification_email = """
+delete_account_email = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,7 +16,7 @@ verification_email = """
       font-family: 'Source Sans Pro';
       font-style: normal;
       font-weight: 400;
-      src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url(https://fonts.gstatic.com/s/sourcesanspro/v10/ODelI1aHBYDBqgeIAH2zlBM0YzuT7MdOe03otPbuUS0.woff) format('woff');
+      src: local('Source Sans Pro RegularR'), local('SourceSansPro-Regular'), url(https://fonts.gstatic.com/s/sourcesanspro/v10/ODelI1aHBYDBqgeIAH2zlBM0YzuT7MdOe03otPbuUS0.woff) format('woff');
     }}
     @font-face {{
       font-family: 'Source Sans Pro';
@@ -141,7 +141,7 @@ verification_email = """
         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
           <tr>
             <td align="left" bgcolor="#ffffff" style="padding: 36px 24px 0; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; border-top: 3px solid #d4dadf;">
-              <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 48px;">Verify Your Email Address</h1>
+              <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 48px;">Delete account</h1>
             </td>
           </tr>
         </table>
@@ -167,7 +167,7 @@ verification_email = """
           <!-- start copy -->
           <tr>
             <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
-              <p style="margin: 0;">Please verify that this is your email address by clicking on the button below.</p>
+              <p style="margin: 0;">A request was made to delete your account. If this was you, please use the link below to finalize the account removal.</p>
             </td>
           </tr>
           <!-- end copy -->
@@ -181,7 +181,7 @@ verification_email = """
                     <table border="0" cellpadding="0" cellspacing="0">
                       <tr>
                         <td align="center" bgcolor="#1a82e2" style="border-radius: 6px;">
-                          <a href="{base_url}/email_verification?access_token={token}&refresh_token={refresh_token}" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Verify email address</a>
+                          <a href="{base_url}/deletion?access_token={token}&refresh_token={refresh_token}&origin={origin}" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">Delete account</a>
                         </td>
                       </tr>
                     </table>
@@ -233,6 +233,7 @@ verification_email = """
       </td>
     </tr>
     <!-- end footer -->
+
 
   </table>
   <!-- end body -->

@@ -10,7 +10,6 @@ from app.models import Hexagon
 
 @api_router_v1.get("/test", status_code=200)
 async def get_test(db: AsyncSession = Depends(get_db)) -> dict:
-    print("1")
     statement = (
         select(Hexagon)
         .where(Hexagon.q == 0 and Hexagon.r == 0)
@@ -18,7 +17,4 @@ async def get_test(db: AsyncSession = Depends(get_db)) -> dict:
     )
     results = await db.execute(statement)
     hexagon = results.first()
-    print(f"hexagon: {hexagon}")
-    print(f"hexagon: {hexagon.Hexagon}")
-    print(f"hexagon: {hexagon.Hexagon.tiles}")
     return {"results": "true"}

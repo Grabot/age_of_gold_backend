@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class ChangeGuildMemberRankRequest(BaseModel):
@@ -27,7 +28,6 @@ async def change_guild_member_rank(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start change guild member rank request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -47,8 +47,6 @@ async def change_guild_member_rank(
         # The permission needs to be 0 or 1 to remove someone.
         return get_failed_response("No permission to change someone's rank", response)
 
-    print("user gotten and guild correct")
-
     guild_id = change_guild_member_rank_request.guild_id
     changed_member_id = change_guild_member_rank_request.changed_member_id
     new_rank = change_guild_member_rank_request.new_rank
@@ -67,7 +65,6 @@ async def change_guild_member_rank(
     if guild_id != logged_in_guild.guild_id:
         return get_failed_response("An error occurred", response)
 
-    print(f"going to change rank of member {changed_member_id} to {new_rank}")
     guild_statement = (
         select(Guild)
         .where(Guild.guild_id == guild_id)
@@ -81,7 +78,6 @@ async def change_guild_member_rank(
 
     guild_to_change_rank: Guild = result.Guild
     member_ids = guild_to_change_rank.member_ids
-    print(f"member ids before {member_ids}")
     for m in range(0, len(member_ids)):
         member = member_ids[m]
         if member[0] == changed_member_id:
@@ -90,7 +86,7 @@ async def change_guild_member_rank(
             else:
                 member[1] = new_rank
                 break
-    print(f"member ids after {member_ids}")
+
     update_guild_members = (
         update(Guild)
         .values(member_ids=member_ids)
@@ -100,7 +96,7 @@ async def change_guild_member_rank(
     await db.execute(update_guild_members)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "member_changed": {
             "user_id": changed_member_id,

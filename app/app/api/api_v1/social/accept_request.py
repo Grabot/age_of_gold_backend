@@ -24,7 +24,6 @@ async def accept_friend(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print(f"accept friend request with {accept_request.user_id}")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":

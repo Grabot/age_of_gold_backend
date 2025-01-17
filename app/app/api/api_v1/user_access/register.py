@@ -14,6 +14,7 @@ from app.database import get_db
 from app.models import User
 from app.sockets.sockets import sio
 from app.util.util import get_user_tokens
+import hashlib
 
 
 class RegisterRequest(BaseModel):
@@ -35,31 +36,28 @@ async def register_user(
     if email is None or password is None or user_name is None:
         return get_failed_response("Invalid request", response)
 
-    print("all fields present, starting first query")
     # Not loading the friends and followers here. Just checking if the username is taken.
     statement = select(User).where(func.lower(User.username) == user_name.lower())
     results = await db.execute(statement)
     result = results.first()
 
-    print(f"results: {result}")
     if result is not None:
         return get_failed_response(
             "User is already taken, please choose a different one.", response
         )
 
-    print("starting second statement")
     # Also not loading the friends and followers here, just checking if the email is taken.
-    statement = select(User).where(User.origin == 0).where(func.lower(User.email) == email.lower())
+    email_hash = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
+    statement = select(User).where(User.origin == 0).where(User.email_hash == email_hash)
     results = await db.execute(statement)
     result = results.first()
 
-    print(f"results: {result}")
     if result is not None:
         return get_failed_response(
             "This email has already been used to create an account", response
         )
 
-    user = User(username=user_name, email=email, origin=0)
+    user = User(username=user_name, email_hash=email_hash, origin=0)
     user.hash_password(password)
     db.add(user)
     # Refresh user so we can get the id.
@@ -70,7 +68,6 @@ async def register_user(
     await db.commit()
 
     task = task_generate_avatar.delay(user.avatar_filename(), user.id)
-    print(f"running avatar generation! {task}")
 
     # Return the user with no friend information because they have none yet.
     # And no avatar, because it might still be generating.

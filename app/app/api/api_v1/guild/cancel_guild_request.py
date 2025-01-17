@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class CancelGuildRequestUserRequest(BaseModel):
@@ -26,7 +27,6 @@ async def cancel_guild_request_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild cancel request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -57,7 +57,7 @@ async def cancel_guild_request_user(
     await db.delete(found_guild)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response_guild = {
         "member_cancelled": {
             "user_id": user_id,
@@ -101,7 +101,6 @@ async def cancel_guild_request_guild(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild cancel request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -132,7 +131,7 @@ async def cancel_guild_request_guild(
     await db.delete(found_guild)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response_guild = {
         "member_cancelled": {
             "user_id": user_id,

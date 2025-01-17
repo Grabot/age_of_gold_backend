@@ -57,7 +57,7 @@ async def reddit_callback(
     authorization = "Basic %s" % http_auth
     headers = {
         "Accept": "application/json",
-        "User-agent": "flutterfly login bot 0.1",
+        "User-agent": "Age of Gold login bot 0.1",
         "Authorization": authorization,
     }
 
@@ -67,7 +67,7 @@ async def reddit_callback(
 
     headers_authorization = {
         "Accept": "application/json",
-        "User-agent": "flutterfly login bot 0.1",
+        "User-agent": "Age of Gold login bot 0.1",
         "Authorization": "bearer %s" % reddit_response_json["access_token"],
     }
     authorization_url = settings.REDDIT_USER

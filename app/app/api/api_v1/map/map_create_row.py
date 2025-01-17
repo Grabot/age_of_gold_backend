@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.api.api_v1.map.map_utils import go_left, go_right, get_tiles, generate_fractal_noise_2d
+from app.api.api_v1.map.map_utils import go_right, generate_fractal_noise_2d
 from app.config.config import settings
 from app.database import get_db
 from app.models import Hexagon
@@ -45,7 +45,7 @@ async def create_map_row(
     hexagon = results.first()
     if not hexagon:
         np.random.seed(0)
-        noise = generate_fractal_noise_2d((2048, 2048), (64, 64), 5)
+        noise = generate_fractal_noise_2d((8192, 8192), (64, 64), 5)
 
         # Find the left most hexagon and create the row going to the right
         q += -1 * (settings.map_size + 1)

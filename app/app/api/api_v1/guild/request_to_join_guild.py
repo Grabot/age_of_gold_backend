@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class RequestToJoinRequest(BaseModel):
@@ -25,7 +26,6 @@ async def request_to_join_guild(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -35,11 +35,9 @@ async def request_to_join_guild(
     if not user:
         return get_failed_response("An error occurred", response)
 
-    print("user found")
     guild_user = user.guild
     # The user has to not be part of a guild
     if guild_user is not None:
-        print("guild found")
         return get_failed_response("already part of a guild", response)
 
     guild_id = request_to_join_request.guild_id
@@ -89,7 +87,7 @@ async def request_to_join_guild(
     db.add(guild)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "member_requested": {
             "user_id": user.id,
@@ -122,7 +120,6 @@ async def new_member(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start new member request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -146,10 +143,8 @@ async def new_member(
 
     # Get the guild objects
     statement_guild = select(Guild).where(Guild.guild_id == guild_id).where(Guild.accepted == True)
-    print(f"guild statement {statement_guild}")
     results_guild = await db.execute(statement_guild)
     result_guild = results_guild.all()
-    print(f"result guild: {result_guild}")
 
     if result_guild is None or result_guild == []:
         return get_failed_response("an error occurred", response)
@@ -193,7 +188,7 @@ async def new_member(
     db.add(guild)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response_guild = {
         "member_asked": {
             "user_id": user_id,

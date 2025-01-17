@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
-
+import pytz
 
 class PersonalMessage(SQLModel, table=True):
     __tablename__ = "PersonalMessage"
@@ -11,7 +11,7 @@ class PersonalMessage(SQLModel, table=True):
     body: str
     user_id: int = Field(foreign_key="User.id")
     receiver_id: int = Field(foreign_key="User.id")
-    timestamp: datetime = Field(index=True, default=datetime.utcnow())
+    timestamp: datetime = Field(index=True, default=datetime.now(pytz.utc).replace(tzinfo=None))
 
     @property
     def serialize(self):

@@ -13,6 +13,7 @@ from app.models import Guild, User
 from app.models.message import GuildMessage
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class SendMessageGuildRequest(BaseModel):
@@ -46,10 +47,9 @@ async def send_guild_message(
     )
     await db.execute(update_guild_members)
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
 
     guild_room = f"guild_{guild_id}"
-    print(f"sending a guild message to room {guild_room}")
     socket_response = {
         "sender_name": user_send.username,
         "sender_id": user_send.id,

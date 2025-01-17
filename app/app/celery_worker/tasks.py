@@ -9,6 +9,12 @@ celery_app = Celery("tasks", broker=settings.REDIS_URI, backend=f"db+{settings.S
 
 
 @celery_app.task
+def task_initialize():
+    # When this function is called the celery worker will create the tables in the db
+    return {"success": True}
+
+
+@celery_app.task
 def task_generate_avatar(avatar_filename: str, user_id: int):
     generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
 

@@ -14,6 +14,7 @@ from sqlmodel import Field, Relationship, SQLModel, select
 
 from app.config.config import settings
 from app.models import Friend
+import pytz
 
 
 class User(SQLModel, table=True):
@@ -24,14 +25,16 @@ class User(SQLModel, table=True):
     __tablename__ = "User"
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(default=None, index=True, unique=True)
-    email: str
+    email_hash: str
     password_hash: str
     salt: str
     about_me: Optional[str] = Field(default=None)
     origin: int
-    tile_lock: datetime = Field(default=datetime.utcnow())
+    # We set a default value with the timezone UTC, but than remove the timezone indicator with tzinfo=None to match the database
+    tile_lock: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     email_verified: bool = Field(default=False)
     default_avatar: bool = Field(default=True)
+    is_admin: bool = Field(default=False)
 
     tokens: List["UserToken"] = Relationship(back_populates="user")
 
@@ -60,16 +63,16 @@ class User(SQLModel, table=True):
         back_populates="user_changed",
     )
 
-    __table_args__ = (Index("user_index", "email", "origin", unique=True),)
+    __table_args__ = (Index("user_index", "email_hash", "origin", unique=True),)
 
     def get_tile_lock(self):
         return self.tile_lock
 
     def lock_tile_setting(self, minutes):
-        self.tile_lock = datetime.utcnow() + timedelta(minutes=minutes)
+        self.tile_lock = datetime.now(pytz.utc).replace(tzinfo=None) + timedelta(minutes=minutes)
 
     def can_change_tile_type(self):
-        return self.tile_lock <= datetime.utcnow()
+        return self.tile_lock <= datetime.now(pytz.utc).replace(tzinfo=None)
 
     def hash_password(self, password):
         salt = secrets.token_hex(8)
@@ -83,10 +86,6 @@ class User(SQLModel, table=True):
             return False
         else:
             return pwd_context.verify(password + self.salt, self.password_hash)
-
-    def avatar(self, size):
-        digest = md5(self.email.lower().encode("utf-8")).hexdigest()
-        return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(digest, size)
 
     def befriend(self, user):
         # Only call if the Friend object is not present yet.
@@ -135,7 +134,7 @@ class User(SQLModel, table=True):
         self.email_verified = True
 
     def avatar_filename(self):
-        return md5(self.email.lower().encode("utf-8")).hexdigest()
+        return md5(self.email_hash.encode("utf-8")).hexdigest()
 
     def avatar_filename_small(self):
         return self.avatar_filename() + "_small"
@@ -184,6 +183,8 @@ class User(SQLModel, table=True):
             "friends": self.get_friend_ids(),
             "avatar": self.get_user_avatar(True),
             "guild": self.guild.serialize if self.guild else None,
+            "origin": self.origin == 0, # we only want to know if it's a regular login
+            "is_admin": self.is_admin,
         }
 
     @property
@@ -209,4 +210,5 @@ class User(SQLModel, table=True):
         return {
             "id": self.id,
             "username": self.username,
+            "origin": self.origin == 0,
         }

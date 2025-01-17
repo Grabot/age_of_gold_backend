@@ -3,6 +3,7 @@ from typing import Optional
 
 from sqlalchemy import Index
 from sqlmodel import Field, Relationship, SQLModel
+import pytz
 
 
 class Tile(SQLModel, table=True):
@@ -32,7 +33,7 @@ class Tile(SQLModel, table=True):
     def update_tile_info(self, tile_type, user_id):
         self.type = tile_type
         self.last_changed_by = user_id
-        self.last_changed_time = datetime.utcnow()
+        self.last_changed_time = datetime.now(pytz.utc).replace(tzinfo=None)
 
     @property
     def serialize_full(self):

@@ -13,6 +13,7 @@ from app.models import Friend, User
 from app.models.message import PersonalMessage
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class SendMessagePersonalRequest(BaseModel):
@@ -60,7 +61,7 @@ async def send_personal_message(
     friend_receive.update_unread_messages()
     db.add(friend_receive)
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
 
     room_receive = "room_%s" % user_receive.id
     room_to = "room_%s" % user_send.id

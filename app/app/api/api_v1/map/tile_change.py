@@ -50,7 +50,8 @@ async def tile_change(
 
     tile_hexagon: Hexagon = tile.hexagon
 
-    user.lock_tile_setting(1)
+    if not user.is_admin:
+        user.lock_tile_setting(1)
     tile.update_tile_info(tile_type, user.id)
     db.add(tile)
     db.add(user)

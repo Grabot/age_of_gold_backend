@@ -12,10 +12,10 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
-    print("accepting guild request!")
     # First remove all Guild objects of the users, meaning all requests made by the user
     # or sent to the user will be removed. This is because the user has accepted a request
     guild_statement = select(Guild).where(Guild.user_id == user_id).where(Guild.accepted == False)
@@ -23,14 +23,11 @@ async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
     result_guild_user = results_guild_user.all()
 
     for guild_request in result_guild_user:
-        print(f"going to remove: {guild_request.Guild}")
         await db.delete(guild_request.Guild)
 
-    print("removed!")
     member_ids = guild_to_join.member_ids
     member_rank = [user_id, 3]
     member_ids.append(member_rank)
-    print(f"member ids: {member_ids}")
 
     update_guild_members = (
         update(Guild)
@@ -52,7 +49,7 @@ async def join_guild(db: AsyncSession, user_id: int, guild_to_join: Guild):
     db.add(guild)
     await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "member": {
             "user_id": user_id,
@@ -104,7 +101,6 @@ async def accept_guild_request_guild(
     if users_guild is None or users_guild == []:
         return get_failed_response("an error occurred", response)
 
-    print("guild query fine. Got all guild members")
     guild_to_join: Guild = users_guild[0].Guild
     new_guild = await join_guild(db, user.id, guild_to_join)
 
@@ -132,7 +128,6 @@ async def accept_guild_request_user(
     if not user:
         return get_failed_response("An error occurred", response)
 
-    print("Initial check user")
     # Check if the user is part of a guild. This should not be the case.
     user_id = guild_accept_request_user.user_id
     user_statement = select(Guild).where(Guild.user_id == user_id).where(Guild.accepted == True)
@@ -150,11 +145,10 @@ async def accept_guild_request_user(
     if users_guild is None or users_guild == []:
         return get_failed_response("an error occurred", response)
 
-    print("guild query fine. Got all guild members")
     guild_to_join: Guild = users_guild[0].Guild
     await join_guild(db, user_id, guild_to_join)
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response_user = {
         "guild": guild_to_join.serialize_minimal,
         "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),

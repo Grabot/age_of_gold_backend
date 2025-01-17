@@ -41,7 +41,7 @@ async def reset_password(
     reset_token = user.generate_auth_token(access_expiration_time).decode("ascii")
     refresh_reset_token = user.generate_refresh_token(refresh_expiration_time).decode("ascii")
 
-    subject = "Age of Gold - Change your password"
+    subject = "Hex Place - Change your password"
     body = reset_password_email.format(
         base_url=settings.BASE_URL, token=reset_token, refresh_token=refresh_reset_token
     )

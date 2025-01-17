@@ -22,7 +22,6 @@ async def change_password(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("change password")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":

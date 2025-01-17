@@ -13,6 +13,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class ChangeGuildCrestRequest(BaseModel):
@@ -27,7 +28,6 @@ async def change_guild_crest(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start change guild crest request")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -55,7 +55,6 @@ async def change_guild_crest(
     guild_crest = change_guild_crest_request.guild_crest
 
     if guild_crest is None and not check_guild.default_crest:
-        print("new crest is default, but previous was not!!!!")
         # We are updating the crest to be the default, so update the member objects
         update_guild_members = (
             update(Guild).values(default_crest=True).where(Guild.guild_id == guild_id)
@@ -63,7 +62,6 @@ async def change_guild_crest(
         await db.execute(update_guild_members)
         await db.commit()
     elif guild_crest is not None and check_guild.default_crest:
-        print("new crest is an image, but previous was default!!!!")
         update_guild_members = (
             update(Guild).values(default_crest=False).where(Guild.guild_id == guild_id)
         )
@@ -73,7 +71,7 @@ async def change_guild_crest(
     if guild_crest is not None:
         save_guild_crest(check_guild, guild_crest)
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "guild_avatar": guild_crest,
         "timestamp": now.strftime("%Y-%m-%dT%H:%M:%S.%f"),

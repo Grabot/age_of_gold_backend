@@ -11,6 +11,7 @@ from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models import User
 from app.util.util import check_token, get_auth_token
+from app.util.rest_util import get_failed_response
 
 
 class GetUserRequest(BaseModel):
@@ -24,7 +25,6 @@ async def get_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("getting user")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":

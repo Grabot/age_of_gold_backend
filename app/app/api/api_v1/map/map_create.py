@@ -8,12 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
-from app.api.api_v1.map.map_utils import get_tiles, go_left, go_right, go_left_up, go_right_down, \
-    generate_fractal_noise_2d
+from app.api.api_v1.map.map_utils import go_right, generate_fractal_noise_2d
 from app.config.config import settings
 from app.database import get_db
 from app.models import Hexagon
 import numpy as np
+from app.celery_worker.tasks import task_initialize
 
 
 @api_router_v1.post("/map/create", status_code=200)
@@ -26,7 +26,7 @@ async def create_map(db: AsyncSession = Depends(get_db)) -> dict:
     hexagon = results.first()
     if not hexagon:
         np.random.seed(0)
-        noise = generate_fractal_noise_2d((2048, 2048), (64, 64), 5)
+        noise = generate_fractal_noise_2d((8192, 8192), (64, 64), 5)
         print(f"create map of size: {settings.map_size}")
 
         for row in range(-settings.map_size, settings.map_size+1):
@@ -61,4 +61,7 @@ async def initialize_folders() -> dict:
     if not os.path.exists(settings.UPLOAD_FOLDER_CRESTS):
         os.makedirs(settings.UPLOAD_FOLDER_CRESTS)
         os.chmod(settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXO)
+
+    _ = task_initialize.delay()
+
     return {"results": "true"}

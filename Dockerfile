@@ -15,7 +15,7 @@ RUN apt-get update &&\
 COPY pyproject.toml /app/pyproject.toml
 
 # install project dependencies
-RUN poetry install --no-dev
+RUN poetry install --no-root --only main
 
 # add other project files
 COPY app /app/.

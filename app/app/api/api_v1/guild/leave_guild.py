@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Guild, User
 from app.sockets.sockets import sio
 from app.util.util import check_token, get_auth_token
+import pytz
 
 
 class LeaveGuildRequest(BaseModel):
@@ -26,7 +27,6 @@ async def leave_guild(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    print("start guild leave")
     auth_token = get_auth_token(request.headers.get("Authorization"))
 
     if auth_token == "":
@@ -85,7 +85,7 @@ async def leave_guild(
         await db.execute(delete_guild_objects)
         await db.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(pytz.utc).replace(tzinfo=None)
     socket_response = {
         "member_removed": {
             "user_id": user_id,
