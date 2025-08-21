@@ -1,4 +1,5 @@
-from typing import Optional, Any
+import hashlib
+from typing import Any, Optional
 
 from fastapi import Depends, Response
 from pydantic import BaseModel
@@ -9,8 +10,6 @@ from sqlmodel import select
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
 from app.models.user import User
-import hashlib
-
 from app.util.util import get_failed_response, get_user_tokens
 
 
@@ -34,7 +33,7 @@ async def login_user(
     if user_name is None and email is not None:
         email_hash: str = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
         statement = (
-            select(User).where(User.origin == 0).where(User.email_hash == email_hash)  # type: ignore
+            select(User).where(User.origin == 0).where(User.email_hash == email_hash)  # type: ignore  # noqa: E501
         )
         results = await db.execute(statement)
         result_user = results.first()

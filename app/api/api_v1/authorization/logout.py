@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Any, Optional
 
 from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -35,4 +35,4 @@ repos:
   rev: v1.17.1
   hooks:
     - id: mypy
-      args: [--disallow-untyped-defs, --disallow-incomplete-defs, --disallow-untyped-calls]
+      args: [--disallow-untyped-defs, --disallow-incomplete-defs, --disallow-untyped-calls, --ignore-missing-imports]

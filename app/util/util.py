@@ -1,14 +1,16 @@
 import time
-from typing import Optional, Any, TypedDict, Union, Dict
+from typing import Any, Dict, Optional, TypedDict, Union
+
 from authlib.jose import jwt
 from authlib.jose.errors import DecodeError
+from fastapi import Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
+
 from app.config.config import settings
 from app.models.user import User
 from app.models.user_token import UserToken
-from fastapi import Response, status
 
 
 def get_failed_response(

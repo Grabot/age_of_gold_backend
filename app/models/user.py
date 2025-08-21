@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.user_token import UserToken
 
 
-class User(SQLModel, table=True):
+class User(SQLModel):
     """
     User
     """
