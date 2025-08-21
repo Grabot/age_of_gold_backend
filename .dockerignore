@@ -1,5 +1,10 @@
 *
 !app/
+!migrations/
 !pyproject.toml
+!boot.sh
+!alembic.ini
+!main.py
+!main_cron.py
 !.pre-commit-config.yaml
 !.flake8

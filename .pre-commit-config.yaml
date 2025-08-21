@@ -1,8 +1,6 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -14,7 +12,7 @@ repos:
     -   id: check-json
     -   id: check-xml
 -   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 6.0.1
     hooks:
     -   id: isort
         name: isort (python)
@@ -24,10 +22,10 @@ repos:
     rev: stable
     hooks:
     -   id: black
-        language_version: python3.12.3
+        language_version: python3.13.2
         name: black (python)
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 7.3.0
     hooks:
     -   id: flake8
         name: flake8 (python)

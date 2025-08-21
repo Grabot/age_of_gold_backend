@@ -8,43 +8,34 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
-skip = ["app/migrations/env.py"]
 
 [tool.poetry]
 name = "age of gold"
-version = "0.1.0"
+version = "0.2.0"
 description = "Age of Gold is a fun trading game. The first single player game that you play with multiple people"
 authors = ["Grabot"]
-license = "GPL-3.0 license"
+license = "GPL-3.0-or-later"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "3.12.3"
-fastapi = "0.112.0"
-uvicorn = "0.30.5"
-python-dotenv = "1.0.1"
-psycopg2-binary = "2.9.9"
-sqlmodel = "0.0.21"
-alembic = "1.13.2"
-asyncpg = "0.29.0"
+python = "3.13.2"
+fastapi = "0.116.1"
+uvicorn = "0.35.0"
+sqlmodel = "0.0.24"
+alembic = "1.16.4"
+authlib = "1.6.1"
 passlib = "1.7.4"
-authlib = "1.3.1"
-oauthlib = "3.2.2"
-python-socketio = "5.11.3"
-websockets = "12.0"
+python-socketio = "5.13.0"
+websockets = "15.0.1"
 asyncio-redis = "0.16.0"
-redis = "5.0.8"
-pillow = "10.4.0"
-fastapi-pagination = "0.12.26"
-fastapi-mail = "1.4.1"
-celery = "5.4.0"
-APScheduler = "3.10.4"
-pydantic-settings = "2.4.0"
-requests = "2.32.3"
-numpy = "2.1.0"
-PyJWT = "2.10.1"
-python-multipart = "0.0.20"
-
+redis = "6.4.0"
+fastapi-pagination = "0.14.0"
+celery = "5.5.3"
+pydantic-settings = "2.10.1"
+asyncpg = "0.30.0"
+psycopg2-binary = "2.9.10"
+APScheduler = "3.11.0"
 
 [build-system]
 requires = ["poetry-core"]

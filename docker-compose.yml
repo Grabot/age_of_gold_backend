@@ -14,7 +14,7 @@ services:
     restart: always
     volumes:
       - ${SHARED_DIR}:/app/static/uploads/
-      - ./app/migrations:/app/migrations
+      # - ./migrations:/migrations
     command: "/bin/sh boot.sh"
     depends_on:
       - age_of_db
@@ -24,7 +24,7 @@ services:
   age_of_db:
     container_name: age_of_db
     env_file: .env
-    image: postgres:17beta3
+    image: postgres:latest
     networks:
       - default
     ports:
@@ -43,7 +43,7 @@ services:
       - "shared_buffers=4096MB"
 
   redis:
-    image: redis:7.0.10
+    image: redis:latest
     ports:
       - 6379:6379
     command:
@@ -53,6 +53,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    user: celery
     env_file: .env
     networks:
       - default

@@ -1,9 +1,8 @@
-FROM python:3.12.3-slim-bullseye
+FROM python:3.13.2-slim-bullseye
 
-WORKDIR /app
+WORKDIR /
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
-# install static dependencies
 RUN apt-get update &&\
     apt install -y git &&\
     pip3 install --no-cache-dir --upgrade pip && \
@@ -11,12 +10,19 @@ RUN apt-get update &&\
     pip3 install --no-cache-dir pre-commit && \
     poetry config virtualenvs.create false
 
-# add dependency file
-COPY pyproject.toml /app/pyproject.toml
+COPY pyproject.toml /pyproject.toml
+COPY boot.sh /boot.sh
+COPY main.py /main.py
+COPY main_cron.py /main_cron.py
+COPY migrations/ /migrations/
+COPY alembic.ini /alembic.ini
 
-# install project dependencies
+RUN useradd -r -s /bin/false -m celery && \
+    mkdir -p /home/celery/ && \
+    chown -R celery:celery /home/celery
+
 RUN poetry install --no-root --only main
 
-# add other project files
-COPY app /app/.
+COPY app/ /app/
 RUN mkdir -p static/uploads
+RUN chown -R celery:celery /app
