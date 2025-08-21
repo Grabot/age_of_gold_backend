@@ -1,4 +1,12 @@
 repos:
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+    -   id: ruff
+        name: ruff (python)
+        args: [--fix, --exit-non-zero-on-fix]
+    -   id: ruff-format
+        name: ruff-format (python)
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -18,12 +26,6 @@ repos:
         name: isort (python)
         files: "\\.(py)$"
         args: [--settings-path=pyproject.toml]
--   repo: https://github.com/ambv/black
-    rev: stable
-    hooks:
-    -   id: black
-        language_version: python3.13.2
-        name: black (python)
 -   repo: https://github.com/PyCQA/flake8
     rev: 7.3.0
     hooks:

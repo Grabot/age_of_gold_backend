@@ -40,7 +40,9 @@ class Settings(BaseSettings):
 
     GOOGLE_CLIENT_ID: str = os.environ.get("GOOGLE_CLIENT_ID", None)
     GOOGLE_CLIENT_SECRET: str = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-    GOOGLE_DISCOVERY_URL: str = "https://accounts.google.com/.well-known/openid-configuration"
+    GOOGLE_DISCOVERY_URL: str = (
+        "https://accounts.google.com/.well-known/openid-configuration"
+    )
     GOOGLE_ACCESS_TOKEN_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
 
     GITHUB_AUTHORIZE: str = "https://github.com/login/oauth/authorize"
@@ -97,7 +99,7 @@ class Settings(BaseSettings):
     MAIL_PASSWORD: str = os.environ.get("MAIL_PASSWORD")
     MAIL_SENDERNAME: str = os.environ.get("MAIL_SENDERNAME")
     BASE_URL: str = os.environ.get("BASE_URL")
-    UPLOAD_FOLDER_AVATARS : str= "/app/static/uploads/avatars"
+    UPLOAD_FOLDER_AVATARS: str = "/app/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/app/static/uploads/crests"
 
     class Config:

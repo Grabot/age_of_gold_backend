@@ -27,13 +27,12 @@ for meta in target_metadata:
         "ix": "ix_%(column_0_label)s",
         "uq": "uq_%(table_name)s_%(column_0_name)s",
         "ck": "ck_%(table_name)s_%(constraint_name)s",
-        "fk": "fk_%(table_name)s_%(column_0_name)" "s_%(referred_table_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
     }
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app import models
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -48,7 +47,7 @@ def filter_db_objects(
     name,
     type_,
     *args,  # noqa: indirect usage
-    **kwargs  # noqa: indirect usage
+    **kwargs,  # noqa: indirect usage
 ):
     if type_ == "table":
         return name not in exclude_tables

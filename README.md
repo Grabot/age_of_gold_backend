@@ -13,4 +13,3 @@ Build the AoG image:
 Run the image you just built:
 
     docker run -it aog
-

@@ -1,14 +1,12 @@
-
 import secrets
 import time
-
-from typing import Optional, List
+from typing import List, Optional
 
 from authlib.jose import jwt
 from passlib.apps import custom_app_context as pwd_context
+from sqlmodel import Field, Relationship, SQLModel
 
 from app.config.config import settings
-from sqlmodel import SQLModel, Field, Relationship
 
 
 class User(SQLModel, table=True):
@@ -23,8 +21,8 @@ class User(SQLModel, table=True):
     password_hash: str
     salt: str
     origin: int
-    
-    tokens: List["UserToken"] = Relationship(back_populates="user")
+
+    tokens: List["UserToken"] = Relationship(back_populates="user")  # noqa: F821
 
     def hash_password(self, password):
         salt = secrets.token_hex(8)

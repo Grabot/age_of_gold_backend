@@ -3,7 +3,9 @@ import socketio
 from app.config.config import settings
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
-sio = socketio.AsyncServer(async_mode="asgi", client_manager=mgr, cors_allowed_origins="*")
+sio = socketio.AsyncServer(
+    async_mode="asgi", client_manager=mgr, cors_allowed_origins="*"
+)
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
 
@@ -36,7 +38,6 @@ async def handle_join(sid, *args, **kwargs):
         )
 
 
-
 @sio.on("leave")
 async def handle_leave(sid, *args, **kwargs):
     data = args[0]
@@ -49,4 +50,3 @@ async def handle_leave(sid, *args, **kwargs):
             "User has left room %s" % room,
             room=sid,
         )
-

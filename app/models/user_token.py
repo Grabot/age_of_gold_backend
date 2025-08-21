@@ -17,8 +17,7 @@ class UserToken(SQLModel, table=True):
     refresh_token: str
     refresh_token_expiration: int
 
-    user: "User" = Relationship(back_populates="tokens")
+    user: "User" = Relationship(back_populates="tokens")  # noqa: F821
 
     def refresh_is_expired(self) -> bool:
         return self.refresh_token_expiration < int(time.time())
-
