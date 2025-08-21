@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Pytest Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "console": "integratedTerminal",
+            "python": "/home/zwaar/.cache/pypoetry/virtualenvs/age_of_gold-31B-xUOb-py3.13/bin/python"
+        }
+    ]
+}
