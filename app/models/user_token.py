@@ -1,7 +1,10 @@
 import time
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class UserToken(SQLModel, table=True):
@@ -17,7 +20,7 @@ class UserToken(SQLModel, table=True):
     refresh_token: str
     refresh_token_expiration: int
 
-    user: "User" = Relationship(back_populates="tokens")  # noqa: F821
+    user: "User" = Relationship(back_populates="tokens")
 
     def refresh_is_expired(self) -> bool:
         return self.refresh_token_expiration < int(time.time())

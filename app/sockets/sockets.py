@@ -1,7 +1,10 @@
+from typing import Any, Dict, Union, cast
+
 import socketio
 
 from app.config.config import settings
 
+# Ignore missing stubs for socketio if necessary
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(
     async_mode="asgi", client_manager=mgr, cors_allowed_origins="*"
@@ -10,43 +13,43 @@ sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
 
 @sio.on("connect")
-async def handle_connect(sid, *args, **kwargs):
+async def handle_connect(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received connect: {sid}")
 
 
 @sio.on("disconnect")
-async def handle_disconnect(sid, *args, **kwargs):
+async def handle_disconnect(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received disconnect: {sid}")
 
 
 @sio.on("message_event")
-async def handle_message_event(sid, *args, **kwargs):
+async def handle_message_event(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received message_event: {sid}")
 
 
 @sio.on("join")
-async def handle_join(sid, *args, **kwargs):
-    data = args[0]
-    user_id = data["user_id"]
+async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
+    data: Dict[str, Union[int, str]] = args[0]
+    user_id: int = cast(int, data["user_id"])
     if user_id != -1:
-        room = "room_%s" % user_id
+        room: str = f"room_{user_id}"
         await sio.enter_room(sid, room)
         await sio.emit(
             "message_event",
-            "User has entered room %s" % room,
+            f"User has entered room {room}",
             room=room,
         )
 
 
 @sio.on("leave")
-async def handle_leave(sid, *args, **kwargs):
-    data = args[0]
-    user_id = data["user_id"]
+async def handle_leave(sid: str, *args: Any, **kwargs: Any) -> None:
+    data: Dict[str, Union[int, str]] = args[0]
+    user_id: int = cast(int, data["user_id"])
     if user_id != -1:
-        room = "room_%s" % user_id
+        room: str = f"room_{user_id}"
         await sio.leave_room(sid, room)
         await sio.emit(
             "message_event",
-            "User has left room %s" % room,
+            f"User has left room {room}",
             room=sid,
         )

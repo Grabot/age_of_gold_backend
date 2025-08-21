@@ -17,6 +17,6 @@ celery_app = Celery(
 
 
 @celery_app.task
-def task_initialize():
+def task_initialize() -> dict[str, bool]:
     logger.info("initialize task")
     return {"success": True}
