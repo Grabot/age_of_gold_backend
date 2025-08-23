@@ -14,7 +14,7 @@ services:
     restart: always
     volumes:
       - ${SHARED_DIR}:/app/static/uploads/
-      # - ./migrations:/migrations
+      - ./migrations:/migrations
     command: "/bin/sh boot.sh"
     depends_on:
       - age_of_db

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models.user import User
+from app.models import User
 from app.util.util import get_failed_response, get_user_tokens, refresh_user_token
 
 

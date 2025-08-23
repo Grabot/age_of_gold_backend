@@ -9,8 +9,8 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.config.config import settings
-from app.models.user import User
-from app.models.user_token import UserToken
+from app.models import User
+from app.models import UserToken
 
 
 def get_failed_response(

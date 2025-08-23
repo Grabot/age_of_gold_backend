@@ -1,4 +1,4 @@
-FROM python:3.13.2-slim-bullseye
+FROM python:3.12.10-slim-bullseye
 
 WORKDIR /
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}

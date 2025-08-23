@@ -6,8 +6,8 @@ from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.database import get_db
-from app.models.user import User
-from app.models.user_token import UserToken
+from app.models import User
+from app.models import UserToken
 from app.util.util import check_token, get_auth_token, get_failed_response
 
 

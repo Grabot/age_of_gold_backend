@@ -12,12 +12,12 @@ if TYPE_CHECKING:
     from app.models.user_token import UserToken
 
 
-class User(SQLModel):
+class User(SQLModel, table=True):
     """
     User
     """
 
-    __tablename__ = "User"
+    __tablename__: str = "User"
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(default=None, index=True, unique=True)
     email_hash: str
