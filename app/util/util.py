@@ -1,16 +1,18 @@
 import time
 from typing import Any, Dict, Optional, TypedDict, Union
 
-from authlib.jose import jwt
-from authlib.jose.errors import DecodeError
+import jwt as pyjwt
+from argon2 import PasswordHasher
 from fastapi import Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from jwt.exceptions import InvalidTokenError
+from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from app.config.config import settings
-from app.models import User
-from app.models import UserToken
+from app.models import User, UserToken
+
+ph = PasswordHasher()
 
 
 def get_failed_response(
@@ -29,16 +31,20 @@ def get_user_tokens(
 ) -> UserToken:
     token_expiration: int = int(time.time()) + access_expiration
     refresh_token_expiration: int = int(time.time()) + refresh_expiration
-    access_token: str = user.generate_auth_token(access_expiration).decode("ascii")
-    refresh_token: str = user.generate_refresh_token(refresh_expiration).decode("ascii")
-    user_token: UserToken = UserToken(
-        user_id=user.id,
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_expiration=token_expiration,
-        refresh_token_expiration=refresh_token_expiration,
-    )
-    return user_token
+    access_token: str = user.generate_auth_token(access_expiration)
+    refresh_token: str = user.generate_refresh_token(refresh_expiration)
+    if not user.id:
+        # TODO: what if it gets here? What error to throw?
+        raise Exception("TODO")
+    else:
+        user_token: UserToken = UserToken(
+            user_id=user.id,
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_expiration=token_expiration,
+            refresh_token_expiration=refresh_token_expiration,
+        )
+        return user_token
 
 
 async def check_token(
@@ -113,17 +119,29 @@ async def refresh_user_token(
     if user_token.token_expiration > int(time.time()):
         return await delete_user_token_and_return(db, user_token, user)
     try:
-        access: Dict[str, Any] = jwt.decode(access_token, settings.jwk)  # type: ignore
-        refresh: Dict[str, Any] = jwt.decode(refresh_token, settings.jwk)  # type: ignore
-    except DecodeError:
+        access: Dict[str, Any] = pyjwt.decode(
+            access_token,
+            settings.jwk,
+            algorithms=[settings.header["alg"]],
+            options={"verify_aud": False},
+        )
+        refresh: Dict[str, Any] = pyjwt.decode(
+            refresh_token,
+            settings.jwk,
+            algorithms=[settings.header["alg"]],
+            options={"verify_aud": False},
+        )
+    except InvalidTokenError:
         return await delete_user_token_and_return(db, user_token, None)
     if not access or not refresh:
         return await delete_user_token_and_return(db, user_token, None)
-
     if refresh["exp"] < int(time.time()):
         return await delete_user_token_and_return(db, user_token, None)
-
     if user.id == access["id"] and user.username == refresh["user_name"]:
         return await delete_user_token_and_return(db, user_token, user)
     else:
         return await delete_user_token_and_return(db, user_token, None)
+
+
+def hash_password(password: str) -> str:
+    return ph.hash(password)

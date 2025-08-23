@@ -1,8 +1,0 @@
-[flake8]
-# handled by ruff
-ignore = E402, W503
-max-line-length = 100
-per-file-ignores =
-    app/models/__init__.py:F401
-    app/api/api_v1/__init__.py:F401
-    app/api/api_v1/authorization/__init__.py:F401

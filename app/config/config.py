@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Union
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -102,8 +102,8 @@ class Settings(BaseSettings):
     UPLOAD_FOLDER_AVATARS: str = "/app/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/app/static/uploads/crests"
 
-    class Config:
-        case_sensitive: bool = True
+    PEPPER: str = os.environ.get("HASH_PEPPER", "your-secret-pepper-here")
+    model_config = SettingsConfigDict()
 
 
 settings = Settings()

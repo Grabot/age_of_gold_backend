@@ -2,11 +2,12 @@ import asyncio
 import os
 from json import loads
 from logging.config import fileConfig
+from typing import Any, Optional
 
 from alembic import context
-from celery.backends.database.session import ResultModelBase
-from sqlalchemy import engine_from_config, pool
-from sqlalchemy.ext.asyncio import AsyncEngine
+from celery.backends.database.session import ResultModelBase  # type: ignore
+from sqlalchemy import engine, engine_from_config, pool
+from sqlalchemy.ext.asyncio import AsyncEngine  # pyright: ignore[reportMissingImports]
 from sqlmodel import SQLModel
 
 from app.config.config import settings
@@ -27,29 +28,30 @@ for meta in target_metadata:
         "ix": "ix_%(column_0_label)s",
         "uq": "uq_%(table_name)s_%(column_0_name)s",
         "ck": "ck_%(table_name)s_%(constraint_name)s",
-        "fk": "fk_%(table_name)s_%(column_0_name)" "s_%(referred_table_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
         "pk": "pk_%(table_name)s",
     }
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app import models
+from app import models  # noqa: E402, F401
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-exclude_tables = loads(os.getenv("DB_EXCLUDE_TABLES"))
+db_exclude_tables = str(os.environ.get("DB_EXCLUDE_TABLES", []))
+exclude_tables = loads(db_exclude_tables)
 
 
 def filter_db_objects(
-    object,  # noqa: indirect usage
-    name,
-    type_,
-    *args,  # noqa: indirect usage
-    **kwargs  # noqa: indirect usage
-):
+    object: Any,
+    name: str,
+    type_: str,
+    *args: Any,
+    **kwargs: Any,
+) -> bool:
     if type_ == "table":
         return name not in exclude_tables
 
@@ -76,28 +78,33 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
-        include_object=filter_db_objects,
+        include_object=filter_db_objects,  # type: ignore
     )
 
     with context.begin_transaction():
         context.run_migrations()
 
 
-def do_run_migrations(connection) -> None:
+def do_run_migrations(connection: engine.Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_object=filter_db_objects,
+            include_object=filter_db_objects,  # type: ignore
         )
         context.run_migrations()
 
 
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    config_section = config.get_section(config.config_ini_section)
+    config_section: Optional[dict[str, str]] = config.get_section(
+        config.config_ini_section
+    )
+    if not config_section:
+        print("config section is empty")
+        return
     config_section["sqlalchemy.url"] = settings.ASYNC_DB_URL
 
     connectable = AsyncEngine(

@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from app.models import User
+    from app.models.user import User
 
 
-class UserToken(SQLModel, table=True):
+class UserToken(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     """
     UserToken
     """
 
-    __tablename__: str = "UserToken"
+    __tablename__ = "UserToken"  # pyright: ignore[reportAssignmentType]
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
     access_token: str = Field(index=True)

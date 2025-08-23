@@ -7,18 +7,6 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
     -   id: ruff-format
         name: ruff-format (python)
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-added-large-files
-    -   id: check-merge-conflict
-    -   id: check-ast
-    -   id: debug-statements
-    -   id: check-toml
-    -   id: check-json
-    -   id: check-xml
 -   repo: https://github.com/pycqa/isort
     rev: 6.0.1
     hooks:
@@ -31,8 +19,22 @@ repos:
     hooks:
     -   id: flake8
         name: flake8 (python)
+        additional_dependencies: [Flake8-pyproject]
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.17.1
   hooks:
-    - id: mypy
-      args: [--disallow-untyped-defs, --disallow-incomplete-defs, --disallow-untyped-calls, --ignore-missing-imports]
+    -   id: mypy
+        additional_dependencies: [python-socketio-stubs, celery-stubs, sqlalchemy-stubs, tokenize-rt==3.2.0]
+        args: [--disallow-untyped-defs, --disallow-incomplete-defs, --disallow-untyped-calls, --ignore-missing-imports]
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-added-large-files
+    -   id: check-merge-conflict
+    -   id: check-ast
+    -   id: debug-statements
+    -   id: check-toml
+    -   id: check-json
+    -   id: check-xml

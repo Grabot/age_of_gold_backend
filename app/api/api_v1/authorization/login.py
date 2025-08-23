@@ -1,21 +1,49 @@
-import hashlib
 from typing import Any, Optional
 
 from fastapi import Depends, Response
 from pydantic import BaseModel
 from sqlalchemy import func
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
+from app.config.config import settings
 from app.database import get_db
 from app.models import User
+from app.models.user import hash_email
 from app.util.util import get_failed_response, get_user_tokens
+
+
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+    email_hash = hash_email(email, settings.PEPPER)
+    results_user = await db.execute(
+        select(User).where(User.origin == 0, User.email_hash == email_hash)
+    )
+    result_user = results_user.first()
+    if result_user is None:
+        return None
+    else:
+        user: User = result_user.User
+        return user
+
+
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+    results_user = await db.execute(
+        select(User).where(
+            User.origin == 0, func.lower(User.username) == username.lower()
+        )
+    )
+    result_user = results_user.first()
+    if result_user is None:
+        return None
+    else:
+        user: User = result_user.User
+        return user
 
 
 class LoginRequest(BaseModel):
     email: Optional[str] = None
-    user_name: Optional[str] = None
+    username: Optional[str] = None
     password: str
 
 
@@ -25,36 +53,27 @@ async def login_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    email: Optional[str] = login_request.email
-    user_name: Optional[str] = login_request.user_name
-    password = login_request.password
-    if password is None or (email is None and user_name is None):
+    if not login_request.password or not (
+        login_request.email or login_request.username
+    ):
         return get_failed_response("Invalid request", response)
-    if user_name is None and email is not None:
-        email_hash: str = hashlib.sha512(email.lower().encode("utf-8")).hexdigest()
-        statement = (
-            select(User).where(User.origin == 0).where(User.email_hash == email_hash)  # type: ignore  # noqa: E501
-        )
-        results = await db.execute(statement)
-        result_user = results.first()
-    elif email is None and user_name is not None:
-        statement = (
-            select(User)
-            .where(User.origin == 0)
-            .where(func.lower(User.username) == user_name.lower())
-        )
-        results = await db.execute(statement)
-        result_user = results.first()
+
+    user: Optional[User]
+    if login_request.email:
+        user = await get_user_by_email(db, login_request.email)
+    elif login_request.username:
+        user = await get_user_by_username(db, login_request.username)
     else:
         return get_failed_response("Invalid request", response)
 
-    if not result_user:
-        return get_failed_response("user name or email not found", response)
+    if not user:
+        return get_failed_response("Invalid email/username or password", response)
 
-    user: User = result_user.User
-
-    if not user.verify_password(password):
-        return get_failed_response("password not correct", response)
+    password_with_salt: str = login_request.password + user.salt
+    if not user.verify_password(
+        hashed_password=user.password_hash, provided_password=password_with_salt
+    ):
+        return get_failed_response("Invalid email/username or password", response)
 
     user_token = get_user_tokens(user)
     db.add(user_token)
