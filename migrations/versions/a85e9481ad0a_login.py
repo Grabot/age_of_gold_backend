@@ -25,10 +25,26 @@ def upgrade() -> None:
     op.create_table(
         "User",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("username", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("email_hash", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("password_hash", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("salt", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "username",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
+        sa.Column(
+            "email_hash",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
+        sa.Column(
+            "password_hash",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
+        sa.Column(
+            "salt",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
         sa.Column("origin", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_User")),
     )
@@ -37,9 +53,17 @@ def upgrade() -> None:
         "UserToken",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
-        sa.Column("access_token", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "access_token",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
         sa.Column("token_expiration", sa.Integer(), nullable=False),
-        sa.Column("refresh_token", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "refresh_token",
+            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            nullable=False,
+        ),
         sa.Column("refresh_token_expiration", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["user_id"], ["User.id"], name=op.f("fk_UserToken_user_id_User")
