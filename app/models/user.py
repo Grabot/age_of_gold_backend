@@ -3,8 +3,9 @@ import time
 from hashlib import sha512
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+import uuid
 import jwt as pyjwt
-from argon2 import PasswordHasher
+from argon2 import PasswordHasher, exceptions
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.config.config import settings
@@ -19,6 +20,14 @@ def hash_email(email: str, pepper: str) -> str:
     normalized_email = email.lower().encode("utf-8")
     peppered_email = normalized_email + pepper.encode("utf-8")
     return sha512(peppered_email).hexdigest()
+
+
+def create_salt() -> str:
+    return secrets.token_hex(8)
+
+
+def avatar_filename():
+    return f"user_{uuid.uuid4().hex}"
 
 
 class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
@@ -36,17 +45,11 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
 
     tokens: List["UserToken"] = Relationship(back_populates="user")
 
-    def create_salt(self) -> str:
-        salt = secrets.token_hex(8)
-        self.salt = salt
-        return salt
-
     def verify_password(self, hashed_password: str, provided_password: str) -> bool:
         try:
             return ph.verify(hashed_password, provided_password)
-        except ValueError:
-            # TODO: What to do? What error to throw?
-            raise ValueError
+        except exceptions.VerificationError:
+            return False
 
     def generate_auth_token(self, expires_in: int = 1800) -> str:
         payload: Dict[str, Any] = {

@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+from app.models.user import hash_email
+
 sys.path.append(str(Path(__file__).parent.parent))
 
 import asyncio
@@ -21,6 +23,7 @@ from app.database import get_db
 from app.models import User
 from app.util.util import hash_password
 from main import app
+from app.config.config import settings
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(
@@ -41,9 +44,10 @@ def test_setup() -> Generator[Any, Any, Any]:
             salt = "salt"
             password_with_salt = password + salt
             password_hash = hash_password(password=password_with_salt)
+            email_hash = hash_email("testuser@example.com", settings.PEPPER)
             user = User(
                 username="testuser",
-                email_hash="not_important",
+                email_hash=email_hash,
                 password_hash=password_hash,
                 salt=salt,
                 origin=0,

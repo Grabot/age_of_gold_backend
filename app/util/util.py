@@ -16,14 +16,15 @@ ph = PasswordHasher()
 
 
 def get_failed_response(
-    message: str, response: Response
+    message: str,
+    response: Response,
+    status_code: int = status.HTTP_400_BAD_REQUEST,
 ) -> Dict[str, Union[bool, str]]:
-    response.status_code = status.HTTP_200_OK
-    actual_response: Dict[str, Union[bool, str]] = {
+    response.status_code = status_code
+    return {
         "result": False,
         "message": message,
     }
-    return actual_response
 
 
 def get_user_tokens(
@@ -35,7 +36,7 @@ def get_user_tokens(
     refresh_token: str = user.generate_refresh_token(refresh_expiration)
     if not user.id:
         # TODO: what if it gets here? What error to throw?
-        raise Exception("TODO")
+        raise Exception("TODO?")
     else:
         user_token: UserToken = UserToken(
             user_id=user.id,
