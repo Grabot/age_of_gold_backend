@@ -47,6 +47,7 @@ argon2-cffi = "^25.1.0"
 pyjwt = "^2.10.1"
 pillow = "^11.3.0"
 requests = "^2.32.5"
+types-requests = "^2.32.4.20250809"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12.9"
@@ -65,6 +66,7 @@ httpx = "^0.28.1"
 podman-compose = "^1.5.0"
 Flake8-pyproject = "1.2.3"
 bump-pydantic = "^0.8.0"
+types-requests = "^2.32.4.20250809"
 
 [build-system]
 requires = ["poetry-core"]

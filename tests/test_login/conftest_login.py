@@ -19,11 +19,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
+from app.config.config import settings
 from app.database import get_db
 from app.models import User
 from app.util.util import hash_password
 from main import app
-from app.config.config import settings
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(

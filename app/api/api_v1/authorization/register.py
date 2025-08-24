@@ -1,22 +1,22 @@
 import asyncio
+from typing import Any
 
-from fastapi import Depends, Response
+from fastapi import Depends, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlmodel import select
 
 from app.api.api_v1 import api_router_v1
 from app.celery_worker.tasks import task_generate_avatar
-from app.models.user import avatar_filename, create_salt, hash_email
+from app.config.config import settings
 from app.database import get_db
 from app.models import User
+from app.models.user import avatar_filename, create_salt, hash_email
 from app.sockets.sockets import sio
-from app.util.util import get_failed_response, get_user_tokens, hash_password
-from app.config.config import settings
-from fastapi import status
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.util.gold_logging import logger
+from app.util.util import get_failed_response, get_user_tokens, hash_password
 
 
 class RegisterRequest(BaseModel):
@@ -30,7 +30,7 @@ async def register_user(
     register_request: RegisterRequest,
     response: Response,
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> dict[str, Any]:
     # Input validation (Pydantic already does this, but you can add extra checks)
     if not all(
         [register_request.email, register_request.username, register_request.password]
@@ -40,11 +40,11 @@ async def register_user(
         )
 
     try:
-        # Check username uniqueness
-        statement = select(User).where(
-            func.lower(User.username) == register_request.username.lower()
+        results = await db.execute(
+            select(User).where(
+                func.lower(User.username) == register_request.username.lower()
+            )
         )
-        results = await db.execute(statement)
         if results.first():
             return get_failed_response(
                 "Username already taken", response, status.HTTP_409_CONFLICT
@@ -52,8 +52,9 @@ async def register_user(
 
         # Check email uniqueness
         email_hash = hash_email(register_request.email, settings.PEPPER)
-        statement = select(User).where(User.origin == 0, User.email_hash == email_hash)
-        results = await db.execute(statement)
+        results = await db.execute(
+            select(User).where(User.origin == 0, User.email_hash == email_hash)
+        )
         if results.first():
             return get_failed_response(
                 "Email already used", response, status.HTTP_409_CONFLICT
@@ -114,7 +115,7 @@ class AvatarCreatedRequest(BaseModel):
 @api_router_v1.post("/avatar/created", status_code=200)
 async def avatar_created(
     avatar_created_request: AvatarCreatedRequest,
-) -> dict:
+) -> dict[str, Any]:
     user_id = avatar_created_request.user_id
     room = "room_%s" % user_id
 

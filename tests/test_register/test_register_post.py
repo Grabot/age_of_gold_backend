@@ -11,8 +11,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import Response
 
-from main import app
 from app.api.api_v1.authorization.login import LoginRequest, login_user
+from main import app
 from tests.test_login.conftest_login import AsyncTestingSessionLocal, test_setup
 
 

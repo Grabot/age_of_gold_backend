@@ -3,6 +3,7 @@ from typing import Any, Optional
 from fastapi import Depends, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlmodel import select
 
@@ -11,10 +12,8 @@ from app.config.config import settings
 from app.database import get_db
 from app.models import User
 from app.models.user import hash_email
-from app.util.util import get_failed_response, get_user_tokens
-
-from sqlalchemy.exc import SQLAlchemyError
 from app.util.gold_logging import logger
+from app.util.util import get_failed_response, get_user_tokens
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:

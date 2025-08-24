@@ -2,7 +2,8 @@ import math
 import os
 import random
 import stat
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from PIL import Image, ImageDraw
 
 angles: List[int] = [83, 84, 85, 86, 94, 95, 96, 97]
@@ -294,7 +295,6 @@ def background_square_clean(_width: int, _height: int, _index: int) -> Plane:
 
 
 def generate_avatar(file_name: str, file_path: str) -> None:
-    # TODO: Test if seed works within functions
     random.seed(file_name)
     file_name += "_default"
     planes: List[Plane] = []
@@ -333,5 +333,4 @@ def generate_avatar(file_name: str, file_path: str) -> None:
     im2 = im.crop(box)
     file = os.path.join(file_path, "%s.png" % file_name)
     im2.save(file)
-    os.chmod(file, stat.S_IRWXO)
-
+    os.chmod(file, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)

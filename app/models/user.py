@@ -1,9 +1,9 @@
 import secrets
 import time
+import uuid
 from hashlib import sha512
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-import uuid
 import jwt as pyjwt
 from argon2 import PasswordHasher, exceptions
 from sqlmodel import Field, Relationship, SQLModel
@@ -26,7 +26,8 @@ def create_salt() -> str:
     return secrets.token_hex(8)
 
 
-def avatar_filename():
+def avatar_filename() -> str:
+    # TODO: Do something different for a unique filename?
     return f"user_{uuid.uuid4().hex}"
 
 
