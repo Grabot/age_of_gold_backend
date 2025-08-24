@@ -31,7 +31,6 @@ async def register_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    # Input validation (Pydantic already does this, but you can add extra checks)
     if not all(
         [register_request.email, register_request.username, register_request.password]
     ):
@@ -50,7 +49,6 @@ async def register_user(
                 "Username already taken", response, status.HTTP_409_CONFLICT
             )
 
-        # Check email uniqueness
         email_hash = hash_email(register_request.email, settings.PEPPER)
         results = await db.execute(
             select(User).where(User.origin == 0, User.email_hash == email_hash)
@@ -60,7 +58,6 @@ async def register_user(
                 "Email already used", response, status.HTTP_409_CONFLICT
             )
 
-        # Create user
         salt = create_salt()
         user = User(
             username=register_request.username,

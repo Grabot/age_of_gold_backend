@@ -46,6 +46,7 @@ def test_setup() -> Generator[Any, Any, Any]:
             password_hash = hash_password(password=password_with_salt)
             email_hash = hash_email("testuser@example.com", settings.PEPPER)
             user = User(
+                id=1,
                 username="testuser",
                 email_hash=email_hash,
                 password_hash=password_hash,

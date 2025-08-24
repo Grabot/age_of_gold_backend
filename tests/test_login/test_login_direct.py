@@ -9,8 +9,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import Response
 from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import select
 
 from app.api.api_v1.authorization.login import LoginRequest, login_user
+from app.models.user_token import UserToken
 from tests.test_login.conftest_login import AsyncTestingSessionLocal, test_setup
 
 
@@ -30,6 +32,9 @@ async def test_successful_login_with_username_direct(
         login_request = LoginRequest(username="testuser", password="testpassword")
 
         response = await login_user(login_request, Response(), db)
+
+        user_tokens = await db.execute(select(UserToken).where(UserToken.user_id == 1))
+        assert user_tokens.scalar() is not None
 
         assert response["result"] is True
         assert response["access_token"] == expected_access_token
