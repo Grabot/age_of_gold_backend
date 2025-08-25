@@ -4,6 +4,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
+from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -22,7 +23,7 @@ from tests.test_login.conftest_login import AsyncTestingSessionLocal, test_setup
 async def test_successful_login_with_username_direct(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
@@ -47,7 +48,7 @@ async def test_successful_login_with_username_direct(
 async def test_successful_login_with_email_direct(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
@@ -67,7 +68,7 @@ async def test_successful_login_with_email_direct(
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_password_direct(
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
         login_request = LoginRequest(username="testuser", password="")
@@ -80,7 +81,7 @@ async def test_invalid_request_missing_password_direct(
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_email_and_username_direct(
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
         login_request = LoginRequest(password="testpassword")
@@ -97,7 +98,7 @@ async def test_invalid_request_missing_email_and_username_direct(
 async def test_invalid_email_or_username_direct(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
         login_request = LoginRequest(
@@ -116,7 +117,7 @@ async def test_invalid_email_or_username_direct(
 async def test_invalid_password_direct(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
         login_request = LoginRequest(username="testuser", password="wrongpassword")
@@ -135,7 +136,7 @@ async def test_database_error_during_login_direct(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     mock_get_db.side_effect = SQLAlchemyError("Database error")
     async with AsyncTestingSessionLocal() as db:
@@ -155,7 +156,7 @@ async def test_unexpected_error_during_login_direct(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     mock_get_db.side_effect = Exception("Unexpected error")
     async with AsyncTestingSessionLocal() as db:

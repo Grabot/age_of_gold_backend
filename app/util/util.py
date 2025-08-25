@@ -48,9 +48,7 @@ def get_user_tokens(
         return user_token
 
 
-async def check_token(
-    db: AsyncSession, token: str, retrieve_full: bool = False
-) -> Optional[User]:
+async def check_token(db: AsyncSession, token: str) -> Optional[User]:
     token_statement = select(UserToken).filter_by(access_token=token)  # type: ignore
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
@@ -59,10 +57,7 @@ async def check_token(
     user_token: UserToken = result_token.UserToken
     if user_token.token_expiration < int(time.time()):
         return None
-    if retrieve_full:
-        user_statement = select(User).filter_by(id=user_token.user_id)  # type: ignore
-    else:
-        user_statement = select(User).filter_by(id=user_token.user_id)  # type: ignore
+    user_statement = select(User).filter_by(id=user_token.user_id)  # type: ignore
     results = await db.execute(user_statement)
     result = results.first()
     if result is None:
@@ -122,13 +117,13 @@ async def refresh_user_token(
     try:
         access: Dict[str, Any] = pyjwt.decode(
             access_token,
-            settings.jwk,
+            settings.jwk_pem,
             algorithms=[settings.header["alg"]],
             options={"verify_aud": False},
         )
         refresh: Dict[str, Any] = pyjwt.decode(
             refresh_token,
-            settings.jwk,
+            settings.jwk_pem,
             algorithms=[settings.header["alg"]],
             options={"verify_aud": False},
         )

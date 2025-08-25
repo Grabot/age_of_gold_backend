@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
+from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,7 +20,7 @@ from tests.test_login.conftest_login import test_setup
 async def test_successful_login_with_username_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         expected_access_token = "access_token_test"
@@ -43,7 +44,7 @@ async def test_successful_login_with_username_post(
 async def test_successful_login_with_email_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         expected_access_token = "access_token_test"
@@ -65,7 +66,7 @@ async def test_successful_login_with_email_post(
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_password_post(
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         response = client.post(
@@ -79,7 +80,7 @@ async def test_invalid_request_missing_password_post(
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_email_and_username_post(
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         response = client.post("/api/v1.0/login", json={"password": "testpassword"})
@@ -95,7 +96,7 @@ async def test_invalid_request_missing_email_and_username_post(
 async def test_invalid_email_or_username_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         response = client.post(
@@ -114,7 +115,7 @@ async def test_invalid_email_or_username_post(
 async def test_invalid_password_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
         response = client.post(
@@ -135,7 +136,7 @@ async def test_database_error_during_login_post(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     mock_get_db.side_effect = SQLAlchemyError("Database error")
     with TestClient(app) as client:
@@ -156,7 +157,7 @@ async def test_unexpected_error_during_login_post(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: MagicMock,
+    test_setup: Generator[Any, Any, Any],
 ) -> None:
     mock_get_db.side_effect = Exception("Unexpected error")
     with TestClient(app) as client:

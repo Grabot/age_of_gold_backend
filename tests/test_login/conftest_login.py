@@ -70,7 +70,6 @@ def test_setup() -> Generator[Any, Any, Any]:
     with TestClient(app) as c:
         yield c
 
-    # Cleanup
     async def cleanup() -> None:
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.drop_all)

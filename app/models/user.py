@@ -63,7 +63,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         }
         return pyjwt.encode(
             payload,
-            settings.jwk,
+            settings.jwk_pem,
             algorithm=settings.header["alg"],
             headers=settings.header,
         )
@@ -79,7 +79,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         }
         return pyjwt.encode(
             payload,
-            settings.jwk,
+            settings.jwk_pem,
             algorithm=settings.header["alg"],
             headers=settings.header,
         )

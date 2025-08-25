@@ -1,0 +1,97 @@
+# ruff: noqa: E402
+import sys
+from pathlib import Path
+
+current_dir = Path(__file__).parent
+sys.path.append(str(current_dir.parent.parent))
+
+import pytest
+
+from app.models import User
+from app.models.user import avatar_filename, create_salt, hash_email
+from app.util.util import hash_password
+
+
+def test_hash_email() -> None:
+    email = "test@example.com"
+    pepper = "pepper"
+    expected_hash = hash_email(email, pepper)
+    assert isinstance(expected_hash, str)
+    assert len(expected_hash) == 128
+
+
+def test_create_salt() -> None:
+    salt = create_salt()
+    assert isinstance(salt, str)
+    assert len(salt) == 16
+
+
+def test_avatar_filename() -> None:
+    # TODO: change the filename creation (and this test)
+    filename = avatar_filename()
+    assert isinstance(filename, str)
+    assert filename.startswith("user_")
+
+
+def test_user_verify_password() -> None:
+    password = "testpassword"
+    salt = "salt"
+    password_with_salt = password + salt
+    password_hash = hash_password(password=password_with_salt)
+    user = User(
+        id=1,
+        username="testuser",
+        origin=0,
+        email_hash="not_important",
+        password_hash=password_hash,
+        salt=salt,
+    )
+    assert user.verify_password(password_hash, password_with_salt) is True
+    assert user.verify_password(password_hash, "wrongpassword") is False
+
+
+def test_user_generate_auth_token() -> None:
+    user = User(
+        id=1,
+        username="testuser",
+        origin=0,
+        email_hash="not_important",
+        password_hash="not_important",
+        salt="not_important",
+    )
+    token = user.generate_auth_token()
+    assert isinstance(token, str)
+    assert len(token) > 0
+
+
+def test_user_generate_refresh_token() -> None:
+    user = User(
+        id=1,
+        username="testuser",
+        origin=0,
+        email_hash="not_important",
+        password_hash="not_important",
+        salt="not_important",
+    )
+    token = user.generate_refresh_token()
+    assert isinstance(token, str)
+    assert len(token) > 0
+
+
+def test_user_serialize() -> None:
+    user = User(
+        id=1,
+        username="testuser",
+        origin=0,
+        email_hash="not_important",
+        password_hash="not_important",
+        salt="not_important",
+    )
+    serialized_user = user.serialize
+    assert isinstance(serialized_user, dict)
+    assert serialized_user["id"] == 1
+    assert serialized_user["username"] == "testuser"
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

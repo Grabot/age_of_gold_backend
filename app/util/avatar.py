@@ -7,7 +7,6 @@ from typing import List, Optional, Tuple
 from PIL import Image, ImageDraw
 
 angles: List[int] = [83, 84, 85, 86, 94, 95, 96, 97]
-min_line_length: int = 20
 colours: List[str] = [
     "#b44ac0",
     "#000000",
@@ -92,6 +91,8 @@ def get_angle_lines(line_1: Line, line_2: Line) -> float:
 def slope_line(point_1: Point, point_2: Point) -> float:
     dividend = point_2[1] - point_1[1]
     divisor = point_2[0] - point_1[0]
+    if divisor == 0:
+        divisor = 0.00001
     return dividend / divisor
 
 
@@ -121,7 +122,7 @@ def point_on_line(_line: Line, _point: Point) -> bool:
         return False
 
 
-def point_on_plane(_plane: Plane, _point: Point) -> bool:
+def point_on_plane_border(_plane: Plane, _point: Point) -> bool:
     line_1 = _plane.get_line(0)
     line_2 = _plane.get_line(1)
     line_3 = _plane.get_line(2)
@@ -143,15 +144,22 @@ def get_length(start_point: Point, end_point: Point) -> float:
     return math.sqrt(math.pow(x_length, 2) + math.pow(y_length, 2))
 
 
+def check_lengths(points: list[Point], min_length: int) -> bool:
+    lengths = [
+        get_length(points[i], points[(i + 1) % len(points)]) for i in range(len(points))
+    ]
+    return all(length > min_length for length in lengths)
+
+
 def add_square_clean(
     _width: int,
     _height: int,
     _planes: List[Plane],
     _index: int,
 ) -> Tuple[Optional[Plane], Optional[Plane], Optional[int]]:
-    attempts = 0
-    while attempts < 100:
-        attempts += 1
+    max_attempts = 100
+    min_line_length: int = 20
+    for _ in range(max_attempts):
         colour_index = random.randint(_index, len(colours) - 1 + _index)
         colour_index -= _index
         _index += 1
@@ -167,6 +175,9 @@ def add_square_clean(
             continue
         next_line: Optional[Line] = line.get_next()
         if not next_line:
+            continue
+        change_line: Optional[Line] = next_line.get_next()
+        if not change_line:
             continue
         line_length_choice = random.uniform(
             _index + min_line_length, line.get_length() + _index
@@ -193,12 +204,9 @@ def add_square_clean(
             test_point_a_2 = (test_point_a_1[0] - adj, test_point_a_1[1] - opp)
         if not point_on_line(line, test_point_a_2):
             continue
-        test_point_b_1 = test_point_a_2
-        next_next_line: Optional[Line] = next_line.get_next()
-        if not next_next_line:
-            continue
+        test_point_b_1: Point = test_point_a_2
         ang_2 = get_angle_lines(line, next_line)
-        ang_3 = get_angle_lines(next_line, next_next_line)
+        ang_3 = get_angle_lines(next_line, change_line)
         ang_4 = 360 - ang_1 - ang_2 - ang_3
         triangle_1_line_2 = Line(next_line.start, next_line.end)
         triangle_1_line_3 = Line(next_line.end, test_point_b_1)
@@ -210,9 +218,6 @@ def add_square_clean(
         t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(
             math.radians(t2_ang_2)
         )
-        change_line: Optional[Line] = next_line.get_next()
-        if not change_line:
-            continue
         angle_c_1 = math.degrees(
             math.asin(
                 (change_line.end[1] - change_line.start[1]) / change_line.get_length()
@@ -230,7 +235,7 @@ def add_square_clean(
             test_point_c_2 = (test_point_c_1[0] - adj, test_point_c_1[1] - opp)
         if not point_on_line(change_line, test_point_c_2):
             continue
-        if not point_on_plane(plane, test_point_c_2):
+        if not point_on_plane_border(plane, test_point_c_2):
             continue
         new_plane_1_points = [
             test_point_b_1,
@@ -244,23 +249,8 @@ def add_square_clean(
             test_point_c_2,
             change_line.end,
         ]
-        length_1 = get_length(new_plane_1_points[0], new_plane_1_points[1])
-        length_2 = get_length(new_plane_1_points[1], new_plane_1_points[2])
-        length_3 = get_length(new_plane_1_points[2], new_plane_1_points[3])
-        length_4 = get_length(new_plane_1_points[3], new_plane_1_points[0])
-        length_5 = get_length(new_plane_2_points[0], new_plane_2_points[1])
-        length_6 = get_length(new_plane_2_points[1], new_plane_2_points[2])
-        length_7 = get_length(new_plane_2_points[2], new_plane_2_points[3])
-        length_8 = get_length(new_plane_2_points[3], new_plane_2_points[0])
-        if (
-            length_1 <= min_line_length
-            or length_2 <= min_line_length
-            or length_3 <= min_line_length
-            or length_4 <= min_line_length
-            or length_5 <= min_line_length
-            or length_6 <= min_line_length
-            or length_7 <= min_line_length
-            or length_8 <= min_line_length
+        if not check_lengths(new_plane_1_points, min_line_length) or not check_lengths(
+            new_plane_2_points, min_line_length
         ):
             continue
         plane_1 = Plane(new_plane_1_points, colours[colour_index])
