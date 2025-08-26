@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from unittest.mock import MagicMock, patch
 
@@ -11,7 +11,7 @@ from fastapi import Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.api.api_v1.authorization.register import RegisterRequest, register_user
-from tests.test_login.conftest_login import AsyncTestingSessionLocal, test_setup
+from tests.conftest import AsyncTestingSessionLocal, test_setup
 
 
 @pytest.mark.asyncio

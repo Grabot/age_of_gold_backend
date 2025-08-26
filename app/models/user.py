@@ -27,8 +27,7 @@ def create_salt() -> str:
 
 
 def avatar_filename() -> str:
-    # TODO: Do something different for a unique filename?
-    return f"user_{uuid.uuid4().hex}"
+    return uuid.uuid4().hex
 
 
 class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]

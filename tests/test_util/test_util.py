@@ -22,7 +22,7 @@ from app.util.util import (
     hash_password,
     refresh_user_token,
 )
-from tests.test_login.conftest_login import AsyncTestingSessionLocal, test_setup
+from tests.conftest import AsyncTestingSessionLocal, test_setup
 
 
 def test_get_failed_response() -> None:
@@ -62,7 +62,6 @@ async def test_get_user_tokens(
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
         user = await db.get(User, 1)
-        await db.commit()
         user_token = get_user_tokens(user)
         assert user_token.user_id == user.id
         assert user_token.access_token == expected_access_token
@@ -85,7 +84,6 @@ async def test_check_token(
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
         user = await db.get(User, 1)
-        await db.commit()
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
@@ -110,7 +108,6 @@ async def test_delete_user_token_and_return(
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
         user = await db.get(User, 1)
-        await db.commit()
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()

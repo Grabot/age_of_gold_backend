@@ -2,7 +2,8 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+
 from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
@@ -11,7 +12,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
 from main import app
-from tests.test_login.conftest_login import test_setup
+from tests.conftest import test_setup
 
 
 @pytest.mark.asyncio

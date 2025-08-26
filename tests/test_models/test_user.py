@@ -27,10 +27,9 @@ def test_create_salt() -> None:
 
 
 def test_avatar_filename() -> None:
-    # TODO: change the filename creation (and this test)
     filename = avatar_filename()
     assert isinstance(filename, str)
-    assert filename.startswith("user_")
+    assert len(filename) == 32
 
 
 def test_user_verify_password() -> None:

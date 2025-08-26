@@ -70,18 +70,6 @@ class Settings(BaseSettings):
 
     PACKAGE_NAME: str = "ageof.gold.age_of_gold"
 
-    # jwk: Dict[str, Union[str, Any]] = {
-    #     "alg": os.environ.get("JWT_ALG", ""),
-    #     "crv": os.environ.get("JWT_CRV", ""),
-    #     "d": os.environ.get("JWT_D", ""),
-    #     "key_ops": ["sign", "verify"],
-    #     "kty": os.environ.get("JWT_KTY", ""),
-    #     "x": os.environ.get("JWT_X", ""),
-    #     "y": os.environ.get("JWT_Y", ""),
-    #     "use": os.environ.get("JWT_USE", ""),
-    #     "kid": os.environ.get("JWT_KID", ""),
-    # }
-
     jwk_pem: str = os.environ.get("JWT_PEM", "")
 
     header: Dict[str, str] = {
