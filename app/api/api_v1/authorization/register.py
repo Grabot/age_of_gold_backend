@@ -116,7 +116,6 @@ async def avatar_created(
     user_id = avatar_created_request.user_id
     room = "room_%s" % user_id
 
-    # A short sleep, just in case the user has not made the socket connection yet
     await asyncio.sleep(1)
 
     await sio.emit(

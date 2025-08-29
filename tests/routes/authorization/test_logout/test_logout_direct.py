@@ -1,10 +1,10 @@
 # ruff: noqa: E402, F401, F811
 import sys
-import time
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
+import time
 from typing import Any, Generator
 from unittest.mock import MagicMock
 
@@ -24,9 +24,11 @@ async def test_successful_logout_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user_id = 1
+        user = await db.get(User, user_id)
+        assert user is not None
         test_user_token = UserToken(
-            user_id=user.id,
+            user_id=user_id,
             access_token="test_access_token",
             token_expiration=int(time.time()) + 1000,
             refresh_token="test_refresh_token",
@@ -80,9 +82,11 @@ async def test_database_error_during_login_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user_id = 1
+        user = await db.get(User, user_id)
+        assert user is not None
         test_user_token = UserToken(
-            user_id=user.id,
+            user_id=user_id,
             access_token="test_access_token",
             token_expiration=int(time.time()) + 1000,
             refresh_token="test_refresh_token",
@@ -110,9 +114,11 @@ async def test_unexpected_error_during_logout_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user_id = 1
+        user = await db.get(User, user_id)
+        assert user is not None
         test_user_token = UserToken(
-            user_id=user.id,
+            user_id=user_id,
             access_token="test_access_token",
             token_expiration=int(time.time()) + 1000,
             refresh_token="test_refresh_token",
@@ -134,6 +140,32 @@ async def test_unexpected_error_during_logout_direct(
         assert not response["result"]
         assert response["message"] == "Internal server error"
 
+
+# @pytest.mark.asyncio
+# async def test_logout_with_invalid_token_not_found_direct(
+#     test_setup: Generator[Any, Any, Any],
+# ) -> None:
+#     async with AsyncTestingSessionLocal() as db:
+#         user_id = 1
+#         user = await db.get(User, user_id)
+#         assert user is not None
+#         test_user_token = UserToken(
+#             user_id=user_id,
+#             access_token="test_access_token",
+#             token_expiration=int(time.time()) + 1000,
+#             refresh_token="test_refresh_token",
+#             refresh_token_expiration=int(time.time()) + 1000,
+#         )
+#         db.add(test_user_token)
+#         await db.commit()
+
+#         request = MagicMock()
+#         request.headers.get.return_value = "Bearer test_access_token"
+
+#         response = await logout_user(request, Response(), db)
+
+#         assert response["result"] is False
+#         assert response["message"] == "Authorization token is missing or invalid"
 
 if __name__ == "__main__":
     pytest.main([__file__])

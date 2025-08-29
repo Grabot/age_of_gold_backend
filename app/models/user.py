@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.models.user_token import UserToken
 
 
+# TODO: Move to util? Or move hash_password to user?
 def hash_email(email: str, pepper: str) -> str:
     normalized_email = email.lower().encode("utf-8")
     peppered_email = normalized_email + pepper.encode("utf-8")

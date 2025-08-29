@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 from fastapi import Depends, Response, status
 from pydantic import BaseModel
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 
 from app.api.api_v1 import api_router_v1
@@ -49,6 +49,13 @@ async def refresh_user(
             "user": user.serialize,
         }
         return login_response
+
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error(f"Database integrity error during registration: {e}")
+        return get_failed_response(
+            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     except SQLAlchemyError as e:
         await db.rollback()
         logger.error(f"Database error during token refresh: {e}")

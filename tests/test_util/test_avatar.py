@@ -1,6 +1,8 @@
 # ruff: noqa: E402
+import random
 import sys
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
@@ -8,6 +10,7 @@ sys.path.append(str(current_dir.parent.parent))
 import filecmp
 import math
 import os
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -22,6 +25,7 @@ from app.util.avatar import (
     generate_avatar,
     get_angle_lines,
     get_length,
+    get_point_on_line,
     point_on_line,
     point_on_plane_border,
     slope_line,
@@ -41,6 +45,29 @@ def test_generate_avatar() -> None:
     ), "The generated avatar does not match the default avatar"
 
     os.remove(str(generated_avatar_path))
+
+
+def get_add_square_clean_none(
+    _width: int,
+    _height: int,
+    _planes: List[Plane],
+    _index: int,
+    _max_attempts: int,
+) -> Tuple[Optional[Plane], Optional[Plane], Optional[int]]:
+    return None, None, None
+
+
+@patch("app.util.avatar.add_square_clean", side_effect=get_add_square_clean_none)
+def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
+    test_path = os.path.join(current_dir.parent, "data")
+
+    generate_avatar(file_name="test", file_path=str(test_path))
+
+    generated_avatar_path = os.path.join(test_path, "test_default.png")
+
+    assert not os.path.exists(
+        generated_avatar_path
+    ), "The generated avatar should not exist"
 
 
 def test_line_class() -> None:
@@ -74,6 +101,8 @@ def test_plane_class() -> None:
     plane = Plane(points, "#FF0000")
     assert plane.points == points
     assert plane.get_colour() == "#FF0000"
+    plane.set_colour("#00FFFF")
+    assert plane.get_colour() == "#00FFFF"
     assert len(plane.get_all_lines()) == 4
 
     line1 = plane.get_line(0)
@@ -129,7 +158,6 @@ def test_slope_line() -> None:
 
 def test_angle_slopes() -> None:
     angle_45: float = angle_slopes(1.0, 0.0)
-    # Angle should be 45 or -45, which will be turned to positive 135
     assert angle_45 == 45.0 or angle_45 == 135
 
     angle_15 = angle_slopes(1.0, math.sqrt(3))
@@ -163,14 +191,175 @@ def test_check_lengths() -> None:
     assert check_lengths(points, 2)
 
 
-def test_add_square_clean() -> None:
+def get_point_on_line_side_effect_none(
+    line: Line, angle_1: float, line_length_choice: float
+) -> Optional[Point]:
+    return None
+
+
+@patch(
+    "app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect_none
+)
+def test_add_square_no_point(mock_get_point_on_line: MagicMock) -> None:
+    random.seed("test")
     width = 252
     height = 252
     planes = [background_square_clean(width, height, 0)]
-    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0)
-    assert plane1 is not None
-    assert plane2 is not None
-    assert chosen_plane is not None
+
+    short_line_points: list[Point] = [(0, 0), (100, 100), (0, 1000), (1000, 0)]
+    short_line_plane = Plane(short_line_points, "#FF0000")
+    planes = [short_line_plane]
+    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0, 2)
+    assert plane1 is None
+    assert plane2 is None
+    assert chosen_plane is None
+
+
+def point_on_line_side_effect(_line: Line, _point: Point) -> bool:
+    return False
+
+
+def get_point_on_line_side_effect(
+    line: Line, angle_1: float, line_length_choice: float
+) -> Optional[Point]:
+    return (100, 0)
+
+
+@patch("app.util.avatar.point_on_line", side_effect=point_on_line_side_effect)
+@patch("app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect)
+def test_add_square_no_point_on_line(
+    mock_get_point_on_line: MagicMock, mock_point_on_line: MagicMock
+) -> None:
+    random.seed("test")
+    width = 252
+    height = 252
+    planes = [background_square_clean(width, height, 0)]
+
+    short_line_points: list[Point] = [(0, 0), (100, 100), (0, 1000), (1000, 0)]
+    short_line_plane = Plane(short_line_points, "#FF0000")
+    planes = [short_line_plane]
+    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0, 2)
+    assert plane1 is None
+    assert plane2 is None
+    assert chosen_plane is None
+
+
+def point_on_plane_border_side_effect(_plane: Plane, _point: Point) -> bool:
+    return False
+
+
+@patch(
+    "app.util.avatar.point_on_plane_border",
+    side_effect=point_on_plane_border_side_effect,
+)
+def test_add_square_no_point_on_plane_border(
+    mock_point_on_plane_border: MagicMock,
+) -> None:
+    random.seed("test")
+    width = 252
+    height = 252
+    planes = [background_square_clean(width, height, 0)]
+
+    short_line_points: list[Point] = [(0, 0), (100, 100), (0, 100), (100, 0)]
+    short_line_plane = Plane(short_line_points, "#FF0000")
+    planes = [short_line_plane]
+    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0, 2)
+    assert plane1 is None
+    assert plane2 is None
+    assert chosen_plane is None
+
+
+def check_lengths_side_effect(_plane: Plane, _point: Point) -> bool:
+    return False
+
+
+@patch("app.util.avatar.check_lengths", side_effect=check_lengths_side_effect)
+def test_add_square_no_check_lengths(mock_check_lengths: MagicMock) -> None:
+    random.seed("test")
+    width = 252
+    height = 252
+    planes = [background_square_clean(width, height, 0)]
+
+    short_line_points: list[Point] = [(0, 0), (100, 100), (0, 100), (100, 0)]
+    short_line_plane = Plane(short_line_points, "#FF0000")
+    planes = [short_line_plane]
+    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0, 2)
+    assert plane1 is None
+    assert plane2 is None
+    assert chosen_plane is None
+
+
+def get_point_on_line_true(_line: Line, _point: Point) -> bool:
+    return True
+
+
+def abs_side_effect(x: float) -> float:
+    if x >= -100 and x <= -80:
+        return 0.0001
+
+    if x >= 0:
+        return x
+    else:
+        return x * -1
+
+
+def check_lengths_side_effect_true(_plane: Plane, _point: Point) -> bool:
+    return True
+
+
+@patch("app.util.avatar.point_on_line", side_effect=get_point_on_line_true)
+@patch("app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect)
+@patch("app.util.avatar.check_lengths", side_effect=check_lengths_side_effect_true)
+@patch("builtins.abs", side_effect=abs_side_effect)
+def test_add_square_no_abs(
+    mock_get_point_on_line_true: MagicMock,
+    mock_point_on_line: MagicMock,
+    mock_check_lengths: MagicMock,
+    mock_abs: MagicMock,
+) -> None:
+    random.seed("test")
+    width = 252
+    height = 252
+    planes = [background_square_clean(width, height, 0)]
+
+    short_line_points: list[Point] = [(0, 0), (100, 100), (0, 100), (100, 0)]
+    short_line_plane = Plane(short_line_points, "#FF0000")
+    planes = [short_line_plane]
+    plane1, plane2, chosen_plane = add_square_clean(width, height, planes, 0, 10)
+    assert plane1 is None
+    assert plane2 is None
+    assert chosen_plane is None
+
+
+def test_get_point_on_line() -> None:
+    line = Line((0, 0), (3, 3))
+    point = get_point_on_line(line, 45, 3)
+    assert point is not None
+    assert point_on_line(line, point)
+
+    line_negative = Line((0, 0), (-3, -3))
+    point_negative = get_point_on_line(line_negative, 45, 3)
+    assert point_negative is not None
+    assert point_on_line(line_negative, point_negative)
+
+    line_one_negative = Line((0, 0), (3, -3))
+    point_one_negative = get_point_on_line(line_one_negative, 45, 3)
+    assert point_one_negative is not None
+    assert point_on_line(line_one_negative, point_one_negative)
+
+    line_vertical = Line((0, 0), (0, 3))
+    point_vertical = get_point_on_line(line_vertical, 90, 3)
+    assert point_vertical is not None
+    assert point_on_line(line_vertical, point_vertical)
+
+    line_horizontal = Line((0, 0), (3, 0))
+    point_horizontal = get_point_on_line(line_horizontal, 0, 3)
+    assert point_horizontal is not None
+    assert point_on_line(line_horizontal, point_horizontal)
+
+    line_short = Line((0, 0), (100, 100))
+    point_short = get_point_on_line(line_short, 20, 100)
+    assert point_short is None
 
 
 def test_background_square_clean() -> None:

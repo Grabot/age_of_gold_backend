@@ -2,15 +2,21 @@
 import sys
 from pathlib import Path
 
+from fastapi.testclient import TestClient
+
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
 import time
-from typing import Any, Generator, Optional
+from typing import Any, AsyncGenerator, Generator, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.selectable import Select
+from sqlmodel import select
 
 from app.models import User, UserToken
 from app.util.util import get_user_tokens
@@ -18,9 +24,7 @@ from tests.conftest import AsyncTestingSessionLocal, test_setup
 
 
 @pytest.mark.asyncio
-async def test_token_expiration_expired(
-    test_setup: Generator[Any, Any, Any],
-) -> None:
+async def test_token_expiration_expired(test_setup: Generator[Any, Any, Any]) -> None:
     async with AsyncTestingSessionLocal() as db:
         user_token = UserToken(
             user_id=1,
@@ -70,18 +74,11 @@ async def test_user_token_reference(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        from sqlalchemy.orm import selectinload
-        from sqlmodel import select
-
-        statement = (
-            select(User)
-            .where(User.id == 1)
-            .options(  # type: ignore
-                selectinload(User.tokens)
-            )
+        statement: Select = (
+            select(User).where(User.id == 1).options(joinedload(User.tokens))
         )
         result = await db.execute(statement)
-        user: Optional[User] = result.scalar_one()
+        user: Optional[User] = result.unique().scalar_one()
         assert user is not None
         user_token = get_user_tokens(user)
         db.add(user_token)

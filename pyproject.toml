@@ -68,6 +68,8 @@ Flake8-pyproject = "1.2.3"
 bump-pydantic = "^0.8.0"
 types-requests = "^2.32.4.20250809"
 cryptography = "^45.0.6"
+pytest-cov = "^6.2.1"
+sqlalchemy2-stubs = "^0.0.2a38"
 
 [build-system]
 requires = ["poetry-core"]

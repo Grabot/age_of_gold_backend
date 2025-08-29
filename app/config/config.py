@@ -26,14 +26,6 @@ class Settings(BaseSettings):
         db=POSTGRES_DB,
     )
 
-    SYNC_DB_URL: str = "postgresql://{user}:{pw}@{url}:{port}/{db}".format(
-        user=POSTGRES_USER,
-        pw=POSTGRES_PASSWORD,
-        url=POSTGRES_URL,
-        port=POSTGRES_PORT,
-        db=POSTGRES_DB,
-    )
-
     REDIS_URI: str = "redis://{url}:{port}".format(url=REDIS_URL, port=REDIS_PORT)
 
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
@@ -94,6 +86,13 @@ class Settings(BaseSettings):
 
     PEPPER: str = os.environ.get("HASH_PEPPER", "your-secret-pepper-here")
     model_config = SettingsConfigDict()
+
+    POOL_SIZE: int = 20
+    MAX_OVERFLOW: int = POOL_SIZE * 4
+    POOL_RECYCLE: int = 3600
+    POOL_PRE_PING: bool = True
+
+    DEBUG: bool = True
 
 
 settings = Settings()

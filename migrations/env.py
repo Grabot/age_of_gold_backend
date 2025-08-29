@@ -7,7 +7,7 @@ from typing import Any, Optional
 from alembic import context
 from celery.backends.database.session import ResultModelBase  # type: ignore
 from sqlalchemy import engine, engine_from_config, pool
-from sqlalchemy.ext.asyncio import AsyncEngine  # pyright: ignore[reportMissingImports]
+from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
 from app.config.config import settings
@@ -113,7 +113,7 @@ async def run_migrations_online() -> None:
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,
             future=True,
-        )
+        )  # type: ignore
     )
 
     async with connectable.connect() as connection:

@@ -46,7 +46,8 @@ class Line:
     def set_next(self, line: "Line") -> None:
         self.next = line
 
-    def get_next(self) -> Optional["Line"]:
+    def get_next(self) -> "Line":
+        assert self.next is not None, "next must be set after creation"
         return self.next
 
     def get_length(self) -> float:
@@ -102,11 +103,7 @@ def angle_slopes(slope_1: float, slope_2: float) -> float:
         divisor = 0.00001
     ang_rad = math.atan((slope_2 - slope_1) / divisor)
     ang = math.degrees(ang_rad)
-    if ang > 180:
-        return ang - 180
-    elif ang < -180:
-        return ang + 360
-    elif ang < 0:
+    if ang < 0:
         return ang + 180
     else:
         return ang
@@ -151,15 +148,33 @@ def check_lengths(points: list[Point], min_length: int) -> bool:
     return all(length > min_length for length in lengths)
 
 
+def get_point_on_line(
+    line: Line, angle_1: float, line_length_choice: float
+) -> Optional[Point]:
+    test_point_a_1: Point = line.start
+    opp = math.sin(math.radians(angle_1)) * line_length_choice
+    adj = math.sqrt(math.pow(line_length_choice, 2) - math.pow(opp, 2))
+    test_point_a_2: Point = (test_point_a_1[0] + adj, test_point_a_1[1] + opp)
+    if not point_on_line(line, test_point_a_2):
+        test_point_a_2 = (test_point_a_1[0] - adj, test_point_a_1[1] + opp)
+        if not point_on_line(line, test_point_a_2):
+            test_point_a_2 = (test_point_a_1[0] + adj, test_point_a_1[1] - opp)
+            if not point_on_line(line, test_point_a_2):
+                test_point_a_2 = (test_point_a_1[0] - adj, test_point_a_1[1] - opp)
+                if not point_on_line(line, test_point_a_2):
+                    return None
+    return test_point_a_2
+
+
 def add_square_clean(
     _width: int,
     _height: int,
     _planes: List[Plane],
     _index: int,
+    _max_attempts: int = 100,
 ) -> Tuple[Optional[Plane], Optional[Plane], Optional[int]]:
-    max_attempts = 100
     min_line_length: int = 20
-    for _ in range(max_attempts):
+    for _ in range(_max_attempts):
         colour_index = random.randint(_index, len(colours) - 1 + _index)
         colour_index -= _index
         _index += 1
@@ -173,12 +188,8 @@ def add_square_clean(
         line: Line = plane.get_line(line_choice)
         if line.get_length() <= min_line_length:
             continue
-        next_line: Optional[Line] = line.get_next()
-        if not next_line:
-            continue
-        change_line: Optional[Line] = next_line.get_next()
-        if not change_line:
-            continue
+        next_line: Line = line.get_next()
+        change_line: Line = next_line.get_next()
         line_length_choice = random.uniform(
             _index + min_line_length, line.get_length() + _index
         )
@@ -192,32 +203,29 @@ def add_square_clean(
         angle_1 = math.degrees(
             math.asin((line.end[1] - line.start[1]) / line.get_length())
         )
-        test_point_a_1: Point = line.start
-        opp = math.sin(math.radians(angle_1)) * line_length_choice
-        adj = math.sqrt(math.pow(line_length_choice, 2) - math.pow(opp, 2))
-        test_point_a_2: Point = (test_point_a_1[0] + adj, test_point_a_1[1] + opp)
-        if not point_on_line(line, test_point_a_2):
-            test_point_a_2 = (test_point_a_1[0] - adj, test_point_a_1[1] + opp)
-        if not point_on_line(line, test_point_a_2):
-            test_point_a_2 = (test_point_a_1[0] + adj, test_point_a_1[1] - opp)
-        if not point_on_line(line, test_point_a_2):
-            test_point_a_2 = (test_point_a_1[0] - adj, test_point_a_1[1] - opp)
-        if not point_on_line(line, test_point_a_2):
+        test_point_a_2: Optional[Point] = get_point_on_line(
+            line, angle_1, line_length_choice
+        )
+        if not test_point_a_2:
             continue
-        test_point_b_1: Point = test_point_a_2
         ang_2 = get_angle_lines(line, next_line)
         ang_3 = get_angle_lines(next_line, change_line)
         ang_4 = 360 - ang_1 - ang_2 - ang_3
         triangle_1_line_2 = Line(next_line.start, next_line.end)
-        triangle_1_line_3 = Line(next_line.end, test_point_b_1)
+        triangle_1_line_3 = Line(next_line.end, test_point_a_2)
         triangle_1_ang_3 = get_angle_lines(triangle_1_line_2, triangle_1_line_3)
         t2_ang_1 = ang_3 - triangle_1_ang_3
         t2_ang_2 = ang_4
         t2_ang_3 = 180 - t2_ang_1 - t2_ang_2
-        t2_mid = Line(next_line.end, test_point_b_1).get_length()
+        t2_mid = Line(next_line.end, test_point_a_2).get_length()
         t2_side = (t2_mid * math.sin(math.radians(t2_ang_3))) / math.sin(
             math.radians(t2_ang_2)
         )
+        line_value = (
+            change_line.end[1] - change_line.start[1]
+        ) / change_line.get_length()
+        if not (-1 <= line_value <= 1):
+            continue
         angle_c_1 = math.degrees(
             math.asin(
                 (change_line.end[1] - change_line.start[1]) / change_line.get_length()
@@ -229,23 +237,23 @@ def add_square_clean(
         test_point_c_2: Point = (test_point_c_1[0] + adj, test_point_c_1[1] + opp)
         if not point_on_line(change_line, test_point_c_2):
             test_point_c_2 = (test_point_c_1[0] - adj, test_point_c_1[1] + opp)
-        if not point_on_line(change_line, test_point_c_2):
-            test_point_c_2 = (test_point_c_1[0] + adj, test_point_c_1[1] - opp)
-        if not point_on_line(change_line, test_point_c_2):
-            test_point_c_2 = (test_point_c_1[0] - adj, test_point_c_1[1] - opp)
-        if not point_on_line(change_line, test_point_c_2):
-            continue
+            if not point_on_line(change_line, test_point_c_2):
+                test_point_c_2 = (test_point_c_1[0] + adj, test_point_c_1[1] - opp)
+                if not point_on_line(change_line, test_point_c_2):
+                    test_point_c_2 = (test_point_c_1[0] - adj, test_point_c_1[1] - opp)
+                    if not point_on_line(change_line, test_point_c_2):
+                        continue
         if not point_on_plane_border(plane, test_point_c_2):
             continue
         new_plane_1_points = [
-            test_point_b_1,
+            test_point_a_2,
             next_line.start,
             next_line.end,
             test_point_c_2,
         ]
         new_plane_2_points = [
             line.start,
-            test_point_b_1,
+            test_point_a_2,
             test_point_c_2,
             change_line.end,
         ]
@@ -255,7 +263,7 @@ def add_square_clean(
             continue
         plane_1 = Plane(new_plane_1_points, colours[colour_index])
         plane_2 = Plane(new_plane_2_points, plane.get_colour())
-        if abs(angle_c_1 - 90) < 0.001 and 90 not in angles:
+        if abs(angle_c_1 - 90) < 0.001:
             continue
         return plane_1, plane_2, plane_choice
     return None, None, None
@@ -298,9 +306,12 @@ def generate_avatar(file_name: str, file_path: str) -> None:
     max_squares = 30
     square_numbers = random.randint(min_squares, max_squares)
     for _ in range(0, square_numbers):
-        plane_1, plane_2, chosen_plane = add_square_clean(width, height, planes, index)
+        plane_1, plane_2, chosen_plane = add_square_clean(
+            width, height, planes, index, 100
+        )
         if plane_1 is None or plane_2 is None or chosen_plane is None:
-            break
+            # TODO: Save default image?
+            return
         else:
             del planes[chosen_plane]
             planes.append(plane_1)

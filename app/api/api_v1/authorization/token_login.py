@@ -35,7 +35,7 @@ async def login_token_user(
         )
 
     try:
-        user = await check_token(db, login_token_request.access_token)
+        user, user_token = await check_token(db, login_token_request.access_token)
         if not user:
             return get_failed_response(
                 "Invalid or expired token", response, status.HTTP_401_UNAUTHORIZED

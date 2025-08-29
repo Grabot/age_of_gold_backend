@@ -13,9 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-celery_app = Celery(
-    "tasks", broker=settings.REDIS_URI, backend=f"db+{settings.SYNC_DB_URL}"
-)
+celery_app = Celery("tasks", broker=settings.REDIS_URI, backend="rpc://")
 
 
 @celery_app.task

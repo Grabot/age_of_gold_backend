@@ -3,14 +3,14 @@ import sys
 import time
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app.models.user import User
 from app.models.user_token import UserToken
@@ -25,9 +25,11 @@ async def test_successful_refresh_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user_id = 1
+        user: Optional[User] = await db.get(User, user_id)
+        assert user is not None
         user_token = UserToken(
-            user_id=user.id,
+            user_id=user_id,
             access_token="valid_access_token",
             token_expiration=int(time.time()) + 1000,
             refresh_token="valid_refresh_token",
@@ -96,9 +98,11 @@ async def test_invalid_or_expired_tokens_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user_id = 1
+        user: Optional[User] = await db.get(User, user_id)
+        assert user is not None
         user_token = UserToken(
-            user_id=user.id,
+            user_id=user_id,
             access_token="valid_access_token",
             token_expiration=int(time.time()) - 1000,
             refresh_token="valid_refresh_token",

@@ -1,12 +1,13 @@
 import time
-from typing import Any, Dict, Optional, TypedDict, Union
+from typing import Any, Dict, Optional, Tuple, TypedDict, Union
 
 import jwt as pyjwt
 from argon2 import PasswordHasher
 from fastapi import Response, status
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from app.config.config import settings
@@ -34,36 +35,36 @@ def get_user_tokens(
     refresh_token_expiration: int = int(time.time()) + refresh_expiration
     access_token: str = user.generate_auth_token(access_expiration)
     refresh_token: str = user.generate_refresh_token(refresh_expiration)
-    if not user.id:
-        # TODO: what if it gets here? What error to throw?
-        raise Exception("TODO?")
-    else:
-        user_token: UserToken = UserToken(
-            user_id=user.id,
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_expiration=token_expiration,
-            refresh_token_expiration=refresh_token_expiration,
-        )
-        return user_token
+    if user.id is None:
+        raise ValueError("User ID should not be None")
+    user_token: UserToken = UserToken(
+        user_id=user.id,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_expiration=token_expiration,
+        refresh_token_expiration=refresh_token_expiration,
+    )
+    return user_token
 
 
-async def check_token(db: AsyncSession, token: str) -> Optional[User]:
-    token_statement = select(UserToken).filter_by(access_token=token)  # type: ignore
+async def check_token(
+    db: AsyncSession, token: str
+) -> Tuple[Optional[User], Optional[UserToken]]:
+    token_statement: Select = (
+        select(UserToken)
+        .options(joinedload(UserToken.user))
+        .filter_by(access_token=token)
+    )
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
     if result_token is None:
-        return None
+        return None, None
     user_token: UserToken = result_token.UserToken
     if user_token.token_expiration < int(time.time()):
-        return None
-    user_statement = select(User).filter_by(id=user_token.user_id)  # type: ignore
-    results = await db.execute(user_statement)
-    result = results.first()
-    if result is None:
-        return None
-    user: User = result.User
-    return user
+        return None, None
+
+    user: User = user_token.user
+    return user, user_token
 
 
 def get_auth_token(auth_header: Optional[str]) -> str:
@@ -90,9 +91,9 @@ class JWTPayload(TypedDict):
 async def refresh_user_token(
     db: AsyncSession, access_token: str, refresh_token: str
 ) -> Optional[User]:
-    token_statement = (
+    token_statement: Select = (
         select(UserToken)
-        .filter_by(access_token=access_token)  # type: ignore
+        .filter_by(access_token=access_token)
         .filter_by(refresh_token=refresh_token)
     )
     results_token = await db.execute(token_statement)
@@ -102,10 +103,8 @@ async def refresh_user_token(
     user_token: UserToken = result_token.UserToken
     if user_token.refresh_token_expiration < int(time.time()):
         return await delete_user_token_and_return(db, user_token, None)
-    user_statement = (
-        select(User)
-        .filter_by(id=user_token.user_id)  # type: ignore
-        .options(selectinload(User.tokens))
+    user_statement: Select = (
+        select(User).filter_by(id=user_token.user_id).options(selectinload(User.tokens))
     )
     user_results = await db.execute(user_statement)
     user_result = user_results.first()
@@ -128,10 +127,6 @@ async def refresh_user_token(
             options={"verify_aud": False},
         )
     except InvalidTokenError:
-        return await delete_user_token_and_return(db, user_token, None)
-    if not access or not refresh:
-        return await delete_user_token_and_return(db, user_token, None)
-    if refresh["exp"] < int(time.time()):
         return await delete_user_token_and_return(db, user_token, None)
     if user.id == access["id"] and user.username == refresh["user_name"]:
         return await delete_user_token_and_return(db, user_token, user)

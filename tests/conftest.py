@@ -2,8 +2,6 @@
 import sys
 from pathlib import Path
 
-from app.models.user import hash_email
-
 sys.path.append(str(Path(__file__).parent.parent))
 
 import asyncio
@@ -11,25 +9,23 @@ from typing import Any, Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import (  # pyright: ignore[reportMissingImports]
-    AsyncSession,
-    create_async_engine,
-)
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker  # type: ignore[attr-defined]
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 from app.config.config import settings
 from app.database import get_db
 from app.models import User
+from app.models.user import hash_email
 from app.util.util import hash_password
 from main import app
 
-DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+ASYNC_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+    ASYNC_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
-AsyncTestingSessionLocal = sessionmaker(
+AsyncTestingSessionLocal = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
 )
 

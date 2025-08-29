@@ -10,10 +10,14 @@ from app.config.config import settings
 async def initialize_folders() -> dict[str, str]:
     if not os.path.exists(settings.UPLOAD_FOLDER_AVATARS):
         os.makedirs(settings.UPLOAD_FOLDER_AVATARS)
-        os.chmod(settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXO)
+        os.chmod(
+            settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
+        )
     if not os.path.exists(settings.UPLOAD_FOLDER_CRESTS):
         os.makedirs(settings.UPLOAD_FOLDER_CRESTS)
-        os.chmod(settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXO)
+        os.chmod(
+            settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
+        )
 
     _ = task_initialize.delay()
 

@@ -2,11 +2,13 @@
 import sys
 from pathlib import Path
 
+from jwt import InvalidTokenError
+
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
 import time
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -48,6 +50,19 @@ def test_hash_password() -> None:
     assert hashed_password.startswith("$argon2")
 
 
+def test_get_user_tokens_with_none_user_id() -> None:
+    user = User(
+        id=None,
+        username="test_user",
+        password_hash="not_important",
+        email_hash="not_important",
+        salt="salt",
+        origin=0,
+    )
+    with pytest.raises(ValueError, match="User ID should not be None"):
+        get_user_tokens(user)
+
+
 @pytest.mark.asyncio
 @patch("app.models.User.generate_auth_token")
 @patch("app.models.User.generate_refresh_token")
@@ -61,7 +76,8 @@ async def test_get_user_tokens(
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
         user_token = get_user_tokens(user)
         assert user_token.user_id == user.id
         assert user_token.access_token == expected_access_token
@@ -83,12 +99,15 @@ async def test_check_token(
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
-        assert await check_token(db, user_token.access_token) == user
-        assert await check_token(db, "invalid_token") is None
+        user_test1, _ = await check_token(db, user_token.access_token)
+        assert user_test1 == user
+        user_test2, _ = await check_token(db, "invalid_token")
+        assert user_test2 is None
         await db.delete(user_token)
         await db.commit()
         assert await db.get(UserToken, user_token.id) is None
@@ -107,7 +126,8 @@ async def test_delete_user_token_and_return(
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
@@ -128,7 +148,8 @@ async def test_refresh_user_token(
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
     async with AsyncTestingSessionLocal() as db:
-        user = await db.get(User, 1)
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
@@ -142,8 +163,168 @@ async def test_refresh_user_token(
         assert await db.get(UserToken, user_token.id) is None
 
 
-# TODO: Test generate_auth_token en decoding in `refresh_user_token`?
-# Maybe put it in seperate function?
+@pytest.mark.asyncio
+@patch("app.models.User.generate_auth_token")
+@patch("app.models.User.generate_refresh_token")
+async def test_check_token_with_expired_token(
+    mock_generate_refresh_token: MagicMock,
+    mock_generate_auth_token: MagicMock,
+    test_setup: Generator[Any, Any, Any],
+) -> None:
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
+    async with AsyncTestingSessionLocal() as db:
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
+        user_token = get_user_tokens(user)
+        user_token.token_expiration = int(time.time()) - 1
+        db.add(user_token)
+        await db.commit()
+
+        user_test, token_test = await check_token(db, user_token.access_token)
+        assert user_test is None
+        assert token_test is None
+        await db.delete(user_token)
+        await db.commit()
+        assert await db.get(UserToken, user_token.id) is None
+
+
+@pytest.mark.asyncio
+@patch("app.models.User.generate_auth_token")
+@patch("app.models.User.generate_refresh_token")
+async def test_refresh_user_token_with_none_user_result(
+    mock_generate_refresh_token: MagicMock,
+    mock_generate_auth_token: MagicMock,
+    test_setup: Generator[Any, Any, Any],
+) -> None:
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
+    async with AsyncTestingSessionLocal() as db:
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
+
+        user_token = get_user_tokens(user)
+        user_token.user_id = 9999
+        db.add(user_token)
+        await db.commit()
+
+        assert (
+            await refresh_user_token(
+                db, user_token.access_token, user_token.refresh_token
+            )
+            is None
+        )
+        assert await db.get(UserToken, user_token.id) is None
+
+
+@pytest.mark.asyncio
+@patch("app.models.User.generate_auth_token")
+@patch("app.models.User.generate_refresh_token")
+@patch("jwt.decode")
+async def test_refresh_user_token_with_expired_access_token(
+    mock_jwt_decode: MagicMock,
+    mock_generate_refresh_token: MagicMock,
+    mock_generate_auth_token: MagicMock,
+    test_setup: Generator[Any, Any, Any],
+) -> None:
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
+    async with AsyncTestingSessionLocal() as db:
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
+        user_token = get_user_tokens(user)
+        user_token.token_expiration = int(time.time()) - 1
+        db.add(user_token)
+        await db.commit()
+        mock_jwt_decode.side_effect = [
+            {"exp": int(time.time()) + 3600, "id": user.id, "user_name": user.username},
+            {"exp": int(time.time()) + 3600, "user_name": user.username},
+        ]
+        assert (
+            await refresh_user_token(
+                db, user_token.access_token, user_token.refresh_token
+            )
+            == user
+        )
+        assert await db.get(UserToken, user_token.id) is None
+
+
+@pytest.mark.asyncio
+@patch("app.models.User.generate_auth_token")
+@patch("app.models.User.generate_refresh_token")
+@patch("jwt.decode")
+async def test_refresh_user_token_with_mismatched_token_data(
+    mock_jwt_decode: MagicMock,
+    mock_generate_refresh_token: MagicMock,
+    mock_generate_auth_token: MagicMock,
+    test_setup: Generator[Any, Any, Any],
+) -> None:
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
+    async with AsyncTestingSessionLocal() as db:
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
+        user_token = get_user_tokens(user)
+        user_token.token_expiration = int(time.time()) - 1
+        db.add(user_token)
+        await db.commit()
+        mock_jwt_decode.side_effect = [
+            {
+                "exp": int(time.time()) + 3600,
+                "id": 9999,
+                "user_name": "mismatched_user",
+            },
+            {"exp": int(time.time()) + 3600, "user_name": "mismatched_user"},
+        ]
+        assert (
+            await refresh_user_token(
+                db, user_token.access_token, user_token.refresh_token
+            )
+            is None
+        )
+        assert await db.get(UserToken, user_token.id) is None
+
+
+@pytest.mark.asyncio
+@patch("app.models.User.generate_auth_token")
+@patch("app.models.User.generate_refresh_token")
+@patch("jwt.decode")
+async def test_refresh_user_token_with_failed_decode(
+    mock_jwt_decode: MagicMock,
+    mock_generate_refresh_token: MagicMock,
+    mock_generate_auth_token: MagicMock,
+    test_setup: Generator[Any, Any, Any],
+) -> None:
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
+    async with AsyncTestingSessionLocal() as db:
+        user: Optional[User] = await db.get(User, 1)
+        assert user is not None
+        user_token = get_user_tokens(user)
+        user_token.token_expiration = int(time.time()) - 1
+        db.add(user_token)
+        await db.commit()
+        mock_jwt_decode.side_effect = [
+            InvalidTokenError("Invalid token"),
+            {"exp": int(time.time()) + 3600, "user_name": user.username},
+        ]
+        assert (
+            await refresh_user_token(
+                db, user_token.access_token, user_token.refresh_token
+            )
+            is None
+        )
+        assert await db.get(UserToken, user_token.id) is None
 
 
 if __name__ == "__main__":
