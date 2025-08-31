@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.api.api_v1.authorization.login import (  # pylint: disable=redefined-builtin
+from app.api.api_v1.authorization.login import (
     LoginRequest,
     get_user_by_username,
     login_user,

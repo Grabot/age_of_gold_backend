@@ -36,11 +36,12 @@ async def test_successful_refresh_direct(
         db.add(user_token)
         await db.commit()
 
-        refresh_request = RefreshRequest(
-            access_token="valid_access_token", refresh_token="valid_refresh_token"
-        )
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
-        response = await refresh_user(refresh_request, Response(), db)
+        refresh_request = RefreshRequest(refresh_token="valid_refresh_token")
+
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is True
         assert response["message"] == "Tokens refreshed successfully."
@@ -54,12 +55,15 @@ async def test_invalid_request_no_tokens_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        refresh_request = RefreshRequest(access_token="", refresh_token="")
+        request = MagicMock()
+        request.headers.get.return_value = None
 
-        response = await refresh_user(refresh_request, Response(), db)
+        refresh_request = RefreshRequest(refresh_token="")
+
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
-        assert response["message"] == "Invalid request"
+        assert response["message"] == "Authorization token is missing or invalid"
 
 
 @pytest.mark.asyncio
@@ -67,11 +71,12 @@ async def test_invalid_request_invalid_tokens_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        refresh_request = RefreshRequest(
-            access_token="invalid_access_token", refresh_token="invalid_refresh_token"
-        )
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer invalid_access_token"
 
-        response = await refresh_user(refresh_request, Response(), db)
+        refresh_request = RefreshRequest(refresh_token="invalid_refresh_token")
+
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Invalid or expired tokens"
@@ -95,11 +100,12 @@ async def test_invalid_or_expired_tokens_direct(
         db.add(user_token)
         await db.commit()
 
-        refresh_request = RefreshRequest(
-            access_token="valid_access_token", refresh_token="valid_refresh_token"
-        )
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
-        response = await refresh_user(refresh_request, Response(), db)
+        refresh_request = RefreshRequest(refresh_token="valid_refresh_token")
+
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Invalid or expired tokens"
@@ -122,16 +128,18 @@ async def test_database_error_during_refresh_direct(
         )
         db.add(user_token)
         await db.commit()
-        refresh_request = RefreshRequest(
-            access_token="valid_access_token", refresh_token="valid_refresh_token"
-        )
+
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
+
+        refresh_request = RefreshRequest(refresh_token="valid_refresh_token")
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise SQLAlchemyError("Database error")
 
         db.commit = mock_commit
 
-        response = await refresh_user(refresh_request, Response(), db)
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
@@ -154,9 +162,11 @@ async def test_integrity_error_during_login_direct(
         )
         db.add(user_token)
         await db.commit()
-        refresh_request = RefreshRequest(
-            access_token="valid_access_token", refresh_token="valid_refresh_token"
-        )
+
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
+
+        refresh_request = RefreshRequest(refresh_token="valid_refresh_token")
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise IntegrityError(
@@ -165,7 +175,7 @@ async def test_integrity_error_during_login_direct(
 
         db.commit = mock_commit
 
-        response = await refresh_user(refresh_request, Response(), db)
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
@@ -190,16 +200,18 @@ async def test_unexpected_error_during_refresh_direct(
         )
         db.add(user_token)
         await db.commit()
-        refresh_request = RefreshRequest(
-            access_token="valid_access_token", refresh_token="valid_refresh_token"
-        )
+
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
+
+        refresh_request = RefreshRequest(refresh_token="valid_refresh_token")
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise Exception("Unexpected error")
 
         db.commit = mock_commit
 
-        response = await refresh_user(refresh_request, Response(), db)
+        response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"

@@ -2,7 +2,7 @@ from asyncio import current_task
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import async_sessionmaker  # type: ignore[attr-defined]
-from sqlalchemy.ext.asyncio import (  # pylint: disable=redefined-builtin
+from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_scoped_session,
     create_async_engine,

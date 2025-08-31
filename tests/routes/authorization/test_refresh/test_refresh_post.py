@@ -5,7 +5,6 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-
 from typing import Any, Generator, Optional
 from unittest.mock import MagicMock, patch
 
@@ -20,7 +19,7 @@ from tests.conftest import AsyncTestingSessionLocal, test_setup
 
 @pytest.mark.asyncio
 @patch("app.database.get_db")
-async def test_successful_refresh_direct(
+async def test_successful_refresh_post(
     mock_get_db: MagicMock,
     test_setup: Generator[Any, Any, Any],
 ) -> None:
@@ -39,12 +38,11 @@ async def test_successful_refresh_direct(
         await db.commit()
 
     with TestClient(app) as client:
+        headers = {"Authorization": "Bearer valid_access_token"}
         response = client.post(
             "/api/v1.0/refresh",
-            json={
-                "access_token": "valid_access_token",
-                "refresh_token": "valid_refresh_token",
-            },
+            json={"refresh_token": "valid_refresh_token"},
+            headers=headers,
         )
         assert response.status_code == 200
         response_json = response.json()
@@ -63,12 +61,13 @@ async def test_invalid_request_no_tokens_post(
 ) -> None:
     with TestClient(app) as client:
         response = client.post(
-            "/api/v1.0/refresh", json={"access_token": "", "refresh_token": ""}
+            "/api/v1.0/refresh",
+            json={"refresh_token": ""},
         )
-        assert response.status_code == 400
+        assert response.status_code == 401
         response_json = response.json()
         assert response_json["result"] is False
-        assert response_json["message"] == "Invalid request"
+        assert response_json["message"] == "Authorization token is missing or invalid"
 
 
 @pytest.mark.asyncio
@@ -78,12 +77,11 @@ async def test_invalid_request_invalid_tokens_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
+        headers = {"Authorization": "Bearer invalid_access_token"}
         response = client.post(
             "/api/v1.0/refresh",
-            json={
-                "access_token": "invalid_access_token",
-                "refresh_token": "invalid_refresh_token",
-            },
+            json={"refresh_token": "invalid_refresh_token"},
+            headers=headers,
         )
         assert response.status_code == 401
         response_json = response.json()
@@ -112,12 +110,11 @@ async def test_invalid_or_expired_tokens_post(
         await db.commit()
 
     with TestClient(app) as client:
+        headers = {"Authorization": "Bearer valid_access_token"}
         response = client.post(
             "/api/v1.0/refresh",
-            json={
-                "access_token": "valid_access_token",
-                "refresh_token": "valid_refresh_token",
-            },
+            json={"refresh_token": "valid_refresh_token"},
+            headers=headers,
         )
         assert response.status_code == 401
         response_json = response.json()
