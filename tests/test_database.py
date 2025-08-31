@@ -45,7 +45,7 @@ async def test_engine_creation() -> None:
 async def test_get_db() -> None:
     from app.database import get_db
 
-    async with get_db() as session:
+    async for session in get_db():
         assert isinstance(session, AsyncSession)
         assert session.is_active
 

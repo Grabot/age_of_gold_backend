@@ -31,8 +31,6 @@ async def register_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    print("register call")
-    logger.info("register call")
     if not all(
         [register_request.email, register_request.username, register_request.password]
     ):
@@ -41,11 +39,10 @@ async def register_user(
         )
 
     try:
-        select_statement = select(User).where(
-            func.lower(User.username) == register_request.username.lower()
-        )
         results = await db.execute(
-            select_statement
+            select(User).where(
+                func.lower(User.username) == register_request.username.lower()
+            )
         )
         if results.first():
             return get_failed_response(
@@ -73,7 +70,6 @@ async def register_user(
         await db.commit()
         await db.refresh(user)
 
-        # Generate tokens
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()

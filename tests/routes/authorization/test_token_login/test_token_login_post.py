@@ -36,9 +36,8 @@ async def test_successful_token_login_post(
         await db.commit()
 
     with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login/token", json={"access_token": "valid_access_token"}
-        )
+        headers = {"Authorization": "Bearer valid_access_token"}
+        response = client.post("/api/v1.0/login/token", headers=headers)
         assert response.status_code == 200
         response_json = response.json()
         assert response_json["result"] is True
@@ -55,11 +54,12 @@ async def test_invalid_request_no_token_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
-        response = client.post("/api/v1.0/login/token", json={"access_token": ""})
-        assert response.status_code == 400
+        headers = {"Authorization": "Bearer "}
+        response = client.post("/api/v1.0/login/token", headers=headers)
+        assert response.status_code == 401
         response_json = response.json()
         assert response_json["result"] is False
-        assert response_json["message"] == "Invalid request"
+        assert response_json["message"] == "Authorization token is missing or invalid"
 
 
 @pytest.mark.asyncio
@@ -69,9 +69,8 @@ async def test_invalid_token_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login/token", json={"access_token": "invalid_access_token"}
-        )
+        headers = {"Authorization": "Bearer invalid_access_token"}
+        response = client.post("/api/v1.0/login/token", headers=headers)
         assert response.status_code == 401
         response_json = response.json()
         assert response_json["result"] is False

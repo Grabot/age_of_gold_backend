@@ -65,9 +65,9 @@ def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
 
     generated_avatar_path = os.path.join(test_path, "test_default.png")
 
-    assert not os.path.exists(
-        generated_avatar_path
-    ), "The generated avatar should not exist"
+    assert not os.path.exists(generated_avatar_path), (
+        "The generated avatar should not exist"
+    )
 
 
 def test_line_class() -> None:

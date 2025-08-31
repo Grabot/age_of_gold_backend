@@ -13,7 +13,7 @@ from fastapi import Response
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import select
 
-from app.api.api_v1.authorization.token_login import LoginTokenRequest, login_token_user
+from app.api.api_v1.authorization.token_login import login_token_user
 from app.models.user import User
 from app.models.user_token import UserToken
 from tests.conftest import AsyncTestingSessionLocal, test_setup
@@ -35,9 +35,10 @@ async def test_successful_token_login_direct(
         db.add(user_token)
         await db.commit()
 
-        login_request = LoginTokenRequest(access_token="valid_access_token")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is True
         assert response["message"] == "User logged in successfully."
@@ -51,12 +52,13 @@ async def test_invalid_request_no_token_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        login_request = LoginTokenRequest(access_token="")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer "
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is False
-        assert response["message"] == "Invalid request"
+        assert response["message"] == "Authorization token is missing or invalid"
 
 
 @pytest.mark.asyncio
@@ -64,9 +66,10 @@ async def test_invalid_token_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     async with AsyncTestingSessionLocal() as db:
-        login_request = LoginTokenRequest(access_token="invalid_access_token")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer invalid_access_token"
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Invalid or expired token"
@@ -87,14 +90,15 @@ async def test_database_error_during_token_login_direct(
         )
         db.add(user_token)
         await db.commit()
-        login_request = LoginTokenRequest(access_token="valid_access_token")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise SQLAlchemyError("Database error")
 
         db.commit = mock_commit
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
@@ -115,7 +119,8 @@ async def test_integrity_error_during_token_login_direct(
         )
         db.add(user_token)
         await db.commit()
-        login_request = LoginTokenRequest(access_token="valid_access_token")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise IntegrityError(
@@ -124,7 +129,7 @@ async def test_integrity_error_during_token_login_direct(
 
         db.commit = mock_commit
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
@@ -147,14 +152,15 @@ async def test_unexpected_error_during_token_login_direct(
         )
         db.add(user_token)
         await db.commit()
-        login_request = LoginTokenRequest(access_token="valid_access_token")
+        request = MagicMock()
+        request.headers.get.return_value = "Bearer valid_access_token"
 
         async def mock_commit(*args: Any, **kwargs: Any) -> None:
             raise Exception("Unexpected error")
 
         db.commit = mock_commit
 
-        response = await login_token_user(login_request, Response(), db)
+        response = await login_token_user(request, Response(), db)
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"

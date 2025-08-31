@@ -1,7 +1,6 @@
 from typing import Any, Dict, Optional, Union, cast
 
 import socketio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.config import settings
 from app.database import async_session
@@ -13,17 +12,21 @@ sio = socketio.AsyncServer(
 )
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
+
 @sio.on("connect")
 async def handle_connect(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received connect: {sid}")
+
 
 @sio.on("disconnect")
 async def handle_disconnect(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received disconnect: {sid}")
 
+
 @sio.on("message_event")
 async def handle_message_event(sid: str, *args: Any, **kwargs: Any) -> None:
     print(f"Received message_event: {sid}")
+
 
 @sio.on("join")
 async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
@@ -44,6 +47,7 @@ async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
                 if user:
                     print(f"user: {user.serialize}")
                 pass
+
 
 @sio.on("leave")
 async def handle_leave(sid: str, *args: Any, **kwargs: Any) -> None:

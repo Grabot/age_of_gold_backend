@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     env_file: .env
     networks:
-      - default
+      - app_net
     ports:
       - 5000:5000
     restart: always
@@ -26,7 +26,8 @@ services:
     env_file: .env
     image: postgres:latest
     networks:
-      - default
+      app_net:
+        ipv4_address: 172.20.0.10
     ports:
       - 5432:5432
     restart: always
@@ -53,7 +54,7 @@ services:
     depends_on:
       - age_of_db
     networks:
-      - default
+      - app_net
 
   redis:
     image: redis:latest
@@ -69,7 +70,7 @@ services:
     user: celery
     env_file: .env
     networks:
-      - default
+      - app_net
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -86,7 +87,7 @@ services:
       dockerfile: Dockerfile
     env_file: .env
     networks:
-      - default
+      - app_net
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -96,3 +97,10 @@ services:
       - redis
       - age_of_db
     command: "python main_cron.py"
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
