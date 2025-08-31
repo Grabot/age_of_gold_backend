@@ -2464,7 +2464,7 @@ version = "0.0.2a38"
 description = "Typing Stubs for SQLAlchemy 1.4"
 optional = false
 python-versions = ">=3.6"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "sqlalchemy2-stubs-0.0.2a38.tar.gz", hash = "sha256:861d722abeb12f13eacd775a9f09379b11a5a9076f469ccd4099961b95800f9e"},
     {file = "sqlalchemy2_stubs-0.0.2a38-py3-none-any.whl", hash = "sha256:b62aa46943807287550e2033dafe07564b33b6a815fbaa3c144e396f9cc53bcb"},
@@ -2777,4 +2777,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.1"
 python-versions = "3.12.10"
-content-hash = "ec91270d949cc566b142689d5845915bddfffd8ca2df674a18a233409b024920"
+content-hash = "3eba8e3d96aba63374c80c5ab4bea8396b208e1d55b0c2dd6a7a02cb67fe8b7c"

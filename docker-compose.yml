@@ -42,6 +42,19 @@ services:
       - "-c"
       - "shared_buffers=4096MB"
 
+  pgadmin:
+    container_name: age_of_pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "5050:80"
+    env_file:
+      - .env
+    depends_on:
+      - age_of_db
+    networks:
+      - default
+
   redis:
     image: redis:latest
     ports:
