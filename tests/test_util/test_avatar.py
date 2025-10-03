@@ -7,12 +7,14 @@ from typing import List, Optional, Tuple
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
-import filecmp
 import math
 import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+import numpy as np
+from PIL import Image
+
 
 from app.util.avatar import (
     Line,
@@ -34,16 +36,20 @@ from app.util.avatar import (
 
 def test_generate_avatar() -> None:
     test_path = os.path.join(current_dir.parent, "data")
-
     generate_avatar(file_name="test", file_path=str(test_path))
-
     generated_avatar_path = os.path.join(test_path, "test_default.png")
     default_avatar_path = os.path.join(test_path, "test_default_copy.png")
 
-    assert filecmp.cmp(
-        str(generated_avatar_path), str(default_avatar_path), shallow=False
-    ), "The generated avatar does not match the default avatar"
+    # Open the images and convert to numpy arrays
+    generated_img = np.array(Image.open(generated_avatar_path))
+    default_img = np.array(Image.open(default_avatar_path))
 
+    # Compare the arrays
+    assert np.array_equal(generated_img, default_img), (
+        "The generated avatar does not match the default avatar"
+    )
+
+    # Clean up
     os.remove(str(generated_avatar_path))
 
 
