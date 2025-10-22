@@ -1,8 +1,8 @@
+"""Test for avatar creation endpoint via direct post call."""
+
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -10,19 +10,22 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app
+sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
+
+from main import app  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
-@patch("app.api.api_v1.authorization.register.sio")
-@patch("app.api.api_v1.authorization.register.asyncio.sleep")
+@patch("src.api.api_v1.authorization.register.sio")
+@patch("src.api.api_v1.authorization.register.asyncio.sleep")
 async def test_avatar_created_success_post(
     mock_sleep: MagicMock, mock_sio: MagicMock
 ) -> None:
+    """Test successful avatar creation via direct post call."""
     mock_sleep.return_value = None
 
     async def mock_emit(*args: Any, **kwargs: Any) -> None:
-        pass
+        """Mock emit function for socket.io."""
 
     mock_sio.emit = MagicMock(side_effect=mock_emit)
 

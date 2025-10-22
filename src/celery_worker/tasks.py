@@ -3,8 +3,8 @@ import logging
 import requests
 from celery import Celery
 
-from app.config.config import settings
-from app.util.avatar import generate_avatar
+from src.config.config import settings
+from src.util.avatar import generate_avatar
 
 logging.basicConfig(
     level=logging.INFO,

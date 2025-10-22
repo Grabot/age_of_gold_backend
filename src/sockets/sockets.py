@@ -2,9 +2,9 @@ from typing import Any, Dict, Optional, Union, cast
 
 import socketio
 
-from app.config.config import settings
-from app.database import async_session
-from app.models.user import User
+from src.config.config import settings
+from src.database import async_session
+from src.models.user import User
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(

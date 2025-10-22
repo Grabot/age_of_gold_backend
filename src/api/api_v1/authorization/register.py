@@ -1,3 +1,5 @@
+"""Endpoint for user registration."""
+
 import asyncio
 from typing import Any
 
@@ -8,18 +10,20 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlmodel import select
 
-from app.api.api_v1 import api_router_v1
-from app.celery_worker.tasks import task_generate_avatar
-from app.config.config import settings
-from app.database import get_db
-from app.models import User
-from app.models.user import avatar_filename, create_salt, hash_email
-from app.sockets.sockets import sio
-from app.util.gold_logging import logger
-from app.util.util import get_failed_response, get_user_tokens, hash_password
+from src.api.api_v1 import api_router_v1
+from src.celery_worker.tasks import task_generate_avatar
+from src.config.config import settings
+from src.database import get_db
+from src.models import User
+from src.models.user import avatar_filename, create_salt, hash_email
+from src.sockets.sockets import sio
+from src.util.gold_logging import logger
+from src.util.util import get_failed_response, get_user_tokens, hash_password
 
 
 class RegisterRequest(BaseModel):
+    """Request model for user registration."""
+
     email: str
     username: str
     password: str
@@ -31,6 +35,7 @@ async def register_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """Handle user registration request."""
     if not all(
         [register_request.email, register_request.username, register_request.password]
     ):
@@ -85,26 +90,21 @@ async def register_user(
         }
 
     except IntegrityError as e:
-        await db.rollback()
-        logger.error(f"Database integrity error during registration: {e}")
-        return get_failed_response(
-            "Database error (e.g., duplicate key)", response, status.HTTP_409_CONFLICT
-        )
+        logger.error("Database integrity error during registration: %s", e)
     except SQLAlchemyError as e:
-        await db.rollback()
-        logger.error(f"Database error during registration: {e}")
-        return get_failed_response(
-            "Database error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Database error during registration: %s", e)
     except Exception as e:
-        await db.rollback()
-        logger.error(f"Unexpected error during registration: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Unexpected error during registration: %s", e)
+
+    await db.rollback()
+    return get_failed_response(
+        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
 
 
 class AvatarCreatedRequest(BaseModel):
+    """Request model for avatar creation notification."""
+
     user_id: int
 
 
@@ -112,8 +112,9 @@ class AvatarCreatedRequest(BaseModel):
 async def avatar_created(
     avatar_created_request: AvatarCreatedRequest,
 ) -> dict[str, Any]:
+    """Handle avatar creation notification."""
     user_id = avatar_created_request.user_id
-    room = "room_%s" % user_id
+    room = f"room_{user_id}"
 
     await asyncio.sleep(1)
 

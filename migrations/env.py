@@ -10,7 +10,7 @@ from sqlalchemy import engine, engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
 
-from app.config.config import settings
+from src.config.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -34,7 +34,7 @@ for meta in target_metadata:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app import models  # noqa: E402, F401
+from src import models  # noqa: E402, F401
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -1,12 +1,10 @@
+"""Testing fixtures."""
+
 # ruff: noqa: E402
 import sys
 from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent))
-
-import asyncio
 from typing import Any, Generator
-
+import asyncio
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker  # type: ignore[attr-defined]
@@ -14,28 +12,33 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
-from app.config.config import settings
-from app.database import get_db
-from app.models import User
-from app.models.user import hash_email
-from app.util.util import hash_password
-from main import app
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.config.config import settings  # pylint: disable=C0413
+from src.database import get_db  # pylint: disable=C0413
+from src.models import User  # pylint: disable=C0413
+from src.models.user import hash_email  # pylint: disable=C0413
+from src.util.util import hash_password  # pylint: disable=C0413
+from main import app  # pylint: disable=C0413
 
 ASYNC_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(
     ASYNC_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
-AsyncTestingSessionLocal = async_sessionmaker(
+
+ASYNC_TESTING_SESSION_LOCAL = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
 )
 
 
 @pytest.fixture(scope="module")
 def test_setup() -> Generator[Any, Any, Any]:
+    """Create a SQLAlchemy engine for tests."""
+
     async def init_db() -> None:
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.create_all)
-        async with AsyncTestingSessionLocal() as session:
+        async with ASYNC_TESTING_SESSION_LOCAL() as session:
             password = "testpassword"
             salt = "salt"
             password_with_salt = password + salt
@@ -56,7 +59,7 @@ def test_setup() -> Generator[Any, Any, Any]:
 
     def override_get_db() -> Any:
         async def get_db_override() -> Any:
-            async with AsyncTestingSessionLocal() as session:
+            async with ASYNC_TESTING_SESSION_LOCAL() as session:
                 yield session
 
         return get_db_override

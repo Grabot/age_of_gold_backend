@@ -1,13 +1,20 @@
+"""
+Initialization endpoint for setting up necessary folders and permissions.
+"""
+
 import os
 import stat
 
-from app.api.api_v1 import api_router_v1
-from app.celery_worker.tasks import task_initialize
-from app.config.config import settings
+from src.api.api_v1 import api_router_v1
+from src.celery_worker.tasks import task_initialize
+from src.config.config import settings
 
 
 @api_router_v1.get("/initialize", status_code=200)
-async def initialize_folders() -> dict[str, str]:
+async def initialize_folders() -> dict[str, bool]:
+    """
+    endpoint for creating folders for storing avatars and crests.
+    """
     if not os.path.exists(settings.UPLOAD_FOLDER_AVATARS):
         os.makedirs(settings.UPLOAD_FOLDER_AVATARS)
         os.chmod(
@@ -21,4 +28,4 @@ async def initialize_folders() -> dict[str, str]:
 
     _ = task_initialize.delay()
 
-    return {"results": "true"}
+    return {"result": True}

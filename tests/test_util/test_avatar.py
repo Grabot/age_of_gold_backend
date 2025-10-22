@@ -1,11 +1,10 @@
+"""Test file for avatars."""
+
 # ruff: noqa: E402
 import random
 import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
-
-current_dir = Path(__file__).parent
-sys.path.append(str(current_dir.parent.parent))
 
 import math
 import os
@@ -15,8 +14,10 @@ import pytest
 import numpy as np
 from PIL import Image
 
+current_dir = Path(__file__).parent
+sys.path.append(str(current_dir.parent.parent))
 
-from app.util.avatar import (
+from src.util.avatar import (  # pylint: disable=C0413
     Line,
     Plane,
     Point,
@@ -35,6 +36,7 @@ from app.util.avatar import (
 
 
 def test_generate_avatar() -> None:
+    """Test the generate_avatar function."""
     test_path = os.path.join(current_dir.parent, "data")
     generate_avatar(file_name="test", file_path=str(test_path))
     generated_avatar_path = os.path.join(test_path, "test_default.png")
@@ -60,11 +62,13 @@ def get_add_square_clean_none(
     _index: int,
     _max_attempts: int,
 ) -> Tuple[Optional[Plane], Optional[Plane], Optional[int]]:
+    """Mock for the add_square_clean function that returns None."""
     return None, None, None
 
 
-@patch("app.util.avatar.add_square_clean", side_effect=get_add_square_clean_none)
+@patch("src.util.avatar.add_square_clean", side_effect=get_add_square_clean_none)
 def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
+    """Test the generate_avatar function when it fails to add a square."""
     test_path = os.path.join(current_dir.parent, "data")
 
     generate_avatar(file_name="test", file_path=str(test_path))
@@ -77,6 +81,7 @@ def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
 
 
 def test_line_class() -> None:
+    """Test the Line class."""
     line = Line((0, 0), (3, 4))
     assert line.start == (0, 0)
     assert line.end == (3, 4)
@@ -103,6 +108,7 @@ def test_line_class() -> None:
 
 
 def test_plane_class() -> None:
+    """Test the Plane class."""
     points: list[Point] = [(0, 0), (3, 0), (3, 3), (0, 3)]
     plane = Plane(points, "#FF0000")
     assert plane.points == points
@@ -123,6 +129,7 @@ def test_plane_class() -> None:
 
 
 def test_get_angle_lines() -> None:
+    """Test the get_angle_lines function."""
     line1 = Line((0, 0), (1, 0))
     line2 = Line((1, 0), (1, 1))
     angle_line: float = get_angle_lines(line1, line2)
@@ -153,6 +160,7 @@ def test_get_angle_lines() -> None:
 
 
 def test_slope_line() -> None:
+    """Test the slope_line function."""
     assert slope_line((0, 0), (1, 1)) == 1.0
     assert slope_line((0, 0), (1, 0)) == 0.0
     assert slope_line((0, 0), (1, math.sqrt(3))) == math.sqrt(3)
@@ -163,22 +171,25 @@ def test_slope_line() -> None:
 
 
 def test_angle_slopes() -> None:
+    """Test the angle_slopes function."""
     angle_45: float = angle_slopes(1.0, 0.0)
-    assert angle_45 == 45.0 or angle_45 == 135
+    assert angle_45 in (45.0, 135)
 
     angle_15 = angle_slopes(1.0, math.sqrt(3))
-    assert angle_15 >= 14.9 and angle_15 <= 15.1
+    assert 14.9 <= angle_15 <= 15.1
 
     angle_30 = angle_slopes(0.0, math.sqrt(3) / 3)
-    assert angle_30 >= 29.9 and angle_30 <= 30.1
+    assert 29.9 <= angle_30 <= 30.1
 
 
 def test_point_on_line() -> None:
+    """Test the point_on_line function."""
     line = Line((0, 0), (3, 3))
     assert point_on_line(line, (1, 1))
 
 
 def test_point_on_plane_border() -> None:
+    """Test the point_on_plane_border function."""
     points: list[Point] = [(0, 0), (3, 0), (3, 3), (0, 3)]
     plane = Plane(points, "#FF0000")
     assert point_on_plane_border(plane, (1, 0))
@@ -186,6 +197,7 @@ def test_point_on_plane_border() -> None:
 
 
 def test_get_length() -> None:
+    """Test the get_length function."""
     assert get_length((0, 0), (0, 0)) == 0.0
     assert get_length((0, 0), (1, 0)) == 1.0
     assert get_length((0, 0), (1, 1)) == math.sqrt(2)
@@ -193,6 +205,7 @@ def test_get_length() -> None:
 
 
 def test_check_lengths() -> None:
+    """Test the check_lengths function."""
     points: list[Point] = [(0, 0), (3, 0), (3, 3), (0, 3)]
     assert check_lengths(points, 2)
 
@@ -200,13 +213,16 @@ def test_check_lengths() -> None:
 def get_point_on_line_side_effect_none(
     line: Line, angle_1: float, line_length_choice: float
 ) -> Optional[Point]:
+    """Mock the get_point_on_line function to return None."""
     return None
 
 
 @patch(
-    "app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect_none
+    "src.util.avatar.get_point_on_line",
+    side_effect=get_point_on_line_side_effect_none,
 )
 def test_add_square_no_point(mock_get_point_on_line: MagicMock) -> None:
+    """Test the add_square_clean function when no point is found on the line."""
     random.seed("test")
     width = 252
     height = 252
@@ -222,20 +238,26 @@ def test_add_square_no_point(mock_get_point_on_line: MagicMock) -> None:
 
 
 def point_on_line_side_effect(_line: Line, _point: Point) -> bool:
+    """Mock for point_on_line function."""
     return False
 
 
 def get_point_on_line_side_effect(
     line: Line, angle_1: float, line_length_choice: float
 ) -> Optional[Point]:
+    """Mock for get_point_on_line function."""
     return (100, 0)
 
 
-@patch("app.util.avatar.point_on_line", side_effect=point_on_line_side_effect)
-@patch("app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect)
+@patch("src.util.avatar.point_on_line", side_effect=point_on_line_side_effect)
+@patch(
+    "src.util.avatar.get_point_on_line",
+    side_effect=get_point_on_line_side_effect,
+)
 def test_add_square_no_point_on_line(
     mock_get_point_on_line: MagicMock, mock_point_on_line: MagicMock
 ) -> None:
+    """Test the add_square_clean function when no point is found on the line."""
     random.seed("test")
     width = 252
     height = 252
@@ -251,16 +273,18 @@ def test_add_square_no_point_on_line(
 
 
 def point_on_plane_border_side_effect(_plane: Plane, _point: Point) -> bool:
+    """Mock for point_on_plane_border function."""
     return False
 
 
 @patch(
-    "app.util.avatar.point_on_plane_border",
+    "src.util.avatar.point_on_plane_border",
     side_effect=point_on_plane_border_side_effect,
 )
 def test_add_square_no_point_on_plane_border(
     mock_point_on_plane_border: MagicMock,
 ) -> None:
+    """Test the add_square_clean function when no point is found on the plane border."""
     random.seed("test")
     width = 252
     height = 252
@@ -276,11 +300,13 @@ def test_add_square_no_point_on_plane_border(
 
 
 def check_lengths_side_effect(_plane: Plane, _point: Point) -> bool:
+    """Mock for check_lengths function."""
     return False
 
 
-@patch("app.util.avatar.check_lengths", side_effect=check_lengths_side_effect)
+@patch("src.util.avatar.check_lengths", side_effect=check_lengths_side_effect)
 def test_add_square_no_check_lengths(mock_check_lengths: MagicMock) -> None:
+    """Test the add_square_clean function when the lengths check fails."""
     random.seed("test")
     width = 252
     height = 252
@@ -296,26 +322,32 @@ def test_add_square_no_check_lengths(mock_check_lengths: MagicMock) -> None:
 
 
 def get_point_on_line_true(_line: Line, _point: Point) -> bool:
+    """Mock for get_point_on_line function."""
     return True
 
 
 def abs_side_effect(x: float) -> float:
-    if x >= -100 and x <= -80:
+    """abs side effect to control functionality"""
+    if -100 <= x <= -80:
         return 0.0001
 
     if x >= 0:
         return x
-    else:
-        return x * -1
+
+    return x * -1
 
 
 def check_lengths_side_effect_true(_plane: Plane, _point: Point) -> bool:
+    """Mock for check_lengths function."""
     return True
 
 
-@patch("app.util.avatar.point_on_line", side_effect=get_point_on_line_true)
-@patch("app.util.avatar.get_point_on_line", side_effect=get_point_on_line_side_effect)
-@patch("app.util.avatar.check_lengths", side_effect=check_lengths_side_effect_true)
+@patch("src.util.avatar.point_on_line", side_effect=get_point_on_line_true)
+@patch(
+    "src.util.avatar.get_point_on_line",
+    side_effect=get_point_on_line_side_effect,
+)
+@patch("src.util.avatar.check_lengths", side_effect=check_lengths_side_effect_true)
 @patch("builtins.abs", side_effect=abs_side_effect)
 def test_add_square_no_abs(
     mock_get_point_on_line_true: MagicMock,
@@ -323,6 +355,7 @@ def test_add_square_no_abs(
     mock_check_lengths: MagicMock,
     mock_abs: MagicMock,
 ) -> None:
+    """Test the add_square_clean function when the absolute value check fails."""
     random.seed("test")
     width = 252
     height = 252
@@ -338,6 +371,7 @@ def test_add_square_no_abs(
 
 
 def test_get_point_on_line() -> None:
+    """Test the get_point_on_line function."""
     line = Line((0, 0), (3, 3))
     point = get_point_on_line(line, 45, 3)
     assert point is not None
@@ -369,6 +403,7 @@ def test_get_point_on_line() -> None:
 
 
 def test_background_square_clean() -> None:
+    """Test the background_square_clean function."""
     width = 252
     height = 252
     plane = background_square_clean(width, height, 0)

@@ -1,10 +1,10 @@
-FROM python:3.12.10-slim-bullseye
+FROM python:3.14-slim
 
 WORKDIR /
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
 RUN apt-get update &&\
-    apt install -y git &&\
+    apt install -y git gcc libpq-dev &&\
     pip3 install --no-cache-dir --upgrade pip && \
     pip3 install --no-cache-dir poetry && \
     pip3 install --no-cache-dir pre-commit && \
@@ -23,6 +23,6 @@ RUN useradd -r -s /bin/false -m celery && \
 
 RUN poetry install --no-root --only main
 
-COPY app/ /app/
+COPY src/ /src/
 RUN mkdir -p static/uploads
-RUN chown -R celery:celery /app
+RUN chown -R celery:celery /src

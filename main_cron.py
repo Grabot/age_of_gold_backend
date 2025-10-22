@@ -5,8 +5,8 @@ import time
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore
 from sqlmodel import delete
 
-from app.database import async_session
-from app.models.user_token import UserToken
+from src.database import async_session
+from src.models.user_token import UserToken
 
 logging.basicConfig(
     level=logging.INFO,

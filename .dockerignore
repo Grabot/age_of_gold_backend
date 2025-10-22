@@ -1,5 +1,5 @@
 *
-!app/
+!src/
 !migrations/
 !pyproject.toml
 !boot.sh

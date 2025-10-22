@@ -13,7 +13,7 @@ services:
       - 5000:5000
     restart: always
     volumes:
-      - ${SHARED_DIR}:/app/static/uploads/
+      - ${SHARED_DIR}:/age_of_gold/static/uploads/
       - ./migrations:/migrations
     command: "/bin/sh boot.sh"
     depends_on:
@@ -43,18 +43,18 @@ services:
       - "-c"
       - "shared_buffers=4096MB"
 
-  pgadmin:
-    container_name: age_of_pgadmin4
-    image: dpage/pgadmin4
-    restart: always
-    ports:
-      - "5050:80"
-    env_file:
-      - .env
-    depends_on:
-      - age_of_db
-    networks:
-      - app_net
+  # pgadmin:
+  #   container_name: age_of_pgadmin4
+  #   image: dpage/pgadmin4
+  #   restart: always
+  #   ports:
+  #     - "5050:80"
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - age_of_db
+  #   networks:
+  #     - app_net
 
   redis:
     image: redis:latest
@@ -75,11 +75,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ${SHARED_DIR}:/app/static/uploads/
+      - ${SHARED_DIR}:/age_of_gold/static/uploads/
     depends_on:
       - redis
       - age_of_db
-    command: "poetry run celery -A app.celery_worker.tasks worker -l info"
+    command: "poetry run celery -A src.celery_worker.tasks worker -l info"
 
   cron_worker:
     build:
@@ -92,7 +92,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - ${SHARED_DIR}:/app/static/uploads/
+      - ${SHARED_DIR}:/age_of_gold/static/uploads/
     depends_on:
       - redis
       - age_of_db

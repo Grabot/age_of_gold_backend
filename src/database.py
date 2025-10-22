@@ -1,3 +1,7 @@
+"""
+Database module for managing asynchronous database connections using SQLAlchemy.
+"""
+
 from asyncio import current_task
 from typing import AsyncGenerator
 
@@ -9,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
-from app.config.config import settings
+from src.config.config import settings
 
 engine_async = create_async_engine(
     settings.ASYNC_DB_URL,
@@ -33,6 +37,12 @@ async_session = async_scoped_session(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Dependency function to get a database session.
+
+    Yields:
+        AsyncSession: An asynchronous SQLAlchemy session.
+    """
     db = async_session()
     try:
         yield db

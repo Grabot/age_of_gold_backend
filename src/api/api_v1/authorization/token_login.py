@@ -1,13 +1,15 @@
+"""Endpoint for token-based login."""
+
 from typing import Any
 
 from fastapi import Depends, Request, Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 
-from app.api.api_v1 import api_router_v1
-from app.database import get_db
-from app.util.gold_logging import logger
-from app.util.util import (
+from src.api.api_v1 import api_router_v1
+from src.database import get_db
+from src.util.gold_logging import logger
+from src.util.util import (
     check_token,
     get_auth_token,
     get_failed_response,
@@ -21,12 +23,13 @@ async def login_token_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """Handle token-based login request."""
     auth_token = get_auth_token(request.headers.get("Authorization"))
     if auth_token == "":
         return get_failed_response(
             "Authorization token is missing or invalid",
             response,
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_400_BAD_REQUEST,
         )
 
     try:
@@ -36,7 +39,6 @@ async def login_token_user(
                 "Invalid or expired token", response, status.HTTP_401_UNAUTHORIZED
             )
 
-        return_user = user.serialize
         user_token_new = get_user_tokens(user)
         await db.delete(user_token_old)
         db.add(user_token_new)
@@ -44,28 +46,19 @@ async def login_token_user(
 
         login_response = {
             "result": True,
-            "message": "User logged in successfully.",
             "access_token": user_token_new.access_token,
             "refresh_token": user_token_new.refresh_token,
-            "user": return_user,
         }
         return login_response
 
     except IntegrityError as e:
-        await db.rollback()
-        logger.error(f"Database constraint violation: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_400_BAD_REQUEST
-        )
+        logger.error("Database constraint violation: %s", e)
     except SQLAlchemyError as e:
-        await db.rollback()
-        logger.error(f"Database error: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Database error: %s", e)
     except Exception as e:
-        await db.rollback()
-        logger.error(f"Unexpected error during registration: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Unexpected error during registration: %s", e)
+
+    await db.rollback()
+    return get_failed_response(
+        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

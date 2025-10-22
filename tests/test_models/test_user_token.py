@@ -1,31 +1,29 @@
+"""Test file for the user token model."""
+
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
 
-from fastapi.testclient import TestClient
-
-current_dir = Path(__file__).parent
-sys.path.append(str(current_dir.parent.parent))
-
 import time
-from typing import Any, AsyncGenerator, Generator, Optional
-from unittest.mock import MagicMock, patch
+from typing import Any, Generator, Optional
 
 import pytest
-from fastapi import Response, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from app.models import User, UserToken
-from app.util.util import get_user_tokens
-from tests.conftest import AsyncTestingSessionLocal, test_setup
+current_dir = Path(__file__).parent
+sys.path.append(str(current_dir.parent.parent))
+
+from src.models import User, UserToken  # pylint: disable=C0413
+from src.util.util import get_user_tokens  # pylint: disable=C0413
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
 async def test_token_expiration_expired(test_setup: Generator[Any, Any, Any]) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test that a token is correctly identified as expired"""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_token = UserToken(
             user_id=1,
             access_token="access_token",
@@ -47,7 +45,8 @@ async def test_token_expiration_expired(test_setup: Generator[Any, Any, Any]) ->
 async def test_token_expiration_good(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test that a token is correctly identified as not expired"""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_token = UserToken(
             user_id=1,
             access_token="access_token",
@@ -73,7 +72,8 @@ async def test_token_expiration_good(
 async def test_user_token_reference(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test that the user token correctly references the user and vice versa"""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         statement: Select = (
             select(User).where(User.id == 1).options(joinedload(User.tokens))
         )

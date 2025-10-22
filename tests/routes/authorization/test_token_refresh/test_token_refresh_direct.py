@@ -1,9 +1,9 @@
+"""Test for token refresh endpoint via direct function call."""
+
 # ruff: noqa: E402, F401, F811
 import sys
 import time
 from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from typing import Any, Generator, Optional
 from unittest.mock import MagicMock, patch
@@ -12,24 +12,30 @@ import pytest
 from fastapi import Response
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.api.api_v1.authorization.refresh import RefreshRequest, refresh_user
-from app.models.user import User
-from app.models.user_token import UserToken
-from tests.conftest import AsyncTestingSessionLocal, test_setup
+sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
+
+from src.api.api_v1.authorization.token_refresh import (  # pylint: disable=C0413
+    RefreshRequest,
+    refresh_user,
+)
+from src.models.user import User  # pylint: disable=C0413
+from src.models.user_token import UserToken  # pylint: disable=C0413
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
 async def test_successful_refresh_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test successful token refresh."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_id = 1
         user: Optional[User] = await db.get(User, user_id)
         assert user is not None
         user_token = UserToken(
             user_id=user_id,
             access_token="valid_access_token",
-            token_expiration=int(time.time()) + 1000,
+            token_expiration=int(time.time()) - 1000,
             refresh_token="valid_refresh_token",
             refresh_token_expiration=int(time.time()) + 1000,
         )
@@ -54,7 +60,8 @@ async def test_successful_refresh_direct(
 async def test_invalid_request_no_tokens_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test invalid request with no tokens."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         request = MagicMock()
         request.headers.get.return_value = None
 
@@ -70,7 +77,8 @@ async def test_invalid_request_no_tokens_direct(
 async def test_invalid_request_invalid_tokens_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test invalid request with invalid tokens."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         request = MagicMock()
         request.headers.get.return_value = "Bearer invalid_access_token"
 
@@ -86,7 +94,8 @@ async def test_invalid_request_invalid_tokens_direct(
 async def test_invalid_or_expired_tokens_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test invalid or expired tokens."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_id = 1
         user: Optional[User] = await db.get(User, user_id)
         assert user is not None
@@ -112,10 +121,13 @@ async def test_invalid_or_expired_tokens_direct(
 
 
 @pytest.mark.asyncio
+@patch("src.util.gold_logging.logger.error")
 async def test_database_error_during_refresh_direct(
+    mock_logger_error: MagicMock,
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test database error during token refresh."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_id = 1
         user: Optional[User] = await db.get(User, user_id)
         assert user is not None
@@ -143,13 +155,20 @@ async def test_database_error_during_refresh_direct(
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
+        mock_logger_error.assert_called_once()
+        args, _ = mock_logger_error.call_args
+        assert args[0] == "Database error during token refresh: %s"
+        assert isinstance(args[1], SQLAlchemyError)
 
 
 @pytest.mark.asyncio
+@patch("src.util.gold_logging.logger.error")
 async def test_integrity_error_during_login_direct(
+    mock_logger_error: MagicMock,
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test integrity error during login."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_id = 1
         user: Optional[User] = await db.get(User, user_id)
         assert user is not None
@@ -179,15 +198,22 @@ async def test_integrity_error_during_login_direct(
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
+        mock_logger_error.assert_called_once()
+        args, _ = mock_logger_error.call_args
+        assert args[0] == "Database integrity error during registration: %s"
+        assert isinstance(args[1], IntegrityError)
 
 
 @pytest.mark.asyncio
-@patch("app.database.get_db")
+@patch("src.database.get_db")
+@patch("src.util.gold_logging.logger.error")
 async def test_unexpected_error_during_refresh_direct(
+    mock_logger_error: MagicMock,
     mock_get_db: MagicMock,
     test_setup: Generator[Any, Any, Any],
 ) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test unexpected error during token refresh."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         user_id = 1
         user: Optional[User] = await db.get(User, user_id)
         assert user is not None
@@ -215,6 +241,10 @@ async def test_unexpected_error_during_refresh_direct(
 
         assert response["result"] is False
         assert response["message"] == "Internal server error"
+        mock_logger_error.assert_called_once()
+        args, _ = mock_logger_error.call_args
+        assert args[0] == "Unexpected error during token refresh: %s"
+        assert isinstance(args[1], Exception)
 
 
 if __name__ == "__main__":

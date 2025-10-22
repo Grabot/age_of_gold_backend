@@ -1,3 +1,5 @@
+"""endpoint for login"""
+
 from typing import Any, Optional
 
 from fastapi import Depends, Response, status
@@ -7,16 +9,17 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlmodel import select
 
-from app.api.api_v1 import api_router_v1
-from app.config.config import settings
-from app.database import get_db
-from app.models import User
-from app.models.user import hash_email
-from app.util.gold_logging import logger
-from app.util.util import get_failed_response, get_user_tokens
+from src.api.api_v1 import api_router_v1
+from src.config.config import settings
+from src.database import get_db
+from src.models import User
+from src.models.user import hash_email
+from src.util.gold_logging import logger
+from src.util.util import get_failed_response, get_user_tokens
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+    """Retrieve a user by their email address."""
     email_hash = hash_email(email, settings.PEPPER)
     results_user = await db.execute(
         select(User).where(User.origin == 0, User.email_hash == email_hash)
@@ -24,12 +27,13 @@ async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     result_user = results_user.first()
     if result_user is None:
         return None
-    else:
-        user: User = result_user.User
-        return user
+
+    user: User = result_user.User
+    return user
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+    """Retrieve a user by their username."""
     results_user = await db.execute(
         select(User).where(
             User.origin == 0, func.lower(User.username) == username.lower()
@@ -38,12 +42,14 @@ async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User
     result_user = results_user.first()
     if result_user is None:
         return None
-    else:
-        user: User = result_user.User
-        return user
+
+    user: User = result_user.User
+    return user
 
 
 class LoginRequest(BaseModel):
+    """Request model for user login."""
+
     email: Optional[str] = None
     username: Optional[str] = None
     password: str
@@ -55,6 +61,7 @@ async def login_user(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    """Handle user login request."""
     if not login_request.password or not (
         login_request.email or login_request.username
     ):
@@ -80,7 +87,9 @@ async def login_user(
 
         password_with_salt = login_request.password + user.salt
         if not user.verify_password(user.password_hash, password_with_salt):
-            logger.warning(f"Login failed for user: {user.username} (invalid password)")
+            logger.warning(
+                "Login failed for user: %s (invalid password)", user.username
+            )
             return get_failed_response(
                 "Invalid email/username or password",
                 response,
@@ -90,7 +99,7 @@ async def login_user(
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
-        logger.info(f"User logged in: {user.username}")
+        logger.info("User logged in: %s", user.username)
 
         return {
             "result": True,
@@ -100,20 +109,13 @@ async def login_user(
             "user": user.serialize,
         }
     except IntegrityError as e:
-        await db.rollback()
-        logger.error(f"Database integrity error during registration: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Database integrity error during registration: %s", e)
     except SQLAlchemyError as e:
-        await db.rollback()
-        logger.error(f"Database error during login: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Database error during login: %s", e)
     except Exception as e:
-        await db.rollback()
-        logger.error(f"Unexpected error during login: {e}")
-        return get_failed_response(
-            "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        logger.error("Unexpected error during login: %s", e)
+
+    await db.rollback()
+    return get_failed_response(
+        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

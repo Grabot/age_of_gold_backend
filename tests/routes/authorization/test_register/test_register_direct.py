@@ -1,8 +1,8 @@
+"""Test for register endpoint via direct function call."""
+
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from unittest.mock import MagicMock, patch
 
@@ -10,25 +10,28 @@ import pytest
 from fastapi import Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.api.api_v1.authorization.register import RegisterRequest, register_user
-from tests.conftest import AsyncTestingSessionLocal, test_setup
+sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
+
+from src.api.api_v1.authorization.register import RegisterRequest, register_user  # pylint: disable=C0413
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_successful_register_direct(
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test successful user registration via direct function call."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         login_request = RegisterRequest(
             email="new_test1@test.test",
             username="new_test1",
@@ -46,7 +49,8 @@ async def test_successful_register_direct(
 
 @pytest.mark.asyncio
 async def test_register_missing_fields(test_setup: MagicMock) -> None:
-    async with AsyncTestingSessionLocal() as db:
+    """Test user registration with missing fields."""
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         register_request_email = RegisterRequest(
             email="", username="new_test2", password="new_test2password"
         )
@@ -88,20 +92,21 @@ async def test_register_missing_fields(test_setup: MagicMock) -> None:
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_username_already_taken(
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test user registration with a username that is already taken."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         register_request = RegisterRequest(
             email="new_test5@test.test",
             username="new_test5",
@@ -130,20 +135,21 @@ async def test_register_username_already_taken(
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_email_already_used(
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test user registration with an email that is already used."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         register_request = RegisterRequest(
             email="new_test6@test.test",
             username="new_test6",
@@ -172,21 +178,24 @@ async def test_register_email_already_used(
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.util.gold_logging.logger.error")
 async def test_register_database_integrity_error(
+    mock_logger_error: MagicMock,
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test user registration with a database integrity error."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
 
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         with (
             patch.object(
                 db,
@@ -204,28 +213,35 @@ async def test_register_database_integrity_error(
             response = await register_user(register_request, response_object, db)
 
             assert response["result"] is False
-            assert response["message"] == "Database error (e.g., duplicate key)"
-            assert response_object.status_code == status.HTTP_409_CONFLICT
+            assert response["message"] == "Internal server error"
+            assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
             mock_rollback.assert_called_once()
+            mock_logger_error.assert_called_once()
+            args, _ = mock_logger_error.call_args
+            assert args[0] == "Database integrity error during registration: %s"
+            assert isinstance(args[1], Exception)
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.util.gold_logging.logger.error")
 async def test_register_database_error(
+    mock_logger_error: MagicMock,
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test user registration with a database error."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
 
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         with (
             patch.object(db, "commit", side_effect=SQLAlchemyError("SQLAlchemyError")),
             patch.object(db, "rollback", return_value=None) as mock_rollback,
@@ -239,28 +255,35 @@ async def test_register_database_error(
             response = await register_user(register_request, response_object, db)
 
             assert response["result"] is False
-            assert response["message"] == "Database error"
+            assert response["message"] == "Internal server error"
             assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
             mock_rollback.assert_called_once()
+            mock_logger_error.assert_called_once()
+            args, _ = mock_logger_error.call_args
+            assert args[0] == "Database error during registration: %s"
+            assert isinstance(args[1], Exception)
 
 
 @pytest.mark.asyncio
-@patch("app.models.User.generate_auth_token")
-@patch("app.models.User.generate_refresh_token")
-@patch("app.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.models.User.generate_auth_token")
+@patch("src.models.User.generate_refresh_token")
+@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("src.util.gold_logging.logger.error")
 async def test_register_unexpected_error(
+    mock_logger_error: MagicMock,
     mock_task_generate_avatar: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
 ) -> None:
+    """Test user registration with an unexpected error."""
     expected_access_token = "access_token_test"
     expected_refresh_token = "refresh_token_test"
     mock_generate_auth_token.return_value = expected_access_token
     mock_generate_refresh_token.return_value = expected_refresh_token
 
-    async with AsyncTestingSessionLocal() as db:
+    async with ASYNC_TESTING_SESSION_LOCAL() as db:
         with (
             patch.object(db, "commit", side_effect=Exception("Unexpected error")),
             patch.object(db, "rollback", return_value=None) as mock_rollback,
@@ -278,6 +301,10 @@ async def test_register_unexpected_error(
             assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
             mock_rollback.assert_called_once()
+            mock_logger_error.assert_called_once()
+            args, _ = mock_logger_error.call_args
+            assert args[0] == "Unexpected error during registration: %s"
+            assert isinstance(args[1], Exception)
 
 
 if __name__ == "__main__":

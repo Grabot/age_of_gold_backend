@@ -1,17 +1,14 @@
 import time
-from typing import Any, Dict, Optional, Tuple, TypedDict, Union
+from typing import Dict, Optional, Tuple, Union
 
-import jwt as pyjwt
 from argon2 import PasswordHasher
 from fastapi import Response, status
-from jwt.exceptions import InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from app.config.config import settings
-from app.models import User, UserToken
+from src.models import User, UserToken
 
 ph = PasswordHasher()
 
@@ -29,7 +26,7 @@ def get_failed_response(
 
 
 def get_user_tokens(
-    user: User, access_expiration: int = 1800, refresh_expiration: int = 345600
+    user: User, access_expiration: int = 180, refresh_expiration: int = 345600
 ) -> UserToken:
     token_expiration: int = int(time.time()) + access_expiration
     refresh_token_expiration: int = int(time.time()) + refresh_expiration
@@ -82,10 +79,10 @@ async def delete_user_token_and_return(
     return return_value
 
 
-class JWTPayload(TypedDict):
-    exp: int
-    id: int
-    user_name: str
+# class JWTPayload(TypedDict):
+#     exp: int
+#     id: int
+#     username: str
 
 
 async def refresh_user_token(
@@ -111,27 +108,7 @@ async def refresh_user_token(
     if user_result is None:
         return await delete_user_token_and_return(db, user_token, None)
     user: User = user_result.User
-    if user_token.token_expiration > int(time.time()):
-        return await delete_user_token_and_return(db, user_token, user)
-    try:
-        access: Dict[str, Any] = pyjwt.decode(
-            access_token,
-            settings.jwk_pem,
-            algorithms=[settings.header["alg"]],
-            options={"verify_aud": False},
-        )
-        refresh: Dict[str, Any] = pyjwt.decode(
-            refresh_token,
-            settings.jwk_pem,
-            algorithms=[settings.header["alg"]],
-            options={"verify_aud": False},
-        )
-    except InvalidTokenError:
-        return await delete_user_token_and_return(db, user_token, None)
-    if user.id == access["id"] and user.username == refresh["user_name"]:
-        return await delete_user_token_and_return(db, user_token, user)
-    else:
-        return await delete_user_token_and_return(db, user_token, None)
+    return await delete_user_token_and_return(db, user_token, user)
 
 
 def hash_password(password: str) -> str:

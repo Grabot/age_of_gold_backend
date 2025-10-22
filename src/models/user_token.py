@@ -1,15 +1,17 @@
+"""User token model"""
+
 import time
 from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from app.models.user import User
+    from src.models.user import User
 
 
 class UserToken(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     """
-    UserToken
+    UserToken model representing a user's authentication tokens.
     """
 
     __tablename__ = "UserToken"  # pyright: ignore[reportAssignmentType]
@@ -23,4 +25,5 @@ class UserToken(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     user: "User" = Relationship(back_populates="tokens")
 
     def refresh_is_expired(self) -> bool:
+        """Check if the refresh token is expired."""
         return self.refresh_token_expiration < int(time.time())
