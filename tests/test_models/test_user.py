@@ -79,8 +79,8 @@ def test_user_generate_auth_token() -> None:
         )
     except Exception as exc:
         raise AssertionError("token decoding failed") from exc
-    assert "id" in decoded_token and "username" not in decoded_token
-    assert decoded_token["id"] == 123
+    assert "sub" in decoded_token
+    assert decoded_token["sub"] == "123"
 
 
 def test_user_generate_refresh_token() -> None:
@@ -105,8 +105,8 @@ def test_user_generate_refresh_token() -> None:
         )
     except Exception as exc:
         raise AssertionError("token decoding failed") from exc
-    assert "id" not in decoded_token and "username" in decoded_token
-    assert decoded_token["username"] == "testuser"
+    assert "sub" in decoded_token
+    assert decoded_token["sub"] == "123"
 
 
 def test_user_serialize() -> None:

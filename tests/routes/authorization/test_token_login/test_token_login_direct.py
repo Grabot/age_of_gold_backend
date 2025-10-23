@@ -17,7 +17,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 from src.api.api_v1.authorization.token_login import login_token_user  # pylint: disable=C0413
 from src.models.user import User  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
-from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL, add_token  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -25,18 +25,8 @@ async def test_successful_token_login_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test successful token login via direct function call."""
+    await add_token(1000, 100)
     async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user = await db.get(User, 1)
-        user_token = UserToken(
-            user_id=user.id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
-
         request = MagicMock()
         request.headers.get.return_value = "Bearer valid_access_token"
 
@@ -84,17 +74,8 @@ async def test_database_error_during_token_login_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test database error during token login via direct function call."""
+    await add_token(1000, 1000)
     async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user = await db.get(User, 1)
-        user_token = UserToken(
-            user_id=user.id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
         request = MagicMock()
         request.headers.get.return_value = "Bearer valid_access_token"
 
@@ -120,17 +101,8 @@ async def test_integrity_error_during_token_login_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test integrity error during token login via direct function call."""
+    await add_token(1000, 10000)
     async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user = await db.get(User, 1)
-        user_token = UserToken(
-            user_id=user.id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
         request = MagicMock()
         request.headers.get.return_value = "Bearer valid_access_token"
 
@@ -160,17 +132,8 @@ async def test_unexpected_error_during_token_login_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test unexpected error during token login via direct function call."""
+    await add_token(1000, 1000)
     async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user = await db.get(User, 1)
-        user_token = UserToken(
-            user_id=user.id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
         request = MagicMock()
         request.headers.get.return_value = "Bearer valid_access_token"
 

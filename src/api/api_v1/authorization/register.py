@@ -7,7 +7,7 @@ from fastapi import Depends, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
 from src.api.api_v1 import api_router_v1
@@ -18,7 +18,12 @@ from src.models import User
 from src.models.user import avatar_filename, create_salt, hash_email
 from src.sockets.sockets import sio
 from src.util.gold_logging import logger
-from src.util.util import get_failed_response, get_user_tokens, hash_password
+from src.util.util import (
+    get_failed_response,
+    get_user_tokens,
+    hash_password,
+    get_successful_user_response,
+)
 
 
 class RegisterRequest(BaseModel):
@@ -81,13 +86,7 @@ async def register_user(
 
         task_generate_avatar.delay(avatar_filename(), user.id)  # type: ignore
 
-        return {
-            "result": True,
-            "message": "User created successfully.",
-            "access_token": user_token.access_token,
-            "refresh_token": user_token.refresh_token,
-            "user": user.serialize,
-        }
+        return get_successful_user_response(user, user_token)
 
     except IntegrityError as e:
         logger.error("Database integrity error during registration: %s", e)

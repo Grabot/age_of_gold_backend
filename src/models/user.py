@@ -4,7 +4,7 @@ import secrets
 import time
 import uuid
 from hashlib import sha512
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import jwt as pyjwt
 from argon2 import PasswordHasher, exceptions
@@ -41,7 +41,8 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     """
 
     __tablename__ = "User"  # pyright: ignore[reportAssignmentType]
-    id: Optional[int] = Field(default=None, primary_key=True)
+    # TODO: Test if Optional was required.
+    id: int = Field(primary_key=True)
     username: str = Field(default=None, index=True, unique=True)
     email_hash: str
     password_hash: str
@@ -57,16 +58,23 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         except exceptions.VerificationError:
             return False
 
-    def generate_auth_token(self, expires_in: int = 1800) -> str:
+    def generate_auth_token(
+        self, expires_in: int = 1800, scopes: Optional[List[str]] = None
+    ) -> str:
         """Generate an authentication token for the user."""
         payload: Dict[str, Any] = {
-            "id": self.id,
+            "sub": str(self.id),
             "iss": settings.JWT_ISS,
             "aud": settings.JWT_AUD,
-            "sub": settings.JWT_SUB,
+            "jti": str(uuid.uuid4()),
+            "typ": "access",
             "exp": int(time.time()) + expires_in,
             "iat": int(time.time()),
         }
+        if scopes:
+            payload["scope"] = " ".join(
+                scopes
+            )  # Convert list to space-separated string
         return pyjwt.encode(
             payload,
             settings.jwt_pem,
@@ -74,15 +82,18 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             headers=settings.header,
         )
 
-    def generate_refresh_token(self, expires_in: int = 345600) -> str:
+    def generate_refresh_token(
+        self,
+        expires_in: int = 345600,
+    ) -> str:
         """Generate a refresh token for the user."""
         payload: Dict[str, Any] = {
-            "username": self.username,
+            "sub": str(self.id),
             "iss": settings.JWT_ISS,
             "aud": settings.JWT_AUD,
-            "sub": settings.JWT_SUB,
+            "jti": str(uuid.uuid4()),
+            "typ": "refresh",
             "exp": int(time.time()) + expires_in,
-            "iat": int(time.time()),
         }
         return pyjwt.encode(
             payload,
@@ -92,7 +103,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         )
 
     @property
-    def serialize(self) -> Dict[str, Any]:
+    def serialize(self) -> Dict[str, Union[int, str]]:
         """Serialize the user object to a dictionary."""
         return {
             "id": self.id,

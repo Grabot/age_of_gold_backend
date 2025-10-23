@@ -5,7 +5,7 @@ from typing import Any, Optional
 from fastapi import Depends, Request, Response, status
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1 import api_router_v1
 from src.database import get_db
@@ -16,6 +16,7 @@ from src.util.util import (
     get_failed_response,
     get_user_tokens,
     refresh_user_token,
+    get_successful_user_response,
 )
 
 
@@ -59,14 +60,7 @@ async def refresh_user(
         user_token = get_user_tokens(user)
         db.add(user_token)
         await db.commit()
-        login_response = {
-            "result": True,
-            "message": "Tokens refreshed successfully.",
-            "access_token": user_token.access_token,
-            "refresh_token": user_token.refresh_token,
-            "user": user.serialize,
-        }
-        return login_response
+        return get_successful_user_response(user, user_token)
 
     except IntegrityError as e:
         logger.error("Database integrity error during registration: %s", e)

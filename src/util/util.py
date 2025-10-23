@@ -1,10 +1,10 @@
 import time
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, Union
 
 from argon2 import PasswordHasher
 from fastapi import Response, status
-from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -22,6 +22,18 @@ def get_failed_response(
     return {
         "result": False,
         "message": message,
+    }
+
+
+def get_successful_user_response(
+    user: User,
+    user_token: UserToken,
+) -> Dict[str, Union[bool, str, Dict[str, Union[int, str]]]]:
+    return {
+        "result": True,
+        "access_token": user_token.access_token,
+        "refresh_token": user_token.refresh_token,
+        "user": user.serialize,
     }
 
 
@@ -44,26 +56,6 @@ def get_user_tokens(
     return user_token
 
 
-async def check_token(
-    db: AsyncSession, token: str
-) -> Tuple[Optional[User], Optional[UserToken]]:
-    token_statement: Select = (
-        select(UserToken)
-        .options(joinedload(UserToken.user))
-        .filter_by(access_token=token)
-    )
-    results_token = await db.execute(token_statement)
-    result_token = results_token.first()
-    if result_token is None:
-        return None, None
-    user_token: UserToken = result_token.UserToken
-    if user_token.token_expiration < int(time.time()):
-        return None, None
-
-    user: User = user_token.user
-    return user, user_token
-
-
 def get_auth_token(auth_header: Optional[str]) -> str:
     auth_token: str = ""
     if auth_header:
@@ -77,12 +69,6 @@ async def delete_user_token_and_return(
     await db.delete(user_token)
     await db.commit()
     return return_value
-
-
-# class JWTPayload(TypedDict):
-#     exp: int
-#     id: int
-#     username: str
 
 
 async def refresh_user_token(

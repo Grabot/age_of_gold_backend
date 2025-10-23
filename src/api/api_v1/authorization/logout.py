@@ -2,40 +2,26 @@
 
 from typing import Any
 
-from fastapi import Depends, Request, Response, status
+from fastapi import Depends, Response, Security, status
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1 import api_router_v1
 from src.database import get_db
 from src.util.gold_logging import logger
-from src.util.util import check_token, get_auth_token, get_failed_response
+from src.util.security import checked_auth_token
+from src.util.util import get_failed_response
 
 
 @api_router_v1.post("/logout", status_code=200, response_model=dict)
 async def logout_user(
-    request: Request,
     response: Response,
+    user_and_token=Security(checked_auth_token, scopes=["user"]),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Handle user logout request."""
-    auth_token = get_auth_token(request.headers.get("Authorization"))
-    if auth_token == "":
-        return get_failed_response(
-            "Authorization token is missing or invalid",
-            response,
-            status.HTTP_401_UNAUTHORIZED,
-        )
-
     try:
-        user, user_token = await check_token(db, auth_token)
-        if not user:
-            return get_failed_response(
-                "User not found or token expired",
-                response,
-                status.HTTP_401_UNAUTHORIZED,
-            )
-
+        user, user_token = user_and_token
         await db.delete(user_token)
         await db.commit()
         logger.info("User %s logged out successfully", user.username)

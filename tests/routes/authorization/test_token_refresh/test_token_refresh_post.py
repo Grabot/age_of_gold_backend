@@ -13,10 +13,10 @@ from fastapi.testclient import TestClient
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
+from tests.conftest import add_token  # pylint: disable=C0413
 from src.models.user import User  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
 from main import app  # pylint: disable=C0413
-from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -26,19 +26,7 @@ async def test_successful_refresh_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test successful token refresh via POST request."""
-    async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user: Optional[User] = await db.get(User, user_id)
-        assert user is not None
-        user_token = UserToken(
-            user_id=user_id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) - 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
+    user = await add_token(-1000, 1000)
 
     with TestClient(app) as client:
         headers = {"Authorization": "Bearer valid_access_token"}
@@ -50,7 +38,6 @@ async def test_successful_refresh_post(
         assert response.status_code == 200
         response_json = response.json()
         assert response_json["result"] is True
-        assert response_json["message"] == "Tokens refreshed successfully."
         assert "access_token" in response_json
         assert "refresh_token" in response_json
         assert response_json["user"] == user.serialize
@@ -101,20 +88,7 @@ async def test_invalid_or_expired_tokens_post(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test token refresh request with invalid or expired tokens via POST request."""
-    async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user: Optional[User] = await db.get(User, user_id)
-        assert user is not None
-        user_token = UserToken(
-            user_id=user_id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) - 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) - 1000,
-        )
-        db.add(user_token)
-        await db.commit()
-
+    await add_token(-1000, -1000)
     with TestClient(app) as client:
         headers = {"Authorization": "Bearer valid_access_token"}
         response = client.post(

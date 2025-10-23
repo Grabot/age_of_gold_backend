@@ -4,13 +4,12 @@ from typing import Any
 
 from fastapi import Depends, Request, Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession  # pyright: ignore[reportMissingImports]
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1 import api_router_v1
 from src.database import get_db
 from src.util.gold_logging import logger
 from src.util.util import (
-    check_token,
     get_auth_token,
     get_failed_response,
     get_user_tokens,
@@ -33,7 +32,9 @@ async def login_token_user(
         )
 
     try:
-        user, user_token_old = await check_token(db, auth_token)
+        # TODO: Change to new security auth check
+        # user, user_token_old = await check_token(db, auth_token)
+        user_token_old, user = None, None
         if not user:
             return get_failed_response(
                 "Invalid or expired token", response, status.HTTP_401_UNAUTHORIZED

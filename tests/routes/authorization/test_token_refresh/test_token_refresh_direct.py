@@ -14,13 +14,13 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL, add_token  # pylint: disable=C0413
 from src.api.api_v1.authorization.token_refresh import (  # pylint: disable=C0413
     RefreshRequest,
     refresh_user,
 )
 from src.models.user import User  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
-from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -28,20 +28,8 @@ async def test_successful_refresh_direct(
     test_setup: Generator[Any, Any, Any],
 ) -> None:
     """Test successful token refresh."""
+    user = await add_token(-1000, 1000)
     async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user: Optional[User] = await db.get(User, user_id)
-        assert user is not None
-        user_token = UserToken(
-            user_id=user_id,
-            access_token="valid_access_token",
-            token_expiration=int(time.time()) - 1000,
-            refresh_token="valid_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(user_token)
-        await db.commit()
-
         request = MagicMock()
         request.headers.get.return_value = "Bearer valid_access_token"
 
@@ -50,7 +38,6 @@ async def test_successful_refresh_direct(
         response = await refresh_user(request, refresh_request, Response(), db)
 
         assert response["result"] is True
-        assert response["message"] == "Tokens refreshed successfully."
         assert "access_token" in response
         assert "refresh_token" in response
         assert response["user"] == user.serialize

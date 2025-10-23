@@ -12,13 +12,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import Response, status
 
+from src.util.security import check_token
+
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
 from src.config.config import settings  # pylint: disable=C0413
 from src.models import User, UserToken  # pylint: disable=C0413
 from src.util.util import (  # pylint: disable=C0413
-    check_token,
     delete_user_token_and_return,
     get_auth_token,
     get_failed_response,

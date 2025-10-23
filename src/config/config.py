@@ -78,7 +78,6 @@ class Settings(BaseSettings):
             "typ": self.jwt_typ,
         }
 
-    JWT_SUB: str
     JWT_ISS: str
     JWT_AUD: str
     API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
