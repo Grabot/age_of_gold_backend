@@ -4,7 +4,6 @@ from typing import Dict, Optional, Union
 from argon2 import PasswordHasher
 from fastapi import Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -28,7 +27,7 @@ def get_failed_response(
 def get_successful_user_response(
     user: User,
     user_token: UserToken,
-) -> Dict[str, Union[bool, str, Dict[str, Union[int, str]]]]:
+) -> Dict[str, Union[bool, str, Dict[str, Union[Optional[int], str]]]]:
     return {
         "result": True,
         "access_token": user_token.access_token,
@@ -56,13 +55,6 @@ def get_user_tokens(
     return user_token
 
 
-def get_auth_token(auth_header: Optional[str]) -> str:
-    auth_token: str = ""
-    if auth_header:
-        auth_token = auth_header.split(" ")[1]
-    return auth_token
-
-
 async def delete_user_token_and_return(
     db: AsyncSession, user_token: UserToken, return_value: Optional[User]
 ) -> Optional[User]:
@@ -86,9 +78,7 @@ async def refresh_user_token(
     user_token: UserToken = result_token.UserToken
     if user_token.refresh_token_expiration < int(time.time()):
         return await delete_user_token_and_return(db, user_token, None)
-    user_statement: Select = (
-        select(User).filter_by(id=user_token.user_id).options(selectinload(User.tokens))
-    )
+    user_statement: Select = select(User).filter_by(id=user_token.user_id)
     user_results = await db.execute(user_statement)
     user_result = user_results.first()
     if user_result is None:

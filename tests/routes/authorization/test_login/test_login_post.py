@@ -3,8 +3,6 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
-from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -22,23 +20,22 @@ from main import app  # pylint: disable=C0413
 async def test_successful_login_with_username_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test successful login with username using POST request."""
-    with TestClient(app) as client:
-        expected_access_token = "access_token_test"
-        expected_refresh_token = "refresh_token_test"
-        mock_generate_auth_token.return_value = expected_access_token
-        mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
-        )
-        assert response.status_code == 200
-        response_json = response.json()
-        assert response_json["result"] is True
-        assert response_json["access_token"] == expected_access_token
-        assert response_json["refresh_token"] == expected_refresh_token
+    response = test_setup.post(
+        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+    )
+    assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["result"] is True
+    assert response_json["access_token"] == expected_access_token
+    assert response_json["refresh_token"] == expected_refresh_token
 
 
 @pytest.mark.asyncio
@@ -47,53 +44,50 @@ async def test_successful_login_with_username_post(
 async def test_successful_login_with_email_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test successful login with email using POST request."""
-    with TestClient(app) as client:
-        expected_access_token = "access_token_test"
-        expected_refresh_token = "refresh_token_test"
-        mock_generate_auth_token.return_value = expected_access_token
-        mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/login",
-            json={"email": "testuser@example.com", "password": "testpassword"},
-        )
+    response = test_setup.post(
+        "/api/v1.0/login",
+        json={"email": "testuser@example.com", "password": "testpassword"},
+    )
 
-        assert response.status_code == 200
-        response_json = response.json()
-        assert response_json["result"] is True
-        assert response_json["access_token"] == expected_access_token
-        assert response_json["refresh_token"] == expected_refresh_token
+    assert response.status_code == 200
+    response_json = response.json()
+    assert response_json["result"] is True
+    assert response_json["access_token"] == expected_access_token
+    assert response_json["refresh_token"] == expected_refresh_token
 
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_password_post(
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test invalid request with missing password using POST request."""
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login", json={"username": "testuser", "password": ""}
-        )
-        assert response.status_code == 400
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Invalid request"
+    response = test_setup.post(
+        "/api/v1.0/login", json={"username": "testuser", "password": ""}
+    )
+    assert response.status_code == 400
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Invalid request"
 
 
 @pytest.mark.asyncio
 async def test_invalid_request_missing_email_and_username_post(
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test invalid request with missing email and username using POST request."""
-    with TestClient(app) as client:
-        response = client.post("/api/v1.0/login", json={"password": "testpassword"})
-        assert response.status_code == 400
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Invalid request"
+    response = test_setup.post("/api/v1.0/login", json={"password": "testpassword"})
+    assert response.status_code == 400
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -102,18 +96,17 @@ async def test_invalid_request_missing_email_and_username_post(
 async def test_invalid_email_or_username_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test invalid email or username using POST request."""
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login",
-            json={"email": "nonexistent@example.com", "password": "testpassword"},
-        )
-        assert response.status_code == 401
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Invalid email/username or password"
+    response = test_setup.post(
+        "/api/v1.0/login",
+        json={"email": "nonexistent@example.com", "password": "testpassword"},
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -122,18 +115,17 @@ async def test_invalid_email_or_username_post(
 async def test_invalid_password_post(
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test invalid password using POST request."""
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login",
-            json={"username": "testuser", "password": "wrongpassword"},
-        )
-        assert response.status_code == 401
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Invalid email/username or password"
+    response = test_setup.post(
+        "/api/v1.0/login",
+        json={"username": "testuser", "password": "wrongpassword"},
+    )
+    assert response.status_code == 401
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -144,18 +136,17 @@ async def test_database_error_during_login_post(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test database error during login using POST request."""
     mock_get_db.side_effect = SQLAlchemyError("Database error")
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
-        )
-        assert response.status_code == 500
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Internal server error"
+    response = test_setup.post(
+        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+    )
+    assert response.status_code == 500
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Login failed"
 
 
 @pytest.mark.asyncio
@@ -166,18 +157,17 @@ async def test_unexpected_error_during_login_post(
     mock_get_db: MagicMock,
     mock_generate_refresh_token: MagicMock,
     mock_generate_auth_token: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test unexpected error during login using POST request."""
     mock_get_db.side_effect = Exception("Unexpected error")
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
-        )
-        assert response.status_code == 500
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Internal server error"
+    response = test_setup.post(
+        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+    )
+    assert response.status_code == 500
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Login failed"
 
 
 if __name__ == "__main__":

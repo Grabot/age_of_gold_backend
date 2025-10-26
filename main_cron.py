@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlmodel import delete
 
 from src.database import async_session

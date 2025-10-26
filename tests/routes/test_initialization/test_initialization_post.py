@@ -3,7 +3,6 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
 from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
@@ -21,7 +20,7 @@ from main import app  # pylint: disable=C0413
 async def test_successful_initialization_get(
     mock_task_initialize_delay: MagicMock,
     mock_exists: MagicMock,
-    test_setup: Generator[Any, Any, Any],
+    test_setup: TestClient,
 ) -> None:
     """Test successful intialization via GET request."""
     with TestClient(app) as client:

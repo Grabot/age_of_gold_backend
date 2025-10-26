@@ -4,15 +4,19 @@
 import sys
 from pathlib import Path
 
-import pytest
 import jwt as pyjwt
+import pytest
 
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
-from src.models import User  # pylint: disable=C0413
 from src.config.config import settings  # pylint: disable=C0413
-from src.models.user import avatar_filename, create_salt, hash_email  # pylint: disable=C0413
+from src.models import User  # pylint: disable=C0413
+from src.models.user import (  # pylint: disable=C0413
+    avatar_filename,
+    create_salt,
+    hash_email,
+)
 from src.util.util import hash_password  # pylint: disable=C0413
 
 

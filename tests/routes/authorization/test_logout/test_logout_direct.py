@@ -3,128 +3,93 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
-import time
-from typing import Any, AsyncGenerator, Generator, Tuple
+from typing import Any, Tuple
 from unittest.mock import MagicMock, patch
 
-from fastapi.testclient import TestClient
 import pytest
 from fastapi import Response
+from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from src.api.api_v1.authorization.logout import logout_user  # pylint: disable=C0413
 from src.models.user import User  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
-from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
+from tests.conftest import add_token  # pylint: disable=C0413
+from tests.helpers import (  # pylint: disable=C0413
+    assert_exception_error_response,
+    assert_sqalchemy_error_response,
+)
 
 
 @pytest.mark.asyncio
 async def test_successful_logout_direct(
-    test_setup: TestClient,
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test successful logout via direct function call."""
-    async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user = await db.get(User, user_id)
-        assert user is not None
-        access_token = "test_access_token"
-        test_user_token = UserToken(
-            user_id=user_id,
-            access_token=access_token,
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="test_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(test_user_token)
-        await db.commit()
+    user, test_user_token = await add_token(1000, 1000, test_db)
+    auth: Tuple[User, UserToken] = (user, test_user_token)
+    response = await logout_user(Response(), auth, test_db)
 
-        auth: Tuple[User, UserToken] = (user, test_user_token)
-        response = await logout_user(Response(), auth, db)
+    user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
+    assert user_tokens.scalar() is None
 
-        user_tokens = await db.execute(select(UserToken).where(UserToken.user_id == 1))
-        assert user_tokens.scalar() is None
-
-        assert response["result"] is True
-        assert response["message"] == "User logged out successfully."
+    assert response["result"] is True
+    assert response["message"] == "User logged out successfully."
 
 
 @pytest.mark.asyncio
 @patch("src.util.gold_logging.logger.error")
+@patch("sqlalchemy.ext.asyncio.AsyncSession.delete")
 async def test_database_error_during_login_direct(
+    mock_delete: MagicMock,
     mock_logger_error: MagicMock,
     test_setup: TestClient,
+    test_db: AsyncSession,
 ) -> None:
     """Test database error during logout via direct function call."""
-    # TODO: User token kan naar generieke functie.
-    async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user = await db.get(User, user_id)
-        assert user is not None
-        test_user_token = UserToken(
-            user_id=user_id,
-            access_token="test_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="test_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(test_user_token)
-        await db.commit()
+    user, test_user_token = await add_token(1000, 1000, test_db)
 
-        async def mock_delete(*args: Any, **kwargs: Any) -> None:
-            raise SQLAlchemyError("Database error")
+    async def mock_delete_side_effect(*args: Any, **kwargs: Any) -> None:
+        raise SQLAlchemyError("Database error")
 
-        db.delete = mock_delete
+    mock_delete.side_effect = mock_delete_side_effect
 
-        auth: Tuple[User, UserToken] = (user, test_user_token)
-        response = await logout_user(Response(), auth, db)
+    auth: Tuple[User, UserToken] = (user, test_user_token)
+    response = await logout_user(Response(), auth, test_db)
 
-        assert not response["result"]
-        assert response["message"] == "Internal server error"
-        mock_logger_error.assert_called_once()
-        args, _ = mock_logger_error.call_args
-        assert args[0] == "Database error during logout: %s"
-        assert isinstance(args[1], Exception)
+    assert_sqalchemy_error_response(
+        response,
+        mock_logger_error,
+        "Logout failed",
+    )
 
 
 @pytest.mark.asyncio
 @patch("src.util.gold_logging.logger.error")
+@patch("sqlalchemy.ext.asyncio.AsyncSession.delete")
 async def test_unexpected_error_during_logout_direct(
+    mock_delete: MagicMock,
     mock_logger_error: MagicMock,
     test_setup: TestClient,
+    test_db: AsyncSession,
 ) -> None:
     """Test unexpected error during logout via direct function call."""
-    async with ASYNC_TESTING_SESSION_LOCAL() as db:
-        user_id = 1
-        user = await db.get(User, user_id)
-        assert user is not None
-        test_user_token = UserToken(
-            user_id=user_id,
-            access_token="test_access_token",
-            token_expiration=int(time.time()) + 1000,
-            refresh_token="test_refresh_token",
-            refresh_token_expiration=int(time.time()) + 1000,
-        )
-        db.add(test_user_token)
-        await db.commit()
+    user, test_user_token = await add_token(1000, 1000, test_db)
 
-        async def mock_delete(*args: Any, **kwargs: Any) -> None:
-            raise Exception("Unexpected error")
+    async def mock_delete_side_effect(*args: Any, **kwargs: Any) -> None:
+        raise Exception("Unexpected error")
 
-        db.delete = mock_delete
+    mock_delete.side_effect = mock_delete_side_effect
 
-        auth: Tuple[User, UserToken] = (user, test_user_token)
-        response = await logout_user(Response(), auth, db)
+    auth: Tuple[User, UserToken] = (user, test_user_token)
+    response = await logout_user(Response(), auth, test_db)
 
-        assert not response["result"]
-        assert response["message"] == "Internal server error"
-        mock_logger_error.assert_called_once()
-        args, _ = mock_logger_error.call_args
-        assert args[0] == "Unexpected error during logout: %s"
-        assert isinstance(args[1], Exception)
+    assert_exception_error_response(response, mock_logger_error, "Logout failed")
 
 
 if __name__ == "__main__":

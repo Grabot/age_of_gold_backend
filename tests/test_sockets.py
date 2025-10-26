@@ -3,11 +3,11 @@
 # ruff: noqa: E402
 import sys
 from pathlib import Path
-
-from typing import Any, Dict, Generator, Optional, Union
+from typing import Dict, Optional, Union
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from fastapi.testclient import TestClient
 from pytest import CaptureFixture
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -48,7 +48,7 @@ async def test_handle_message_event(capfd: CaptureFixture[str]) -> None:
 
 
 @pytest.mark.asyncio
-async def test_handle_join(test_setup: Generator[Any, Any, Any]) -> None:
+async def test_handle_join(test_setup: TestClient) -> None:
     """Test the handle_join function."""
     with (
         patch("src.sockets.sockets.sio") as mock_sio,
@@ -87,7 +87,7 @@ async def test_handle_leave() -> None:
 
 
 @pytest.mark.asyncio
-async def test_handle_join_with_db(test_setup: Generator[Any, Any, Any]) -> None:
+async def test_handle_join_with_db(test_setup: TestClient) -> None:
     """Test the handle_join function with database interaction."""
 
     async with ASYNC_TESTING_SESSION_LOCAL() as db:

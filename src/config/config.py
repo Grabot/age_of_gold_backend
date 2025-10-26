@@ -88,8 +88,8 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str
     MAIL_PASSWORD: str
     MAIL_SENDERNAME: str
-    UPLOAD_FOLDER_AVATARS: str = "/app/static/uploads/avatars"
-    UPLOAD_FOLDER_CRESTS: str = "/app/static/uploads/crests"
+    UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
+    UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
 
     PEPPER: str
 
@@ -103,4 +103,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

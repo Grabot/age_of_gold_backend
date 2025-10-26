@@ -3,7 +3,6 @@
 # ruff: noqa: E402
 import sys
 from pathlib import Path
-
 from typing import Any, Generator
 from unittest.mock import patch
 
@@ -25,6 +24,7 @@ def mock_settings() -> Generator[Any, Any, Any]:
         mock_settings.DEBUG = False
 
         import importlib  # pylint: disable=C0415
+
         import src.database  # pylint: disable=C0415
 
         importlib.reload(src.database)

@@ -1,10 +1,9 @@
 """Test for initialization endpoint via direct function call."""
 
 # ruff: noqa: E402
+import stat
 import sys
 from pathlib import Path
-
-import stat
 from unittest.mock import MagicMock, patch
 
 import pytest

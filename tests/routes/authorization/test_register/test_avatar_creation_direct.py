@@ -3,7 +3,6 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
 from typing import Any
 from unittest.mock import MagicMock, patch
 

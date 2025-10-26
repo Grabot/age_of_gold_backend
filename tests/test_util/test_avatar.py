@@ -1,26 +1,25 @@
 """Test file for avatars."""
 
 # ruff: noqa: E402
+import math
+import os
 import random
 import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
-
-import math
-import os
 from unittest.mock import MagicMock, patch
 
-import pytest
 import numpy as np
+import pytest
 from PIL import Image
 
 current_dir = Path(__file__).parent
 sys.path.append(str(current_dir.parent.parent))
 
 from src.util.avatar import (  # pylint: disable=C0413
+    Point,
     Line,
     Plane,
-    Point,
     add_square_clean,
     angle_slopes,
     background_square_clean,

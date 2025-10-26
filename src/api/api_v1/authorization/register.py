@@ -6,7 +6,6 @@ from typing import Any
 from fastapi import Depends, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -17,12 +16,12 @@ from src.database import get_db
 from src.models import User
 from src.models.user import avatar_filename, create_salt, hash_email
 from src.sockets.sockets import sio
-from src.util.gold_logging import logger
+from src.util.decorators import handle_db_errors
 from src.util.util import (
     get_failed_response,
+    get_successful_user_response,
     get_user_tokens,
     hash_password,
-    get_successful_user_response,
 )
 
 
@@ -35,6 +34,7 @@ class RegisterRequest(BaseModel):
 
 
 @api_router_v1.post("/register", status_code=201)
+@handle_db_errors("Registration failed")
 async def register_user(
     register_request: RegisterRequest,
     response: Response,
@@ -48,57 +48,43 @@ async def register_user(
             "Invalid request", response, status.HTTP_400_BAD_REQUEST
         )
 
-    try:
-        results = await db.execute(
-            select(User).where(
-                func.lower(User.username) == register_request.username.lower()
-            )
+    results = await db.execute(
+        select(User).where(
+            func.lower(User.username) == register_request.username.lower()
         )
-        if results.first():
-            return get_failed_response(
-                "Username already taken", response, status.HTTP_409_CONFLICT
-            )
-
-        email_hash = hash_email(register_request.email, settings.PEPPER)
-        results = await db.execute(
-            select(User).where(User.origin == 0, User.email_hash == email_hash)
-        )
-        if results.first():
-            return get_failed_response(
-                "Email already used", response, status.HTTP_409_CONFLICT
-            )
-
-        salt = create_salt()
-        user = User(
-            username=register_request.username,
-            email_hash=email_hash,
-            origin=0,
-            salt=salt,
-            password_hash=hash_password(register_request.password + salt),
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-
-        user_token = get_user_tokens(user)
-        db.add(user_token)
-        await db.commit()
-
-        task_generate_avatar.delay(avatar_filename(), user.id)  # type: ignore
-
-        return get_successful_user_response(user, user_token)
-
-    except IntegrityError as e:
-        logger.error("Database integrity error during registration: %s", e)
-    except SQLAlchemyError as e:
-        logger.error("Database error during registration: %s", e)
-    except Exception as e:
-        logger.error("Unexpected error during registration: %s", e)
-
-    await db.rollback()
-    return get_failed_response(
-        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
     )
+    if results.first():
+        return get_failed_response(
+            "Username already taken", response, status.HTTP_409_CONFLICT
+        )
+
+    email_hash = hash_email(register_request.email, settings.PEPPER)
+    results = await db.execute(
+        select(User).where(User.origin == 0, User.email_hash == email_hash)
+    )
+    if results.first():
+        return get_failed_response(
+            "Email already used", response, status.HTTP_409_CONFLICT
+        )
+
+    salt = create_salt()
+    user = User(
+        username=register_request.username,
+        email_hash=email_hash,
+        origin=0,
+        salt=salt,
+        password_hash=hash_password(register_request.password + salt),
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
+
+    task_generate_avatar.delay(avatar_filename(), user.id)
+    return get_successful_user_response(user, user_token)
 
 
 class AvatarCreatedRequest(BaseModel):

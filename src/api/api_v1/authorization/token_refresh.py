@@ -2,21 +2,21 @@
 
 from typing import Any, Optional
 
-from fastapi import Depends, Request, Response, status
+from fastapi import Depends, Response, Security, status
 from pydantic import BaseModel
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1 import api_router_v1
 from src.database import get_db
 from src.models import User
+from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
+from src.util.security import decode_token, get_valid_auth_token
 from src.util.util import (
-    get_auth_token,
     get_failed_response,
+    get_successful_user_response,
     get_user_tokens,
     refresh_user_token,
-    get_successful_user_response,
 )
 
 
@@ -27,49 +27,27 @@ class RefreshRequest(BaseModel):
 
 
 @api_router_v1.post("/login/token/refresh", status_code=200)
+@handle_db_errors("Token refresh failed")
 async def refresh_user(
-    request: Request,
     refresh_request: RefreshRequest,
     response: Response,
+    access_token: str = Security(get_valid_auth_token, scopes=["user"]),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Handle token refresh request."""
-    auth_token = get_auth_token(request.headers.get("Authorization"))
-    if auth_token == "":
-        return get_failed_response(
-            "Authorization token is missing or invalid",
-            response,
-            status.HTTP_401_UNAUTHORIZED,
-        )
-
     if not refresh_request.refresh_token:
         logger.warning("Refresh failed: Invalid request")
         return get_failed_response(
             "Invalid request", response, status.HTTP_400_BAD_REQUEST
         )
-
-    try:
-        user: Optional[User] = await refresh_user_token(
-            db, auth_token, refresh_request.refresh_token
-        )
-        if not user:
-            return get_failed_response(
-                "Invalid or expired tokens", response, status.HTTP_401_UNAUTHORIZED
-            )
-
-        user_token = get_user_tokens(user)
-        db.add(user_token)
-        await db.commit()
-        return get_successful_user_response(user, user_token)
-
-    except IntegrityError as e:
-        logger.error("Database integrity error during registration: %s", e)
-    except SQLAlchemyError as e:
-        logger.error("Database error during token refresh: %s", e)
-    except Exception as e:
-        logger.error("Unexpected error during token refresh: %s", e)
-
-    await db.rollback()
-    return get_failed_response(
-        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
+    user: Optional[User] = await refresh_user_token(
+        db, access_token, refresh_request.refresh_token
     )
+    if not user or not decode_token(refresh_request.refresh_token, "refresh"):
+        return get_failed_response(
+            "Invalid or expired tokens", response, status.HTTP_401_UNAUTHORIZED
+        )
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
+    return get_successful_user_response(user, user_token)

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import requests
 from celery import Celery
@@ -23,7 +24,11 @@ def task_initialize() -> dict[str, bool]:
 
 
 @celery_app.task
-def task_generate_avatar(avatar_filename: str, user_id: int) -> dict[str, bool]:
+def task_generate_avatar(
+    avatar_filename: str, user_id: Optional[int]
+) -> dict[str, bool]:
+    if not user_id:
+        return {"success": False}
     generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
 
     base_url = settings.BASE_URL

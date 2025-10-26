@@ -9,7 +9,10 @@ import pytest
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.celery_worker.tasks import task_generate_avatar, task_initialize  # pylint: disable=C0413
+from src.celery_worker.tasks import (  # pylint: disable=C0413
+    task_generate_avatar,
+    task_initialize,
+)
 
 
 def test_task_initialize() -> None:
@@ -43,6 +46,15 @@ def test_task_generate_avatar(
         json={"user_id": 1},
     )
     assert result == {"success": True}
+
+
+@patch("src.celery_worker.tasks.generate_avatar")
+def test_task_generate_avatar_no_user_id(mock_generate_avatar: MagicMock) -> None:
+    """Test the task_generate_avatar function."""
+    result = task_generate_avatar("avatar.png", None)
+
+    mock_generate_avatar.assert_not_called()
+    assert result == {"success": False}
 
 
 if __name__ == "__main__":

@@ -32,6 +32,6 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/", sio_app)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     logger.info("Starting the backend")
     uvicorn.run("main:app", port=5000, host="0.0.0.0", reload=True)

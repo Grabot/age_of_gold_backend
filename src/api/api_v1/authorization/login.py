@@ -5,7 +5,6 @@ from typing import Any, Optional
 from fastapi import Depends, Response, status
 from pydantic import BaseModel
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -14,6 +13,7 @@ from src.config.config import settings
 from src.database import get_db
 from src.models import User
 from src.models.user import hash_email
+from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.util import (
     get_failed_response,
@@ -60,6 +60,7 @@ class LoginRequest(BaseModel):
 
 
 @api_router_v1.post("/login", status_code=200)
+@handle_db_errors("Login failed")
 async def login_user(
     login_request: LoginRequest,
     response: Response,
@@ -74,47 +75,32 @@ async def login_user(
             "Invalid request", response, status.HTTP_400_BAD_REQUEST
         )
 
-    try:
-        user: Optional[User] = None
-        if login_request.email:
-            user = await get_user_by_email(db, login_request.email)
-        elif login_request.username:
-            user = await get_user_by_username(db, login_request.username)
+    user: Optional[User] = None
+    if login_request.email:
+        user = await get_user_by_email(db, login_request.email)
+    elif login_request.username:
+        user = await get_user_by_username(db, login_request.username)
 
-        if not user:
-            logger.warning("Login failed: User not found or invalid credentials")
-            return get_failed_response(
-                "Invalid email/username or password",
-                response,
-                status.HTTP_401_UNAUTHORIZED,
-            )
+    if not user:
+        logger.warning("Login failed: User not found or invalid credentials")
+        return get_failed_response(
+            "Invalid email/username or password",
+            response,
+            status.HTTP_401_UNAUTHORIZED,
+        )
 
-        password_with_salt = login_request.password + user.salt
-        if not user.verify_password(user.password_hash, password_with_salt):
-            logger.warning(
-                "Login failed for user: %s (invalid password)", user.username
-            )
-            return get_failed_response(
-                "Invalid email/username or password",
-                response,
-                status.HTTP_401_UNAUTHORIZED,
-            )
+    password_with_salt = login_request.password + user.salt
+    if not user.verify_password(user.password_hash, password_with_salt):
+        logger.warning("Login failed for user: %s (invalid password)", user.username)
+        return get_failed_response(
+            "Invalid email/username or password",
+            response,
+            status.HTTP_401_UNAUTHORIZED,
+        )
 
-        user_token = get_user_tokens(user)
-        db.add(user_token)
-        await db.commit()
-        logger.info("User logged in: %s", user.username)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
+    logger.info("User logged in: %s", user.username)
 
-        return get_successful_user_response(user, user_token)
-
-    except IntegrityError as e:
-        logger.error("Database integrity error during registration: %s", e)
-    except SQLAlchemyError as e:
-        logger.error("Database error during login: %s", e)
-    except Exception as e:
-        logger.error("Unexpected error during login: %s", e)
-
-    await db.rollback()
-    return get_failed_response(
-        "Internal server error", response, status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
+    return get_successful_user_response(user, user_token)

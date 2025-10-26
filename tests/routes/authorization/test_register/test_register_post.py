@@ -3,15 +3,11 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from main import app  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -25,73 +21,73 @@ async def test_successful_register_post(
     test_setup: MagicMock,
 ) -> None:
     """Test successful registration via POST request."""
-    with TestClient(app) as client:
-        expected_access_token = "access_token_test"
-        expected_refresh_token = "refresh_token_test"
-        mock_generate_auth_token.return_value = expected_access_token
-        mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token = "access_token_test_register_1"
+    expected_refresh_token = "refresh_token_test_register_1"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test@test.test",
-                "username": "new_testuser",
-                "password": "new_testpassword",
-            },
-        )
-        assert response.status_code == 201
-        response_json = response.json()
-        assert response_json["result"] is True
-        assert response_json["access_token"] == expected_access_token
-        assert response_json["refresh_token"] == expected_refresh_token
-        mock_task_generate_avatar.assert_called_once()
+    response = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test@test.test",
+            "username": "new_testuser",
+            "password": "new_testpassword",
+        },
+    )
+    assert response.status_code == 201
+    response_json = response.json()
+    assert response_json["result"] is True
+    assert response_json["access_token"] == expected_access_token
+    assert response_json["refresh_token"] == expected_refresh_token
+    mock_task_generate_avatar.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_register_missing_fields_post(test_setup: MagicMock) -> None:
+async def test_register_missing_fields_post(
+    test_setup: MagicMock,
+) -> None:
     """Test registration with missing fields via POST request."""
-    with TestClient(app) as client:
-        response_email = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "",
-                "username": "new_test2",
-                "password": "new_test2password",
-            },
-        )
+    response_email = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "",
+            "username": "new_test2",
+            "password": "new_test2password",
+        },
+    )
 
-        assert response_email.status_code == 400
-        response_json_email = response_email.json()
-        assert response_json_email["result"] is False
-        assert response_json_email["message"] == "Invalid request"
+    assert response_email.status_code == 400
+    response_json_email = response_email.json()
+    assert response_json_email["result"] is False
+    assert response_json_email["message"] == "Invalid request"
 
-        response_username = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test3@test.test",
-                "username": "",
-                "password": "new_test3password",
-            },
-        )
+    response_username = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test2_2@test.test",
+            "username": "",
+            "password": "new_test2_2password",
+        },
+    )
 
-        assert response_username.status_code == 400
-        response_json_username = response_username.json()
-        assert response_json_username["result"] is False
-        assert response_json_username["message"] == "Invalid request"
+    assert response_username.status_code == 400
+    response_json_username = response_username.json()
+    assert response_json_username["result"] is False
+    assert response_json_username["message"] == "Invalid request"
 
-        response_password = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test4@test.test",
-                "username": "new_test4",
-                "password": "",
-            },
-        )
+    response_password = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test2_3@test.test",
+            "username": "new_test2_3",
+            "password": "",
+        },
+    )
 
-        assert response_password.status_code == 400
-        response_json_password = response_password.json()
-        assert response_json_password["result"] is False
-        assert response_json_password["message"] == "Invalid request"
+    assert response_password.status_code == 400
+    response_json_password = response_password.json()
+    assert response_json_password["result"] is False
+    assert response_json_password["message"] == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -105,40 +101,39 @@ async def test_register_username_already_taken_post(
     test_setup: MagicMock,
 ) -> None:
     """Test registration with an already taken username via POST request."""
-    with TestClient(app) as client:
-        expected_access_token = "access_token_test"
-        expected_refresh_token = "refresh_token_test"
-        mock_generate_auth_token.return_value = expected_access_token
-        mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token = "access_token_test_register_3"
+    expected_refresh_token = "refresh_token_test_register_3"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test5@test.test",
-                "username": "new_test5",
-                "password": "new_test5password",
-            },
-        )
+    response = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test3_1@test.test",
+            "username": "test_user_taken",
+            "password": "new_test3_1password",
+        },
+    )
 
-        assert response.status_code == 201
-        response_json = response.json()
-        assert response_json["result"] is True
-        assert response_json["access_token"] == expected_access_token
-        assert response_json["refresh_token"] == expected_refresh_token
+    assert response.status_code == 201
+    response_json = response.json()
+    assert response_json["result"] is True
+    assert response_json["access_token"] == expected_access_token
+    assert response_json["refresh_token"] == expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test5_2@test.test",
-                "username": "new_test5",
-                "password": "new_test5password",
-            },
-        )
+    response = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test3_2@test.test",
+            "username": "test_user_taken",
+            "password": "new_test3_2password",
+        },
+    )
 
-        assert response.status_code == 409
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Username already taken"
+    assert response.status_code == 409
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Username already taken"
 
 
 @pytest.mark.asyncio
@@ -152,40 +147,39 @@ async def test_register_email_already_used_post(
     test_setup: MagicMock,
 ) -> None:
     """Test registration with an already used email via POST request."""
-    with TestClient(app) as client:
-        expected_access_token = "access_token_test"
-        expected_refresh_token = "refresh_token_test"
-        mock_generate_auth_token.return_value = expected_access_token
-        mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token = "access_token_test_register_4"
+    expected_refresh_token = "refresh_token_test_register_4"
+    mock_generate_auth_token.return_value = expected_access_token
+    mock_generate_refresh_token.return_value = expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test6@test.test",
-                "username": "new_test6",
-                "password": "new_test6password",
-            },
-        )
+    response = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test@taken.test",
+            "username": "new_test4_1",
+            "password": "new_test4_1password",
+        },
+    )
 
-        assert response.status_code == 201
-        response_json = response.json()
-        assert response_json["result"] is True
-        assert response_json["access_token"] == expected_access_token
-        assert response_json["refresh_token"] == expected_refresh_token
+    assert response.status_code == 201
+    response_json = response.json()
+    assert response_json["result"] is True
+    assert response_json["access_token"] == expected_access_token
+    assert response_json["refresh_token"] == expected_refresh_token
 
-        response = client.post(
-            "/api/v1.0/register",
-            json={
-                "email": "new_test6@test.test",
-                "username": "new_test6_2",
-                "password": "new_test6password",
-            },
-        )
+    response = test_setup.post(
+        "/api/v1.0/register",
+        json={
+            "email": "new_test@taken.test",
+            "username": "new_test4_2",
+            "password": "new_test4_2password",
+        },
+    )
 
-        assert response.status_code == 409
-        response_json = response.json()
-        assert response_json["result"] is False
-        assert response_json["message"] == "Email already used"
+    assert response.status_code == 409
+    response_json = response.json()
+    assert response_json["result"] is False
+    assert response_json["message"] == "Email already used"
 
 
 if __name__ == "__main__":

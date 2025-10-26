@@ -41,8 +41,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     """
 
     __tablename__ = "User"  # pyright: ignore[reportAssignmentType]
-    # TODO: Test if Optional was required.
-    id: int = Field(primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(default=None, index=True, unique=True)
     email_hash: str
     password_hash: str
@@ -72,9 +71,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "iat": int(time.time()),
         }
         if scopes:
-            payload["scope"] = " ".join(
-                scopes
-            )  # Convert list to space-separated string
+            payload["scope"] = " ".join(scopes)
         return pyjwt.encode(
             payload,
             settings.jwt_pem,
@@ -103,7 +100,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         )
 
     @property
-    def serialize(self) -> Dict[str, Union[int, str]]:
+    def serialize(self) -> Dict[str, Union[Optional[int], str]]:
         """Serialize the user object to a dictionary."""
         return {
             "id": self.id,
