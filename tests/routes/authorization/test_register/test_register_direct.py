@@ -1,8 +1,5 @@
 """Test for register endpoint via direct function call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,10 +7,8 @@ from fastapi import Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from src.api.api_v1.authorization import register  # pylint: disable=C0413
-from tests.helpers import (  # pylint: disable=C0413
+from src.api.api_v1.authorization import register
+from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
     assert_sqalchemy_error_response,
@@ -263,7 +258,3 @@ async def test_register_unexpected_error(
             mock_logger_error,
             "Registration failed",
         )
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

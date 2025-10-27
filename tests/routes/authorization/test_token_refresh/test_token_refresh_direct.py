@@ -1,8 +1,5 @@
 """Test for token refresh endpoint via direct function call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -12,12 +9,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from src.api.api_v1.authorization import token_refresh  # pylint: disable=C0413
-
-from tests.conftest import add_token  # pylint: disable=C0413
-from tests.helpers import (  # pylint: disable=C0413
+from src.api.api_v1.authorization import token_refresh
+from tests.conftest import add_token
+from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
     assert_sqalchemy_error_response,
@@ -189,7 +183,3 @@ async def test_unexpected_error_during_refresh_direct(
         mock_logger_error,
         "Token refresh failed",
     )
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

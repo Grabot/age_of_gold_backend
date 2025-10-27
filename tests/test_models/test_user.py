@@ -1,23 +1,11 @@
 """Test file for user model."""
 
-# ruff: noqa: E402
-import sys
-from pathlib import Path
-
 import jwt as pyjwt
-import pytest
 
-current_dir = Path(__file__).parent
-sys.path.append(str(current_dir.parent.parent))
-
-from src.config.config import settings  # pylint: disable=C0413
-from src.models import User  # pylint: disable=C0413
-from src.models.user import (  # pylint: disable=C0413
-    avatar_filename,
-    create_salt,
-    hash_email,
-)
-from src.util.util import hash_password  # pylint: disable=C0413
+from src.config.config import settings
+from src.models import User
+from src.models.user import avatar_filename, create_salt, hash_email
+from src.util.util import hash_password
 
 
 def test_hash_email() -> None:
@@ -71,18 +59,15 @@ def test_user_generate_auth_token() -> None:
         password_hash="not_important",
         salt="not_important",
     )
-    token = user.generate_auth_token()
+    token = user.generate_auth_token(expires_in=180, scopes=["user"])
     assert isinstance(token, str)
     assert len(token) > 0
-    try:
-        decoded_token = pyjwt.decode(
-            token,
-            settings.jwt_pem,
-            algorithms=[settings.header["alg"]],
-            options={"verify_aud": False},
-        )
-    except Exception as exc:
-        raise AssertionError("token decoding failed") from exc
+    decoded_token = pyjwt.decode(
+        token,
+        settings.jwt_pem,
+        algorithms=[settings.header["alg"]],
+        options={"verify_aud": False},
+    )
     assert "sub" in decoded_token
     assert decoded_token["sub"] == "123"
 
@@ -100,15 +85,12 @@ def test_user_generate_refresh_token() -> None:
     token = user.generate_refresh_token()
     assert isinstance(token, str)
     assert len(token) > 0
-    try:
-        decoded_token = pyjwt.decode(
-            token,
-            settings.jwt_pem,
-            algorithms=[settings.header["alg"]],
-            options={"verify_aud": False},
-        )
-    except Exception as exc:
-        raise AssertionError("token decoding failed") from exc
+    decoded_token = pyjwt.decode(
+        token,
+        settings.jwt_pem,
+        algorithms=[settings.header["alg"]],
+        options={"verify_aud": False},
+    )
     assert "sub" in decoded_token
     assert decoded_token["sub"] == "123"
 
@@ -127,7 +109,3 @@ def test_user_serialize() -> None:
     assert isinstance(serialized_user, dict)
     assert serialized_user["id"] == 1
     assert serialized_user["username"] == "testuser"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

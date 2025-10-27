@@ -1,8 +1,5 @@
 """Test for avatar creation endpoint via direct post call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -10,8 +7,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tests.helpers import assert_successful_response
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 
 @pytest.mark.asyncio
@@ -42,7 +37,3 @@ async def test_avatar_created_success_post(
         "Avatar creation done!",
         room="room_1",
     )
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

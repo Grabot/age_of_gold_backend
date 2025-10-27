@@ -1,18 +1,8 @@
 """Test file for tasks."""
 
-# ruff: noqa: E402
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-sys.path.append(str(Path(__file__).parent.parent))
-
-from src.celery_worker.tasks import (  # pylint: disable=C0413
-    task_generate_avatar,
-    task_initialize,
-)
+from src.celery_worker.tasks import task_generate_avatar, task_initialize
 
 
 def test_task_initialize() -> None:
@@ -55,7 +45,3 @@ def test_task_generate_avatar_no_user_id(mock_generate_avatar: MagicMock) -> Non
 
     mock_generate_avatar.assert_not_called()
     assert result == {"success": False}
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

@@ -1,8 +1,5 @@
 """Testing file for sockets."""
 
-# ruff: noqa: E402
-import sys
-from pathlib import Path
 from typing import Dict, Optional, Union
 from unittest.mock import AsyncMock, patch
 
@@ -10,17 +7,15 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest import CaptureFixture
 
-sys.path.append(str(Path(__file__).parent.parent))
-
-from src.models.user import User  # pylint: disable=C0413
-from src.sockets.sockets import (  # pylint: disable=C0413
+from src.models.user import User
+from src.sockets.sockets import (
     handle_connect,
     handle_disconnect,
     handle_join,
     handle_leave,
     handle_message_event,
 )
-from tests.conftest import ASYNC_TESTING_SESSION_LOCAL  # pylint: disable=C0413
+from tests.conftest import ASYNC_TESTING_SESSION_LOCAL
 
 
 @pytest.mark.asyncio
@@ -102,10 +97,26 @@ async def test_handle_join_with_db(test_setup: TestClient) -> None:
         mock_sio.emit = AsyncMock()
 
         data: Dict[str, Union[int, str]] = {"user_id": 1}
-        await handle_join("test_sid", data)
+        await handle_join("test_sid_1", data)
 
-        mock_sio.enter_room.assert_called_once_with("test_sid", "room_1")
+        mock_sio.enter_room.assert_called_once_with("test_sid_1", "room_1")
         mock_sio.emit.assert_called_once_with(
+            "message_event",
+            "User has entered room room_1",
+            room="room_1",
+        )
+
+        data_not_real: Dict[str, Union[int, str]] = {"user_id": 2}
+        await handle_join("test_sid_2", data_not_real)
+
+        mock_sio.enter_room.assert_any_call("test_sid_1", "room_1")
+        mock_sio.enter_room.assert_any_call("test_sid_2", "room_2")
+        mock_sio.emit.assert_any_call(
+            "message_event",
+            "User has entered room room_2",
+            room="room_2",
+        )
+        mock_sio.emit.assert_any_call(
             "message_event",
             "User has entered room room_1",
             room="room_1",
@@ -116,7 +127,3 @@ async def test_handle_join_with_db(test_setup: TestClient) -> None:
             assert retrieved_user is not None
             assert retrieved_user.id == user.id
             assert retrieved_user.username == user.username
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

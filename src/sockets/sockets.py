@@ -32,32 +32,31 @@ async def handle_message_event(sid: str, *args: Any, **kwargs: Any) -> None:
 async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
     data: Dict[str, Union[int, str]] = args[0]
     user_id: int = cast(int, data["user_id"])
-    if user_id != -1:
-        room: str = f"room_{user_id}"
-        await sio.enter_room(sid, room)
-        await sio.emit(
-            "message_event",
-            f"User has entered room {room}",
-            room=room,
-        )
+    room: str = f"room_{user_id}"
+    await sio.enter_room(sid, room)
+    await sio.emit(
+        "message_event",
+        f"User has entered room {room}",
+        room=room,
+    )
 
-        async with async_session() as session:
-            async with session.begin():
-                user: Optional[User] = await session.get(User, user_id)
-                if user:
-                    print(f"user: {user.serialize}")
-                pass
+    # Example of database calls with sockets
+    async with async_session() as session:
+        async with session.begin():
+            user: Optional[User] = await session.get(User, user_id)
+            if user:
+                print(f"user: {user.serialize}")
+            pass
 
 
 @sio.on("leave")
 async def handle_leave(sid: str, *args: Any, **kwargs: Any) -> None:
     data: Dict[str, Union[int, str]] = args[0]
     user_id: int = cast(int, data["user_id"])
-    if user_id != -1:
-        room: str = f"room_{user_id}"
-        await sio.leave_room(sid, room)
-        await sio.emit(
-            "message_event",
-            f"User has left room {room}",
-            room=sid,
-        )
+    room: str = f"room_{user_id}"
+    await sio.leave_room(sid, room)
+    await sio.emit(
+        "message_event",
+        f"User has left room {room}",
+        room=sid,
+    )

@@ -1,17 +1,11 @@
 """Test for token refresh endpoint via direct post call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from tests.conftest import add_token  # pylint: disable=C0413
-from tests.helpers import assert_successful_response_token_key  # pylint: disable=C0413
+from tests.conftest import add_token
+from tests.helpers import assert_successful_response_token_key
 
 
 @pytest.mark.asyncio
@@ -66,7 +60,3 @@ async def test_invalid_or_expired_tokens_post(
     response_json = response.json()
     assert response_json["result"] is False
     assert response_json["message"] == "Invalid or expired tokens"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

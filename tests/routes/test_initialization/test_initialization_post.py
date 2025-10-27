@@ -1,18 +1,12 @@
 """Test for initialization endpoint via direct get call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
-from typing import Any, Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-
-from main import app  # pylint: disable=C0413
-from tests.helpers import assert_successful_response  # pylint: disable=C0413
+from main import app
+from tests.helpers import assert_successful_response
 
 
 @pytest.mark.asyncio
@@ -31,7 +25,3 @@ async def test_successful_initialization_get(
             headers=headers,
         )
         assert_successful_response(response)
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

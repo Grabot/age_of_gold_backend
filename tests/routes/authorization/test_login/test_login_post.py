@@ -1,8 +1,5 @@
 """Test for login endpoint via direct post call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -10,9 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from tests.helpers import assert_successful_response_token  # pylint: disable=C0413
+from tests.helpers import assert_successful_response_token
 
 
 @pytest.mark.asyncio
@@ -145,7 +140,3 @@ async def test_unexpected_error_during_login_post(
     response_json = response.json()
     assert response_json["result"] is False
     assert response_json["message"] == "Login failed"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

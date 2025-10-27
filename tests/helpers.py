@@ -1,8 +1,8 @@
 """Helper class for the test."""
 
-# ruff: noqa: E402
 from typing import Any
 from unittest.mock import MagicMock
+
 import httpx
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 

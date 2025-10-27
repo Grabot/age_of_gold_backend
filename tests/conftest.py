@@ -1,6 +1,5 @@
 """Testing fixtures."""
 
-# ruff: noqa: E402
 import time
 from typing import AsyncGenerator, Optional, Tuple
 from unittest.mock import MagicMock, patch

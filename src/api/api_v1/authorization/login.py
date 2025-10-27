@@ -67,19 +67,16 @@ async def login_user(
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """Handle user login request."""
-    if not login_request.password or not (
-        login_request.email or login_request.username
-    ):
-        logger.warning("Login failed: Invalid request (missing credentials)")
+    user: Optional[User] = None
+    if login_request.email and login_request.password:
+        user = await get_user_by_email(db, login_request.email)
+    elif login_request.username and login_request.password:
+        user = await get_user_by_username(db, login_request.username)
+    else:
+        logger.warning("Login failed: Invalid request")
         return get_failed_response(
             "Invalid request", response, status.HTTP_400_BAD_REQUEST
         )
-
-    user: Optional[User] = None
-    if login_request.email:
-        user = await get_user_by_email(db, login_request.email)
-    elif login_request.username:
-        user = await get_user_by_username(db, login_request.username)
 
     if not user:
         logger.warning("Login failed: User not found or invalid credentials")

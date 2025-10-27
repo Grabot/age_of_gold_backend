@@ -2,16 +2,7 @@
 
 import inspect
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Coroutine,
-    Dict,
-    Optional,
-    TypeVar,
-    Union,
-    get_type_hints,
-)
+from typing import Any, Callable, Coroutine, Dict, TypeVar, Union, cast, get_type_hints
 
 from fastapi import Response, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -55,28 +46,34 @@ def handle_db_errors(
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
 
-            response: Optional[Response] = None
-            db: Optional[AsyncSession] = None
-
-            if response_param_name:
-                response = bound_args.arguments.get(response_param_name)
-                # TODO: probably remove?
-                if not isinstance(response, Response):
-                    response = None
-
-            if db_param_name:
-                db = bound_args.arguments.get(db_param_name)
-                # TODO: probably remove?
-                if not isinstance(db, AsyncSession):
-                    db = None
-
-            if response is None or db is None:
+            if (
+                response_param_name is None
+                or db_param_name is None
+                or response_param_name not in bound_args.arguments
+                or db_param_name not in bound_args.arguments
+                or bound_args.arguments[response_param_name] is None
+                or bound_args.arguments[db_param_name] is None
+            ):
                 logger.error("Failed to extract response or db from function arguments")
-                if response is None:
-                    response = Response()
+                response_fail: Response = Response()
+                if (
+                    response_param_name is not None
+                    and response_param_name in bound_args.arguments
+                    and bound_args.arguments[response_param_name] is not None
+                ):
+                    response_fail = cast(
+                        Response, bound_args.arguments.get(response_param_name)
+                    )
                 return get_failed_response(
-                    "Invalid function call", response, status.HTTP_409_CONFLICT
+                    "Invalid function call", response_fail, status.HTTP_409_CONFLICT
                 )
+
+            response: Response = cast(
+                Response, bound_args.arguments.get(response_param_name)
+            )
+            db: AsyncSession = cast(
+                AsyncSession, bound_args.arguments.get(db_param_name)
+            )
 
             try:
                 return await func(*args, **kwargs)

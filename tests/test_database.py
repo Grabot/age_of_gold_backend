@@ -1,15 +1,10 @@
 """Test file for database."""
 
-# ruff: noqa: E402
-import sys
-from pathlib import Path
 from typing import Any, Generator
 from unittest.mock import patch
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
-sys.path.append(str(Path(__file__).parent.parent))
 
 
 @pytest.fixture(autouse=True)
@@ -52,7 +47,3 @@ async def test_get_db() -> None:
     async for session in get_db():
         assert isinstance(session, AsyncSession)
         assert session.is_active
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

@@ -1,16 +1,11 @@
 """Test for avatar creation endpoint via direct function call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from src.api.api_v1.authorization import register  # pylint: disable=C0413
+from src.api.api_v1.authorization import register
 
 
 @pytest.mark.asyncio
@@ -39,7 +34,3 @@ async def test_avatar_created_success(
 
     assert response["result"] is True
     assert response["message"] == "Avatar creation done!"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

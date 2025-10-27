@@ -1,17 +1,12 @@
 """Test for initialization endpoint via direct function call."""
 
-# ruff: noqa: E402
 import stat
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
-
-from src.api.api_v1 import initialization  # pylint: disable=C0413
-from src.config.config import settings  # pylint: disable=C0413
+from src.api.api_v1 import initialization
+from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -19,12 +14,7 @@ async def test_successful_initialization_direct_avatar() -> None:
     """Test successful initialization of avatar folder."""
 
     def mock_exists(path: str) -> bool:
-        if path == settings.UPLOAD_FOLDER_AVATARS:
-            return False
-        if path == settings.UPLOAD_FOLDER_CRESTS:
-            return True
-
-        return False
+        return path != settings.UPLOAD_FOLDER_AVATARS
 
     with (
         patch("os.path.exists", side_effect=mock_exists) as mock_exists,
@@ -50,12 +40,7 @@ async def test_successful_initialization_direct_crest() -> None:
     """Test successful initialization of crest folder."""
 
     def mock_exists(path: str) -> bool:
-        if path == settings.UPLOAD_FOLDER_AVATARS:
-            return True
-        if path == settings.UPLOAD_FOLDER_CRESTS:
-            return False
-
-        return False
+        return path == settings.UPLOAD_FOLDER_AVATARS
 
     with (
         patch("os.path.exists", side_effect=mock_exists) as mock_exists,
@@ -74,7 +59,3 @@ async def test_successful_initialization_direct_crest() -> None:
             settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
         )
         mock_task_initialize.delay.assert_called_once()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

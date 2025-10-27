@@ -1,8 +1,5 @@
 """Test for login endpoint via direct function call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -13,12 +10,9 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from src.api.api_v1.authorization import login  # pylint: disable=C0413
-from src.models.user_token import UserToken  # pylint: disable=C0413
-from tests.helpers import (  # pylint: disable=C0413
+from src.api.api_v1.authorization import login
+from src.models.user_token import UserToken
+from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
     assert_sqalchemy_error_response,
@@ -209,7 +203,3 @@ async def test_get_user_by_username_none_direct(
     username = "nonexistentuser"
     user = await login.get_user_by_username(test_db, username)
     assert user is None
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

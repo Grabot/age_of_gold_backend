@@ -1,15 +1,10 @@
 """Test for register endpoint via direct post call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from tests.helpers import assert_successful_response_token  # pylint: disable=C0413
+from tests.helpers import assert_successful_response_token
 
 
 @pytest.mark.asyncio
@@ -159,7 +154,3 @@ async def test_register_email_already_used_post(
     response_json = response.json()
     assert response_json["result"] is False
     assert response_json["message"] == "Email already used"
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

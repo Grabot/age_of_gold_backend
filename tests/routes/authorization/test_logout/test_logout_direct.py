@@ -1,8 +1,5 @@
 """Test for logout endpoint via direct function call."""
 
-# ruff: noqa: E402, F401, F811
-import sys
-from pathlib import Path
 from typing import Any, Tuple
 from unittest.mock import MagicMock, patch
 
@@ -13,14 +10,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-
-sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
-
-from src.api.api_v1.authorization import logout  # pylint: disable=C0413
-from src.models.user import User  # pylint: disable=C0413
-from src.models.user_token import UserToken  # pylint: disable=C0413
-from tests.conftest import add_token  # pylint: disable=C0413
-from tests.helpers import (  # pylint: disable=C0413
+from src.api.api_v1.authorization import logout
+from src.models.user import User
+from src.models.user_token import UserToken
+from tests.conftest import add_token
+from tests.helpers import (
     assert_exception_error_response,
     assert_sqalchemy_error_response,
 )
@@ -90,7 +84,3 @@ async def test_unexpected_error_during_logout_direct(
     response = await logout.logout_user(Response(), auth, test_db)
 
     assert_exception_error_response(response, mock_logger_error, "Logout failed")
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

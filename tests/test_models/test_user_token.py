@@ -1,10 +1,7 @@
 """Test file for the user token model."""
 
-# ruff: noqa: E402, F401, F811
-import sys
 import time
-from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Optional
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,11 +10,8 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-current_dir = Path(__file__).parent
-sys.path.append(str(current_dir.parent.parent))
-
-from src.models import User, UserToken  # pylint: disable=C0413
-from src.util.util import get_user_tokens  # pylint: disable=C0413
+from src.models import User, UserToken
+from src.util.util import get_user_tokens
 
 
 @pytest.mark.asyncio
@@ -95,7 +89,3 @@ async def test_user_token_reference(
     await test_db.delete(user_token)
     await test_db.commit()
     assert await test_db.get(UserToken, user_token.id) is None
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])

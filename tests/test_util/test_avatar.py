@@ -1,25 +1,19 @@
 """Test file for avatars."""
 
-# ruff: noqa: E402
 import math
 import os
 import random
-import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 from PIL import Image
 
-current_dir = Path(__file__).parent
-sys.path.append(str(current_dir.parent.parent))
-
-from src.util.avatar import (  # pylint: disable=C0413
-    Point,
+from src.util.avatar import (
     Line,
     Plane,
+    Point,
     add_square_clean,
     angle_slopes,
     background_square_clean,
@@ -32,6 +26,8 @@ from src.util.avatar import (  # pylint: disable=C0413
     point_on_plane_border,
     slope_line,
 )
+
+current_dir = Path(__file__).parent
 
 
 def test_generate_avatar() -> None:
@@ -330,10 +326,7 @@ def abs_side_effect(x: float) -> float:
     if -100 <= x <= -80:
         return 0.0001
 
-    if x >= 0:
-        return x
-
-    return x * -1
+    return x
 
 
 def check_lengths_side_effect_true(_plane: Plane, _point: Point) -> bool:
@@ -408,7 +401,3 @@ def test_background_square_clean() -> None:
     plane = background_square_clean(width, height, 0)
     assert plane is not None
     assert len(plane.get_all_lines()) == 4
-
-
-if __name__ == "__main__":
-    pytest.main([__file__])
