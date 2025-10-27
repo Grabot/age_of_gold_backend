@@ -3,6 +3,7 @@
 # ruff: noqa: E402
 import time
 from typing import AsyncGenerator, Optional, Tuple
+from unittest.mock import MagicMock, patch
 
 import pytest_asyncio
 from fastapi.testclient import TestClient
@@ -32,11 +33,9 @@ ASYNC_TESTING_SESSION_LOCAL = async_sessionmaker(
 @pytest_asyncio.fixture(scope="module")
 async def test_setup() -> AsyncGenerator[TestClient, None]:
     """Create a SQLAlchemy engine and TestClient for tests."""
-    # Initialize the database
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    # Create a test user
     async with ASYNC_TESTING_SESSION_LOCAL() as session:
         password = "testpassword"
         salt = "salt"
@@ -54,19 +53,16 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
         session.add(user)
         await session.commit()
 
-    # Override the get_db dependency
     async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         async with ASYNC_TESTING_SESSION_LOCAL() as session:
             yield session
 
     app.dependency_overrides[get_db] = override_get_db
 
-    # Create and yield the TestClient
     client = TestClient(app)
     try:
         yield client
     finally:
-        # Cleanup
         async with engine.begin() as conn:
             await conn.run_sync(SQLModel.metadata.drop_all)
         await engine.dispose()
@@ -105,3 +101,24 @@ async def add_token(
     test_db_for_token.add(user_token)
     await test_db_for_token.commit()
     return user, user_token
+
+
+@pytest_asyncio.fixture
+async def mock_tokens() -> AsyncGenerator[tuple[str, str, MagicMock, MagicMock], None]:
+    """Fixture that sets up mock tokens for authentication tests."""
+    expected_access_token = "access_token_test"
+    expected_refresh_token = "refresh_token_test"
+
+    with (
+        patch("src.models.User.generate_auth_token") as mock_generate_auth_token,
+        patch("src.models.User.generate_refresh_token") as mock_generate_refresh_token,
+    ):
+        mock_generate_auth_token.return_value = expected_access_token
+        mock_generate_refresh_token.return_value = expected_refresh_token
+
+        yield (
+            expected_access_token,
+            expected_refresh_token,
+            mock_generate_auth_token,
+            mock_generate_refresh_token,
+        )

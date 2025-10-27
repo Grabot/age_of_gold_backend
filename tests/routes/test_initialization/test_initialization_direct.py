@@ -10,7 +10,7 @@ import pytest
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-from src.api.api_v1.initialization import initialize_folders  # pylint: disable=C0413
+from src.api.api_v1 import initialization  # pylint: disable=C0413
 from src.config.config import settings  # pylint: disable=C0413
 
 
@@ -35,7 +35,7 @@ async def test_successful_initialization_direct_avatar() -> None:
         mock_exists.return_value = False
         mock_task_initialize.delay.return_value = MagicMock()
 
-        response = await initialize_folders()
+        response = await initialization.initialize_folders()
 
         assert response["result"] is True
         mock_makedirs.assert_called_with(settings.UPLOAD_FOLDER_AVATARS)
@@ -66,7 +66,7 @@ async def test_successful_initialization_direct_crest() -> None:
         mock_exists.return_value = False
         mock_task_initialize.delay.return_value = MagicMock()
 
-        response = await initialize_folders()
+        response = await initialization.initialize_folders()
 
         assert response["result"] is True
         mock_makedirs.assert_called_with(settings.UPLOAD_FOLDER_CRESTS)

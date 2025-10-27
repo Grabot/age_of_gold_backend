@@ -6,7 +6,7 @@ from fastapi import Depends, Response, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.api_v1 import api_router_v1
+from src.api.api_v1.router import api_router_v1
 from src.database import get_db
 from src.models import User
 from src.util.decorators import handle_db_errors

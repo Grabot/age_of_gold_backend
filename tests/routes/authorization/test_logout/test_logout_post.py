@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from tests.conftest import add_token  # pylint: disable=C0413
+from tests.helpers import assert_successful_response  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -25,9 +26,7 @@ async def test_successful_logout_post(
     _, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
     response = test_setup.post("/api/v1.0/logout", headers=headers)
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
+    response_json = assert_successful_response(response)
     assert response_json["message"] == "User logged out successfully."
 
 

@@ -68,8 +68,8 @@ async def refresh_user_token(
 ) -> Optional[User]:
     token_statement: Select = (
         select(UserToken)
-        .filter_by(access_token=access_token)
-        .filter_by(refresh_token=refresh_token)
+        .where(UserToken.access_token == access_token)
+        .where(UserToken.refresh_token == refresh_token)
     )
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
@@ -78,7 +78,7 @@ async def refresh_user_token(
     user_token: UserToken = result_token.UserToken
     if user_token.refresh_token_expiration < int(time.time()):
         return await delete_user_token_and_return(db, user_token, None)
-    user_statement: Select = select(User).filter_by(id=user_token.user_id)
+    user_statement: Select = select(User).where(User.id == user_token.user_id)
     user_results = await db.execute(user_statement)
     user_result = user_results.first()
     if user_result is None:

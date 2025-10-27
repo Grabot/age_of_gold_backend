@@ -3,7 +3,7 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,11 +16,7 @@ from sqlmodel import select
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from src.api.api_v1.authorization.login import (  # pylint: disable=C0413
-    LoginRequest,
-    get_user_by_username,
-    login_user,
-)
+from src.api.api_v1.authorization import login  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
 from tests.helpers import (  # pylint: disable=C0413
     assert_exception_error_response,
@@ -30,22 +26,16 @@ from tests.helpers import (  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_successful_login_with_username_direct(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
     """Test successful login with username."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-    login_request = LoginRequest(username="testuser", password="testpassword")
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
     assert user_tokens.scalar() is not None
@@ -56,22 +46,18 @@ async def test_successful_login_with_username_direct(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_successful_login_with_email_direct(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
     """Test successful login with email."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-    login_request = LoginRequest(email="testuser@example.com", password="testpassword")
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    login_request = login.LoginRequest(
+        email="testuser@example.com", password="testpassword"
+    )
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert response["result"] is True
     assert response["access_token"] == expected_access_token
@@ -84,9 +70,9 @@ async def test_invalid_request_missing_password_direct(
     test_db: AsyncSession,
 ) -> None:
     """Test invalid request with missing password."""
-    login_request = LoginRequest(username="testuser", password="")
+    login_request = login.LoginRequest(username="testuser", password="")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert response["result"] is False
     assert response["message"] == "Invalid request"
@@ -98,9 +84,9 @@ async def test_invalid_request_missing_email_and_username_direct(
     test_db: AsyncSession,
 ) -> None:
     """Test invalid request with missing email and username."""
-    login_request = LoginRequest(password="testpassword")
+    login_request = login.LoginRequest(password="testpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert response["result"] is False
     assert response["message"] == "Invalid request"
@@ -112,11 +98,11 @@ async def test_invalid_email_or_username_direct(
     test_db: AsyncSession,
 ) -> None:
     """Test invalid email or username."""
-    login_request = LoginRequest(
+    login_request = login.LoginRequest(
         email="nonexistent@example.com", password="testpassword"
     )
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert response["result"] is False
     assert response["message"] == "Invalid email/username or password"
@@ -128,9 +114,9 @@ async def test_invalid_password_direct(
     test_db: AsyncSession,
 ) -> None:
     """Test invalid password."""
-    login_request = LoginRequest(username="testuser", password="wrongpassword")
+    login_request = login.LoginRequest(username="testuser", password="wrongpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert response["result"] is False
     assert response["message"] == "Invalid email/username or password"
@@ -152,9 +138,9 @@ async def test_database_error_during_login_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    login_request = LoginRequest(username="testuser", password="testpassword")
+    login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert_sqalchemy_error_response(
         response,
@@ -181,9 +167,9 @@ async def test_integrity_error_during_login_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    login_request = LoginRequest(username="testuser", password="testpassword")
+    login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert_integrity_error_response(
         response,
@@ -207,9 +193,9 @@ async def test_unexpected_error_during_login_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    login_request = LoginRequest(username="testuser", password="testpassword")
+    login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login_user(login_request, Response(), test_db)
+    response = await login.login_user(login_request, Response(), test_db)
 
     assert_exception_error_response(response, mock_logger_error, "Login failed")
 
@@ -221,7 +207,7 @@ async def test_get_user_by_username_none_direct(
 ) -> None:
     """Test get user by username with nonexistent username."""
     username = "nonexistentuser"
-    user = await get_user_by_username(test_db, username)
+    user = await login.get_user_by_username(test_db, username)
     assert user is None
 
 

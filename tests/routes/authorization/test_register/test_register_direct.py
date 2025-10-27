@@ -12,10 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from src.api.api_v1.authorization.register import (  # pylint: disable=C0413
-    RegisterRequest,
-    register_user,
-)
+from src.api.api_v1.authorization import register  # pylint: disable=C0413
 from tests.helpers import (  # pylint: disable=C0413
     assert_exception_error_response,
     assert_integrity_error_response,
@@ -24,29 +21,23 @@ from tests.helpers import (  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_successful_register_direct(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test successful user registration via direct function call."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-    login_request = RegisterRequest(
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    login_request = register.RegisterRequest(
         email="new_test1@test.test",
         username="new_test1",
         password="new_test1password",
     )
     response_object = Response()
 
-    response = await register_user(login_request, response_object, test_db)
+    response = await register.register_user(login_request, response_object, test_db)
 
     assert response["result"] is True
     assert response["access_token"] == expected_access_token
@@ -60,12 +51,12 @@ async def test_register_missing_fields(
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with missing fields."""
-    register_request_email = RegisterRequest(
+    register_request_email = register.RegisterRequest(
         email="", username="new_test2", password="new_test2password"
     )
     response_object_email = Response()
 
-    response_email = await register_user(
+    response_email = await register.register_user(
         register_request_email, response_object_email, test_db
     )
 
@@ -73,12 +64,12 @@ async def test_register_missing_fields(
     assert response_email["message"] == "Invalid request"
     assert response_object_email.status_code == status.HTTP_400_BAD_REQUEST
 
-    register_request_username = RegisterRequest(
+    register_request_username = register.RegisterRequest(
         email="new_test3@test.test", username="", password="new_test3password"
     )
     response_object_username = Response()
 
-    response_username = await register_user(
+    response_username = await register.register_user(
         register_request_username, response_object_username, test_db
     )
 
@@ -86,12 +77,12 @@ async def test_register_missing_fields(
     assert response_username["message"] == "Invalid request"
     assert response_object_username.status_code == status.HTTP_400_BAD_REQUEST
 
-    register_request_password = RegisterRequest(
+    register_request_password = register.RegisterRequest(
         email="new_test4@test.test", username="new_test4", password=""
     )
     response_object_password = Response()
 
-    response_password = await register_user(
+    response_password = await register.register_user(
         register_request_password, response_object_password, test_db
     )
 
@@ -101,85 +92,74 @@ async def test_register_missing_fields(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_username_already_taken(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with a username that is already taken."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-    register_request = RegisterRequest(
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    register_request = register.RegisterRequest(
         email="new_test5@test.test",
         username="new_test5",
         password="new_test5password",
     )
     response_object = Response()
 
-    response = await register_user(register_request, response_object, test_db)
+    response = await register.register_user(register_request, response_object, test_db)
 
     assert response["result"] is True
     assert response["access_token"] == expected_access_token
     assert response["refresh_token"] == expected_refresh_token
 
-    register_request = RegisterRequest(
+    register_request = register.RegisterRequest(
         email="new_test5_2@test.test",
         username="new_test5",
         password="new_test5password",
     )
     response_object = Response()
 
-    response = await register_user(register_request, response_object, test_db)
+    response = await register.register_user(register_request, response_object, test_db)
 
     assert response["result"] is False
     assert response["message"] == "Username already taken"
     assert response_object.status_code == status.HTTP_409_CONFLICT
+    mock_task_generate_avatar.assert_called_once()
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_email_already_used(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with an email that is already used."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-    register_request = RegisterRequest(
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    register_request = register.RegisterRequest(
         email="new_test6@test.test",
         username="new_test6",
         password="new_test6password",
     )
     response_object = Response()
 
-    response = await register_user(register_request, response_object, test_db)
+    response = await register.register_user(register_request, response_object, test_db)
 
     assert response["result"] is True
     assert response["access_token"] == expected_access_token
     assert response["refresh_token"] == expected_refresh_token
 
-    register_request = RegisterRequest(
+    register_request = register.RegisterRequest(
         email="new_test6@test.test",
         username="new_test6_2",
         password="new_test6password",
     )
     response_object = Response()
 
-    response = await register_user(register_request, response_object, test_db)
+    response = await register.register_user(register_request, response_object, test_db)
 
     assert response["result"] is False
     assert response["message"] == "Email already used"
@@ -187,22 +167,13 @@ async def test_register_email_already_used(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.util.gold_logging.logger.error")
 async def test_register_database_integrity_error(
     mock_logger_error: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with a database integrity error."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-
     with (
         patch.object(
             test_db,
@@ -211,13 +182,15 @@ async def test_register_database_integrity_error(
         ),
         patch.object(test_db, "rollback", return_value=None) as mock_rollback,
     ):
-        register_request = RegisterRequest(
+        register_request = register.RegisterRequest(
             email="new_test7@test.test",
             username="new_test7",
             password="new_test7password",
         )
         response_object = Response()
-        response = await register_user(register_request, response_object, test_db)
+        response = await register.register_user(
+            register_request, response_object, test_db
+        )
 
         assert response_object.status_code == status.HTTP_409_CONFLICT
         mock_rollback.assert_called_once()
@@ -229,33 +202,26 @@ async def test_register_database_integrity_error(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.util.gold_logging.logger.error")
 async def test_register_database_error(
     mock_logger_error: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with a database error."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-
     with (
         patch.object(test_db, "commit", side_effect=SQLAlchemyError("SQLAlchemyError")),
         patch.object(test_db, "rollback", return_value=None) as mock_rollback,
     ):
-        register_request = RegisterRequest(
+        register_request = register.RegisterRequest(
             email="new_test8@test.test",
             username="new_test8",
             password="new_test8password",
         )
         response_object = Response()
-        response = await register_user(register_request, response_object, test_db)
+        response = await register.register_user(
+            register_request, response_object, test_db
+        )
 
         assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         mock_rollback.assert_called_once()
@@ -268,33 +234,26 @@ async def test_register_database_error(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.util.gold_logging.logger.error")
 async def test_register_unexpected_error(
     mock_logger_error: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
     """Test user registration with an unexpected error."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
-
     with (
         patch.object(test_db, "commit", side_effect=Exception("Unexpected error")),
         patch.object(test_db, "rollback", return_value=None) as mock_rollback,
     ):
-        register_request = RegisterRequest(
+        register_request = register.RegisterRequest(
             email="new_test9@test.test",
             username="new_test9",
             password="new_test9password",
         )
         response_object = Response()
-        response = await register_user(register_request, response_object, test_db)
+        response = await register.register_user(
+            register_request, response_object, test_db
+        )
 
         assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         mock_rollback.assert_called_once()

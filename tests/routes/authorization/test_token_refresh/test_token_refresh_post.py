@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from tests.conftest import add_token  # pylint: disable=C0413
+from tests.helpers import assert_successful_response_token_key  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -26,11 +27,7 @@ async def test_successful_refresh_post(
         json={"refresh_token": user_token.refresh_token},
         headers=headers,
     )
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert "access_token" in response_json
-    assert "refresh_token" in response_json
+    assert_successful_response_token_key(response)
 
 
 @pytest.mark.asyncio

@@ -1,18 +1,4 @@
 repos:
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.11
-    hooks:
-    -   id: ruff
-        name: ruff (python)
-        args: [--fix, --exit-non-zero-on-fix]
-    -   id: ruff-format
-        name: ruff-format (python)
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.17.1
-  hooks:
-    -   id: mypy
-        additional_dependencies: [python-socketio-stubs, celery-stubs, sqlalchemy-stubs, tokenize-rt==3.2.0, types-requests, sqlalchemy2-stubs]
-        args: [--disallow-untyped-defs, --disallow-incomplete-defs, --disallow-untyped-calls, --ignore-missing-imports]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -25,3 +11,10 @@ repos:
     -   id: check-toml
     -   id: check-json
     -   id: check-xml
+-   repo: local
+    hooks:
+    - id: tox
+      name: Run tox linters
+      entry: uv run tox -e linters
+      language: system
+      pass_filenames: false

@@ -37,10 +37,10 @@ async def test_engine_creation() -> None:
     """Test the creation of the database engine."""
     from src.database import engine_async  # pylint: disable=C0415
 
-    assert engine_async.pool.size() == 5  # type: ignore
-    assert engine_async.pool._max_overflow == 10  # type: ignore
-    assert engine_async.pool._pre_ping is True  # type: ignore
-    assert engine_async.pool._recycle == 3600  # type: ignore
+    assert engine_async.pool.size() == 5  # type: ignore[attr-defined]
+    assert engine_async.pool._max_overflow == 10  # type: ignore[attr-defined]
+    assert engine_async.pool._pre_ping is True  # type: ignore[attr-defined]
+    assert engine_async.pool._recycle == 3600  # type: ignore[attr-defined]
     assert str(engine_async.url) == "sqlite+aiosqlite:///:memory:"
 
 

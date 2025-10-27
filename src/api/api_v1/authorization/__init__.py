@@ -1,5 +1,17 @@
-"""File for the authorization endpoints"""
+"""File for the authorization endpoints."""
 
-from . import login, logout, register, token_login, token_refresh
+from . import (
+    login,
+    token_refresh,
+    logout,
+    register,
+    token_login,
+)
 
-__all__ = ["login", "logout", "token_refresh", "register", "token_login"]
+__all__ = [
+    "login",
+    "token_refresh",
+    "logout",
+    "register",
+    "token_login",
+]

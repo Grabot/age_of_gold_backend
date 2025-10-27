@@ -1,10 +1,6 @@
-"""File for the api router"""
+"""Base file for the api router and endpoints."""
 
-# ruff: noqa: E402
-from fastapi import APIRouter
+from .router import api_router_v1
+from . import initialization, authorization
 
-api_router_v1 = APIRouter()
-
-from . import authorization, initialization  # pylint: disable=C0413
-
-__all__ = ["authorization", "initialization"]
+__all__ = ["initialization", "authorization", "api_router_v1"]

@@ -16,7 +16,7 @@ from sqlmodel import select
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from src.api.api_v1.authorization.logout import logout_user  # pylint: disable=C0413
+from src.api.api_v1.authorization import logout  # pylint: disable=C0413
 from src.models.user import User  # pylint: disable=C0413
 from src.models.user_token import UserToken  # pylint: disable=C0413
 from tests.conftest import add_token  # pylint: disable=C0413
@@ -33,7 +33,7 @@ async def test_successful_logout_direct(
     """Test successful logout via direct function call."""
     user, test_user_token = await add_token(1000, 1000, test_db)
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout_user(Response(), auth, test_db)
+    response = await logout.logout_user(Response(), auth, test_db)
 
     user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
     assert user_tokens.scalar() is None
@@ -60,7 +60,7 @@ async def test_database_error_during_login_direct(
     mock_delete.side_effect = mock_delete_side_effect
 
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout_user(Response(), auth, test_db)
+    response = await logout.logout_user(Response(), auth, test_db)
 
     assert_sqalchemy_error_response(
         response,
@@ -87,7 +87,7 @@ async def test_unexpected_error_during_logout_direct(
     mock_delete.side_effect = mock_delete_side_effect
 
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout_user(Response(), auth, test_db)
+    response = await logout.logout_user(Response(), auth, test_db)
 
     assert_exception_error_response(response, mock_logger_error, "Logout failed")
 

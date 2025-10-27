@@ -14,10 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from src.api.api_v1.authorization.token_refresh import (  # pylint: disable=C0413
-    RefreshRequest,
-    refresh_user,
-)
+from src.api.api_v1.authorization import token_refresh  # pylint: disable=C0413
+
 from tests.conftest import add_token  # pylint: disable=C0413
 from tests.helpers import (  # pylint: disable=C0413
     assert_exception_error_response,
@@ -32,9 +30,11 @@ async def test_successful_refresh_direct(
 ) -> None:
     """Test successful token refresh."""
     user, user_token = await add_token(-1000, 1000, test_db)
-    refresh_request = RefreshRequest(refresh_token=user_token.refresh_token)
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token=user_token.refresh_token
+    )
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), user_token.access_token, test_db
     )
 
@@ -49,9 +49,11 @@ async def test_invalid_request_no_tokens_direct(
     test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test invalid request with no tokens."""
-    refresh_request = RefreshRequest(refresh_token="")
+    refresh_request = token_refresh.RefreshRequest(refresh_token="")
 
-    response = await refresh_user(refresh_request, Response(), "", test_db)
+    response = await token_refresh.refresh_user(
+        refresh_request, Response(), "", test_db
+    )
 
     assert response["result"] is False
     assert response["message"] == "Invalid request"
@@ -63,9 +65,11 @@ async def test_invalid_request_invalid_tokens_direct(
 ) -> None:
     """Test invalid request with invalid tokens."""
     await add_token(-1000, 1000, test_db)
-    refresh_request = RefreshRequest(refresh_token="invalid_refresh_token2")
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token="invalid_refresh_token2"
+    )
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), "invalid_access_token2", test_db
     )
 
@@ -79,9 +83,11 @@ async def test_invalid_or_expired_tokens_direct(
 ) -> None:
     """Test invalid or expired tokens."""
     _, user_token = await add_token(-1000, -1000, test_db)
-    refresh_request = RefreshRequest(refresh_token=user_token.refresh_token)
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token=user_token.refresh_token
+    )
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), user_token.access_token, test_db
     )
 
@@ -100,14 +106,16 @@ async def test_database_error_during_refresh_direct(
 ) -> None:
     """Test database error during token refresh."""
     _, user_token = await add_token(-1000, -1000, test_db)
-    refresh_request = RefreshRequest(refresh_token=user_token.refresh_token)
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token=user_token.refresh_token
+    )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
         raise SQLAlchemyError("Database error")
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), user_token.access_token, test_db
     )
 
@@ -129,7 +137,9 @@ async def test_integrity_error_during_login_direct(
 ) -> None:
     """Test integrity error during login."""
     _, user_token = await add_token(-1000, -1000, test_db)
-    refresh_request = RefreshRequest(refresh_token=user_token.refresh_token)
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token=user_token.refresh_token
+    )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
         raise IntegrityError(
@@ -138,7 +148,7 @@ async def test_integrity_error_during_login_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), user_token.access_token, test_db
     )
 
@@ -161,14 +171,16 @@ async def test_unexpected_error_during_refresh_direct(
 ) -> None:
     """Test unexpected error during token refresh."""
     _, user_token = await add_token(-1000, -1000, test_db)
-    refresh_request = RefreshRequest(refresh_token=user_token.refresh_token)
+    refresh_request = token_refresh.RefreshRequest(
+        refresh_token=user_token.refresh_token
+    )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
         raise Exception("Unexpected error")
 
     mock_commit.side_effect = mock_commit_side_effect
 
-    response = await refresh_user(
+    response = await token_refresh.refresh_user(
         refresh_request, Response(), user_token.access_token, test_db
     )
 

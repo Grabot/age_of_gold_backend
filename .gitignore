@@ -135,5 +135,3 @@ _ignore/*
 
 kubernetes/kubernetes_production
 kubernetes/kubernetes_production/*
-
-updater.py

@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from main import app  # pylint: disable=C0413
+from tests.helpers import assert_successful_response  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -29,9 +30,7 @@ async def test_successful_initialization_get(
             "/api/v1.0/initialize",
             headers=headers,
         )
-        assert response.status_code == 200
-        response_json = response.json()
-        assert response_json["result"] is True
+        assert_successful_response(response)
 
 
 if __name__ == "__main__":

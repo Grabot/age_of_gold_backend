@@ -3,6 +3,7 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 from tests.conftest import add_token  # pylint: disable=C0413
+from tests.helpers import assert_successful_response_token_key  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -22,11 +24,7 @@ async def test_successful_token_login_post(
     _, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
     response = test_setup.post("/api/v1.0/login/token", headers=headers)
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert "access_token" in response_json
-    assert "refresh_token" in response_json
+    assert_successful_response_token_key(response)
 
 
 @pytest.mark.asyncio

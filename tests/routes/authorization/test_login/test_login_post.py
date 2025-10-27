@@ -3,6 +3,7 @@
 # ruff: noqa: E402, F401, F811
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,57 +12,41 @@ from sqlalchemy.exc import SQLAlchemyError
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from main import app  # pylint: disable=C0413
+from tests.helpers import assert_successful_response_token  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_successful_login_with_username_post(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: TestClient,
 ) -> None:
     """Test successful login with username using POST request."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
         "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
     )
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert response_json["access_token"] == expected_access_token
-    assert response_json["refresh_token"] == expected_refresh_token
+    assert_successful_response_token(
+        response, expected_access_token, expected_refresh_token
+    )
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_successful_login_with_email_post(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: TestClient,
 ) -> None:
     """Test successful login with email using POST request."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
         "/api/v1.0/login",
         json={"email": "testuser@example.com", "password": "testpassword"},
     )
 
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert response_json["access_token"] == expected_access_token
-    assert response_json["refresh_token"] == expected_refresh_token
+    assert_successful_response_token(
+        response, expected_access_token, expected_refresh_token
+    )
 
 
 @pytest.mark.asyncio
@@ -91,11 +76,7 @@ async def test_invalid_request_missing_email_and_username_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_invalid_email_or_username_post(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: TestClient,
 ) -> None:
     """Test invalid email or username using POST request."""
@@ -110,11 +91,7 @@ async def test_invalid_email_or_username_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_invalid_password_post(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: TestClient,
 ) -> None:
     """Test invalid password using POST request."""
@@ -129,17 +106,17 @@ async def test_invalid_password_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
-@patch("src.database.get_db")
+@patch("sqlalchemy.ext.asyncio.AsyncSession.commit")
 async def test_database_error_during_login_post(
-    mock_get_db: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_commit: MagicMock,
     test_setup: TestClient,
 ) -> None:
     """Test database error during login using POST request."""
-    mock_get_db.side_effect = SQLAlchemyError("Database error")
+
+    async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
+        raise SQLAlchemyError("Database error")
+
+    mock_commit.side_effect = mock_commit_side_effect
     response = test_setup.post(
         "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
     )
@@ -150,17 +127,17 @@ async def test_database_error_during_login_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
-@patch("src.database.get_db")
+@patch("sqlalchemy.ext.asyncio.AsyncSession.commit")
 async def test_unexpected_error_during_login_post(
-    mock_get_db: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_commit: MagicMock,
     test_setup: TestClient,
 ) -> None:
     """Test unexpected error during login using POST request."""
-    mock_get_db.side_effect = Exception("Unexpected error")
+
+    async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
+        raise Exception("Unexpected error")
+
+    mock_commit.side_effect = mock_commit_side_effect
     response = test_setup.post(
         "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
     )

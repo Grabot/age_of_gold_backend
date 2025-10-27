@@ -10,10 +10,7 @@ import pytest
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
-from src.api.api_v1.authorization.register import (  # pylint: disable=C0413
-    AvatarCreatedRequest,
-    avatar_created,
-)
+from src.api.api_v1.authorization import register  # pylint: disable=C0413
 
 
 @pytest.mark.asyncio
@@ -30,8 +27,8 @@ async def test_avatar_created_success(
 
     mock_sio.emit = MagicMock(side_effect=mock_emit)
 
-    avatar_created_request = AvatarCreatedRequest(user_id=1)
-    response = await avatar_created(avatar_created_request)
+    avatar_created_request = register.AvatarCreatedRequest(user_id=1)
+    response = await register.avatar_created(avatar_created_request)
 
     mock_sleep.assert_called_once_with(1)
     mock_sio.emit.assert_called_once_with(

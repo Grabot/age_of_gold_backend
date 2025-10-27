@@ -63,19 +63,13 @@ def test_get_user_tokens_with_none_user_id() -> None:
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_get_user_tokens(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
     """Test the get_user_tokens function."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
     user: Optional[User] = await test_db.get(User, 1)
     assert user is not None
     user_token = get_user_tokens(user)
@@ -107,19 +101,11 @@ async def test_check_token(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_delete_user_token_and_return(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
     """Test the delete_user_token_and_return function."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
     user: Optional[User] = await test_db.get(User, 1)
     assert user is not None
     user_token = get_user_tokens(user)
@@ -174,19 +160,11 @@ async def test_check_token_with_expired_token(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 async def test_refresh_user_token_with_none_user_result(
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
     """Test the refresh_user_token function with a None user result."""
-    expected_access_token = "access_token_test"
-    expected_refresh_token = "refresh_token_test"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
     user: Optional[User] = await test_db.get(User, 1)
     assert user is not None
 

@@ -9,22 +9,18 @@ import pytest
 
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
+from tests.helpers import assert_successful_response_token  # pylint: disable=C0413
+
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_successful_register_post(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
 ) -> None:
     """Test successful registration via POST request."""
-    expected_access_token = "access_token_test_register_1"
-    expected_refresh_token = "refresh_token_test_register_1"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
         "/api/v1.0/register",
@@ -34,11 +30,10 @@ async def test_successful_register_post(
             "password": "new_testpassword",
         },
     )
-    assert response.status_code == 201
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert response_json["access_token"] == expected_access_token
-    assert response_json["refresh_token"] == expected_refresh_token
+    # DOING
+    assert_successful_response_token(
+        response, expected_access_token, expected_refresh_token, 201
+    )
     mock_task_generate_avatar.assert_called_once()
 
 
@@ -91,20 +86,14 @@ async def test_register_missing_fields_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_username_already_taken_post(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
 ) -> None:
     """Test registration with an already taken username via POST request."""
-    expected_access_token = "access_token_test_register_3"
-    expected_refresh_token = "refresh_token_test_register_3"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
         "/api/v1.0/register",
@@ -115,11 +104,9 @@ async def test_register_username_already_taken_post(
         },
     )
 
-    assert response.status_code == 201
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert response_json["access_token"] == expected_access_token
-    assert response_json["refresh_token"] == expected_refresh_token
+    assert_successful_response_token(
+        response, expected_access_token, expected_refresh_token, 201
+    )
 
     response = test_setup.post(
         "/api/v1.0/register",
@@ -137,20 +124,14 @@ async def test_register_username_already_taken_post(
 
 
 @pytest.mark.asyncio
-@patch("src.models.User.generate_auth_token")
-@patch("src.models.User.generate_refresh_token")
 @patch("src.celery_worker.tasks.task_generate_avatar.delay")
 async def test_register_email_already_used_post(
     mock_task_generate_avatar: MagicMock,
-    mock_generate_refresh_token: MagicMock,
-    mock_generate_auth_token: MagicMock,
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
     test_setup: MagicMock,
 ) -> None:
     """Test registration with an already used email via POST request."""
-    expected_access_token = "access_token_test_register_4"
-    expected_refresh_token = "refresh_token_test_register_4"
-    mock_generate_auth_token.return_value = expected_access_token
-    mock_generate_refresh_token.return_value = expected_refresh_token
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
         "/api/v1.0/register",
@@ -161,11 +142,9 @@ async def test_register_email_already_used_post(
         },
     )
 
-    assert response.status_code == 201
-    response_json = response.json()
-    assert response_json["result"] is True
-    assert response_json["access_token"] == expected_access_token
-    assert response_json["refresh_token"] == expected_refresh_token
+    assert_successful_response_token(
+        response, expected_access_token, expected_refresh_token, 201
+    )
 
     response = test_setup.post(
         "/api/v1.0/register",

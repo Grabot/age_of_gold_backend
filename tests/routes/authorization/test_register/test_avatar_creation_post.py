@@ -9,6 +9,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.helpers import assert_successful_response
+
 sys.path.append(str(Path(__file__).parent.parent.parent.parent.parent))
 
 
@@ -31,9 +33,7 @@ async def test_avatar_created_success_post(
         json={"user_id": 1},
     )
 
-    assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["result"] is True
+    response_json = assert_successful_response(response)
     assert response_json["message"] == "Avatar creation done!"
 
     mock_sleep.assert_any_call(1)
