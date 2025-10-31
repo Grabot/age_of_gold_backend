@@ -22,6 +22,7 @@ async def get_valid_auth_token(
 ) -> str:
     """Validates the authorization token from the request"""
     auth_token = credentials.credentials
+    print(f"got valid auth token {auth_token}")
     if not auth_token.strip():
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -33,6 +34,7 @@ async def get_valid_auth_token(
 def decode_token(token: str, token_type: str) -> bool:
     """Decodes and verifies the JWT token"""
     try:
+        print(f"decoding token with type {token_type}")
         payload: dict[str, Any] = pyjwt.decode(
             token,
             settings.jwt_pem,
@@ -43,7 +45,8 @@ def decode_token(token: str, token_type: str) -> bool:
         if payload.get("typ") != token_type:
             return False
         return True
-    except pyjwt.PyJWTError:
+    except pyjwt.PyJWTError as e:
+        print(f"decoding failed {e}")
         return False
 
 
@@ -53,17 +56,27 @@ async def check_token(
     """Checks the validity of the token and retrieves the associated user and token"""
     if not decode_token(token, token_type):
         return None, None
-    token_statement: Select = (
-        select(UserToken)
-        .options(joinedload(UserToken.user))
-        .filter_by(access_token=token)
-    )
+    if token_type == "access":
+        token_statement: Select = (
+            select(UserToken)
+            .options(joinedload(UserToken.user))
+            .filter_by(access_token=token)
+        )
+    else:
+        token_statement: Select = (
+            select(UserToken)
+            .options(joinedload(UserToken.user))
+            .filter_by(refresh_token=token)
+        )
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
+    print("queried tokens")
     if result_token is None:
         return None, None
     user_token: UserToken = result_token.UserToken
+    print("token validity check")
     if user_token.token_expiration < int(time.time()):
+        print("not valid")
         return None, None
 
     user: User = user_token.user
