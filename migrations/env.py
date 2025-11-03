@@ -103,7 +103,6 @@ async def run_migrations_online() -> None:
         config.config_ini_section
     )
     if not config_section:
-        print("config section is empty")
         return
     config_section["sqlalchemy.url"] = settings.ASYNC_DB_URL
 

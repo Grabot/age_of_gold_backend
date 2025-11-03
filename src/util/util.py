@@ -37,7 +37,7 @@ def get_successful_user_response(
 
 
 def get_user_tokens(
-    user: User, access_expiration: int = 180, refresh_expiration: int = 345600
+    user: User, access_expiration: int = 1800, refresh_expiration: int = 345600
 ) -> UserToken:
     token_expiration: int = int(time.time()) + access_expiration
     refresh_token_expiration: int = int(time.time()) + refresh_expiration

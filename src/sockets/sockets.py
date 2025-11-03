@@ -45,7 +45,7 @@ async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
         async with session.begin():
             user: Optional[User] = await session.get(User, user_id)
             if user:
-                print(f"user: {user.serialize}")
+                pass
             pass
 
 

@@ -50,8 +50,12 @@ async def test_check_token(
     assert user is not None
     user_test1, _ = await check_token(test_db, user_token.access_token, "access")
     assert user_test1 == user
-    user_test2, _ = await check_token(test_db, "invalid_token", "access")
-    assert user_test2 is None
+    user_test2, _ = await check_token(test_db, user_token.refresh_token, "refresh")
+    assert user_test2 == user
+    user_test3, _ = await check_token(test_db, "invalid_token", "access")
+    assert user_test3 is None
+    user_test4, _ = await check_token(test_db, "invalid_token", "refresh")
+    assert user_test4 is None
     await test_db.delete(user_token)
     await test_db.commit()
     assert await test_db.get(UserToken, user_token.id) is None
