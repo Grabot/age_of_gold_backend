@@ -3,7 +3,7 @@
 import secrets
 import time
 import uuid
-from hashlib import sha512
+from hashlib import sha512, md5
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import jwt as pyjwt
@@ -30,11 +30,6 @@ def create_salt() -> str:
     return secrets.token_hex(8)
 
 
-def avatar_filename() -> str:
-    """Generate a random filename for the avatar."""
-    return uuid.uuid4().hex
-
-
 class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     """
     User model representing a user in the system.
@@ -47,8 +42,15 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     password_hash: str
     salt: str
     origin: int
+    default_avatar: bool = Field(default=True)
 
     tokens: List["UserToken"] = Relationship(back_populates="user")
+
+    def avatar_filename(self):
+        return md5(self.email_hash.encode("utf-8")).hexdigest()
+
+    def avatar_filename_default(self):
+        return self.avatar_filename() + "_default"
 
     def verify_password(self, hashed_password: str, provided_password: str) -> bool:
         """Verify the provided password against the stored hash."""

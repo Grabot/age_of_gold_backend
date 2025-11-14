@@ -14,7 +14,7 @@ from src.celery_worker.tasks import task_generate_avatar
 from src.config.config import settings
 from src.database import get_db
 from src.models import User
-from src.models.user import avatar_filename, create_salt, hash_email
+from src.models.user import create_salt, hash_email
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.util import (
@@ -83,7 +83,7 @@ async def register_user(
     db.add(user_token)
     await db.commit()
 
-    task_generate_avatar.delay(avatar_filename(), user.id)
+    _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
     return get_successful_user_response(user, user_token)
 
 

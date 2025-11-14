@@ -36,10 +36,13 @@ class Settings(BaseSettings):
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+    GOOGLE_REDIRECT_URI: str
     GOOGLE_DISCOVERY_URL: str = (
         "https://accounts.google.com/.well-known/openid-configuration"
     )
+    GOOGLE_ACCOUNTS_URL: str = "https://accounts.google.com/o/oauth2/auth"
     GOOGLE_ACCESS_TOKEN_URL: str = "https://www.googleapis.com/oauth2/v3/userinfo"
+    GOOGLE_AUTHORIZE: str = "https://oauth2.googleapis.com/token"
 
     GITHUB_AUTHORIZE: str = "https://github.com/login/oauth/authorize"
     GITHUB_ACCESS: str = "https://github.com/login/oauth/access_token"
@@ -52,9 +55,10 @@ class Settings(BaseSettings):
     REDDIT_USER: str = "https://oauth.reddit.com/api/v1/me"
     REDDIT_CLIENT_ID: str
     REDDIT_CLIENT_SECRET: str
-    REDDIT_REDIRECT: str = "https://ageof.gold/login/reddit/callback"
+    REDDIT_REDIRECT: str
 
-    APPLE_AUTHORIZE: str = "https://appleid.apple.com/auth/token"
+    APPLE_AUTHORIZE_TOKEN: str = "https://appleid.apple.com/auth/token"
+    APPLE_AUTHORIZE: str = "https://appleid.apple.com/auth/authorize"
     APPLE_CLIENT_ID: str
     APPLE_AUD_URL: str = "https://appleid.apple.com"
     APPLE_KEY_ID: str
@@ -63,7 +67,7 @@ class Settings(BaseSettings):
     APPLE_GRANT_TYPE: str = "authorization_code"
     APPLE_REDIRECT_URL: str
 
-    PACKAGE_NAME: str = "ageof.gold.age_of_gold"
+    OAUTH_LIFETIME: int = 600
 
     jwt_pem: str
     jwt_alg: str
@@ -98,7 +102,9 @@ class Settings(BaseSettings):
     POOL_RECYCLE: int = 3600
     POOL_PRE_PING: bool = True
 
-    DEBUG: bool = True
+    DEBUG: bool = False
+
+    FRONTEND_URL: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

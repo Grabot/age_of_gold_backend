@@ -5,12 +5,15 @@ import socketio
 from src.config.config import settings
 from src.database import async_session
 from src.models.user import User
+from redis import asyncio as aioredis
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(
     async_mode="asgi", client_manager=mgr, cors_allowed_origins="*"
 )
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
+
+redis = aioredis.from_url(settings.REDIS_URI)
 
 
 @sio.on("connect")

@@ -21,6 +21,7 @@ async def get_valid_auth_token(
     credentials: HTTPAuthorizationCredentials = Security(security),
 ) -> str:
     """Validates the authorization token from the request"""
+    print("get valid auth tokens")
     auth_token = credentials.credentials
     if not auth_token.strip():
         raise HTTPException(
@@ -51,8 +52,10 @@ async def check_token(
     db: AsyncSession, token: str, token_type: str
 ) -> Tuple[Optional[User], Optional[UserToken]]:
     """Checks the validity of the token and retrieves the associated user and token"""
+    print("in the function")
     if not decode_token(token, token_type):
         return None, None
+    print("tokens decoded")
     token_statement: Select
     if token_type == "access":
         token_statement = (
@@ -66,14 +69,17 @@ async def check_token(
             .options(joinedload(UserToken.user))
             .filter_by(refresh_token=token)
         )
+    print("token statement")
     results_token = await db.execute(token_statement)
     result_token = results_token.first()
     if result_token is None:
         return None, None
+    print("found token")
     user_token: UserToken = result_token.UserToken
     if user_token.token_expiration < int(time.time()):
         return None, None
 
+    print("return user")
     user: User = user_token.user
     return user, user_token
 
@@ -83,11 +89,14 @@ async def checked_auth_token(
     db: AsyncSession = Depends(get_db),
 ) -> Tuple[User, UserToken]:
     """Checks the authorization token and retrieves the associated user and token"""
+    print("check auth tokens")
     user, token = await check_token(db, auth_token, "access")
+    print(f"tokens checked {user} {token}")
 
     if not user or not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization token is invalid or expired",
         )
+    print("returning user")
     return user, token

@@ -5,7 +5,6 @@ from logging.config import fileConfig
 from typing import Any, Optional
 
 from alembic import context
-from celery.backends.database.session import ResultModelBase  # type: ignore
 from sqlalchemy import engine, engine_from_config, pool
 from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlmodel import SQLModel
@@ -21,7 +20,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = [SQLModel.metadata, ResultModelBase.metadata]
+target_metadata = [SQLModel.metadata]
 
 for meta in target_metadata:
     meta.naming_convention = {

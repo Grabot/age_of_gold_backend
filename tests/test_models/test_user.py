@@ -4,7 +4,7 @@ import jwt as pyjwt
 
 from src.config.config import settings
 from src.models import User
-from src.models.user import avatar_filename, create_salt, hash_email
+from src.models.user import create_salt, hash_email
 from src.util.util import hash_password
 
 
@@ -22,13 +22,6 @@ def test_create_salt() -> None:
     salt = create_salt()
     assert isinstance(salt, str)
     assert len(salt) == 16
-
-
-def test_avatar_filename() -> None:
-    """Test that the avatar_filename function returns a string of length 32"""
-    filename = avatar_filename()
-    assert isinstance(filename, str)
-    assert len(filename) == 32
 
 
 def test_user_verify_password() -> None:

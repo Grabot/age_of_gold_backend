@@ -1,0 +1,5 @@
+"""File for the oauth endpoints."""
+
+from . import google_oauth, github_oauth, reddit_oauth, apple_oauth
+
+__all__ = ["google_oauth", "github_oauth", "reddit_oauth", "apple_oauth"]
