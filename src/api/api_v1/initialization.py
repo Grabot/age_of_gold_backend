@@ -28,4 +28,4 @@ async def initialize_folders() -> dict[str, bool]:
 
     _ = task_initialize.delay()
 
-    return {"result": True}
+    return {"success": True}

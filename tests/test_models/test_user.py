@@ -1,7 +1,8 @@
 """Test file for user model."""
 
+from pathlib import Path
 import jwt as pyjwt
-
+from pytest_mock import MockerFixture
 from src.config.config import settings
 from src.models import User
 from src.models.user import create_salt, hash_email
@@ -102,3 +103,45 @@ def test_user_serialize() -> None:
     assert isinstance(serialized_user, dict)
     assert serialized_user["id"] == 1
     assert serialized_user["username"] == "testuser"
+
+
+def test_user_create_avatar(
+    mocker: MockerFixture,
+) -> None:
+    """Test that create_avatar writes the avatar file correctly."""
+    test_user = User(
+        username="testuser",
+        email_hash="test@example.com",
+        password_hash="hashedpassword",
+        salt="salt",
+        origin=0,
+    )
+
+    test_image_path = Path(__file__).parent.parent / "data" / "test_default_copy.png"
+    assert test_image_path.is_file(), "Test image must exist"
+
+    test_image_bytes = test_image_path.read_bytes()
+
+    temp_upload_folder = Path(__file__).parent / "temp_avatars"
+    temp_upload_folder.mkdir(exist_ok=True)
+
+    mocker.patch.object(settings, "UPLOAD_FOLDER_AVATARS", str(temp_upload_folder))
+
+    test_user.create_avatar(test_image_bytes)
+
+    expected_filename = test_user.avatar_filename() + ".png"
+    expected_path = temp_upload_folder / expected_filename
+
+    assert expected_path.is_file(), "Avatar file was not created"
+
+    created_content = expected_path.read_bytes()
+    assert created_content == test_image_bytes, "Avatar file content does not match"
+
+    test_user.remove_avatar()
+    assert not expected_path.is_file(), "Avatar file was not removed"
+
+    # Test remove with no file
+    test_user.remove_avatar()
+    assert not expected_path.is_file(), "Avatar file was not removed"
+
+    temp_upload_folder.rmdir()

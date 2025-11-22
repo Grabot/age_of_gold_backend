@@ -4,7 +4,7 @@ from typing import Any, Tuple
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import Response
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,13 +27,12 @@ async def test_successful_logout_direct(
     """Test successful logout via direct function call."""
     user, test_user_token = await add_token(1000, 1000, test_db)
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout.logout_user(Response(), auth, test_db)
+    response = await logout.logout_user(auth, test_db)
 
     user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
     assert user_tokens.scalar() is None
 
-    assert response["result"] is True
-    assert response["message"] == "User logged out successfully."
+    assert response["success"] is True
 
 
 @pytest.mark.asyncio
@@ -54,10 +53,11 @@ async def test_database_error_during_login_direct(
     mock_delete.side_effect = mock_delete_side_effect
 
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout.logout_user(Response(), auth, test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await logout.logout_user(auth, test_db)
 
     assert_sqalchemy_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
         "Logout failed",
     )
@@ -81,6 +81,7 @@ async def test_unexpected_error_during_logout_direct(
     mock_delete.side_effect = mock_delete_side_effect
 
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    response = await logout.logout_user(Response(), auth, test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await logout.logout_user(auth, test_db)
 
-    assert_exception_error_response(response, mock_logger_error, "Logout failed")
+    assert_exception_error_response(exc_info.value, mock_logger_error, "Logout failed")

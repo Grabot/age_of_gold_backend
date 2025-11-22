@@ -7,7 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
-from tests.helpers import assert_successful_response_token
+from tests.helpers import assert_successful_login
+from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -19,11 +20,10 @@ async def test_successful_login_with_username_post(
     expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
-        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+        f"{settings.API_V1_STR}/login",
+        json={"username": "testuser", "password": "testpassword"},
     )
-    assert_successful_response_token(
-        response, expected_access_token, expected_refresh_token
-    )
+    assert_successful_login(response, expected_access_token, expected_refresh_token)
 
 
 @pytest.mark.asyncio
@@ -35,13 +35,11 @@ async def test_successful_login_with_email_post(
     expected_access_token, expected_refresh_token, _, _ = mock_tokens
 
     response = test_setup.post(
-        "/api/v1.0/login",
+        f"{settings.API_V1_STR}/login",
         json={"email": "testuser@example.com", "password": "testpassword"},
     )
 
-    assert_successful_response_token(
-        response, expected_access_token, expected_refresh_token
-    )
+    assert_successful_login(response, expected_access_token, expected_refresh_token)
 
 
 @pytest.mark.asyncio
@@ -50,12 +48,11 @@ async def test_invalid_request_missing_password_post(
 ) -> None:
     """Test invalid request with missing password using POST request."""
     response = test_setup.post(
-        "/api/v1.0/login", json={"username": "testuser", "password": ""}
+        f"{settings.API_V1_STR}/login", json={"username": "testuser", "password": ""}
     )
     assert response.status_code == 400
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Invalid request"
+    assert response_json["detail"] == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -63,11 +60,12 @@ async def test_invalid_request_missing_email_and_username_post(
     test_setup: TestClient,
 ) -> None:
     """Test invalid request with missing email and username using POST request."""
-    response = test_setup.post("/api/v1.0/login", json={"password": "testpassword"})
+    response = test_setup.post(
+        f"{settings.API_V1_STR}/login", json={"password": "testpassword"}
+    )
     assert response.status_code == 400
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Invalid request"
+    assert response_json["detail"] == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -76,13 +74,12 @@ async def test_invalid_email_or_username_post(
 ) -> None:
     """Test invalid email or username using POST request."""
     response = test_setup.post(
-        "/api/v1.0/login",
+        f"{settings.API_V1_STR}/login",
         json={"email": "nonexistent@example.com", "password": "testpassword"},
     )
     assert response.status_code == 401
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Invalid email/username or password"
+    assert response_json["detail"] == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -91,13 +88,12 @@ async def test_invalid_password_post(
 ) -> None:
     """Test invalid password using POST request."""
     response = test_setup.post(
-        "/api/v1.0/login",
+        f"{settings.API_V1_STR}/login",
         json={"username": "testuser", "password": "wrongpassword"},
     )
     assert response.status_code == 401
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Invalid email/username or password"
+    assert response_json["detail"] == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -113,12 +109,12 @@ async def test_database_error_during_login_post(
 
     mock_commit.side_effect = mock_commit_side_effect
     response = test_setup.post(
-        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+        f"{settings.API_V1_STR}/login",
+        json={"username": "testuser", "password": "testpassword"},
     )
     assert response.status_code == 500
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Login failed"
+    assert response_json["detail"] == "Login failed"
 
 
 @pytest.mark.asyncio
@@ -134,9 +130,9 @@ async def test_unexpected_error_during_login_post(
 
     mock_commit.side_effect = mock_commit_side_effect
     response = test_setup.post(
-        "/api/v1.0/login", json={"username": "testuser", "password": "testpassword"}
+        f"{settings.API_V1_STR}/login",
+        json={"username": "testuser", "password": "testpassword"},
     )
     assert response.status_code == 500
     response_json = response.json()
-    assert response_json["result"] is False
-    assert response_json["message"] == "Login failed"
+    assert response_json["detail"] == "Login failed"

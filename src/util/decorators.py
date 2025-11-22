@@ -2,28 +2,31 @@
 
 import inspect
 from functools import wraps
-from typing import Any, Callable, Coroutine, Dict, TypeVar, Union, cast, get_type_hints
+from typing import Any, Callable, Coroutine, TypeVar, cast, get_type_hints, ParamSpec
 
-from fastapi import HTTPException, Response, status
+from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.util.gold_logging import logger
 
+P = ParamSpec("P")
 T = TypeVar("T")
 
 
 def handle_db_errors(
     default_error_message: str = "Internal server error",
     default_status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR,
-):
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, T]]], Callable[P, Coroutine[Any, Any, T]]
+]:
     """
     Decorator to handle database errors and rollback.
     """
 
     def decorator(
         func: Callable[..., Coroutine[Any, Any, T]],
-    ):
+    ) -> Callable[P, Coroutine[Any, Any, T]]:
         type_hints = get_type_hints(func)
         db_param_name = None
 
@@ -32,9 +35,7 @@ def handle_db_errors(
                 db_param_name = name
 
         @wraps(func)
-        async def wrapper(
-            *args: Any, **kwargs: Any
-        ):
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             sig = inspect.signature(func)
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
@@ -70,6 +71,10 @@ def handle_db_errors(
                     status_code=default_status_code,
                     detail=default_error_message,
                 )
+            except HTTPException:
+                # Re-raise HTTPException to let FastAPI handle it
+                # Make sure no database changes are made when raising an HTTPException
+                raise
             except Exception as e:
                 logger.error("Unexpected error: %s", e)
                 await db.rollback()

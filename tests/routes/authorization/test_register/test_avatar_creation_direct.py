@@ -32,5 +32,4 @@ async def test_avatar_created_success(
         room="room_1",
     )
 
-    assert response["result"] is True
-    assert response["message"] == "Avatar creation done!"
+    assert response["success"] is True

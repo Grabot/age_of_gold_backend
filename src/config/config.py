@@ -105,6 +105,12 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     FRONTEND_URL: str
+    ALLOWED_ORIGINS: str
+    SHARED_DIR: str
+
+    @property
+    def ALLOWED_ORIGINS_LIST(self) -> list[str]:
+        return self.ALLOWED_ORIGINS.split(",")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

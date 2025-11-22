@@ -4,7 +4,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import Response
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,10 +12,12 @@ from sqlmodel import select
 
 from src.api.api_v1.authorization import login
 from src.models.user_token import UserToken
+from src.util.util import SuccessfulLoginResponse
 from tests.helpers import (
-    assert_exception_error_response,
-    assert_integrity_error_response,
     assert_sqalchemy_error_response,
+    assert_integrity_error_response,
+    assert_exception_error_response,
+    assert_successful_login_dict,
 )
 
 
@@ -29,14 +31,14 @@ async def test_successful_login_with_username_direct(
     expected_access_token, expected_refresh_token, _, _ = mock_tokens
     login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login.login_user(login_request, Response(), test_db)
+    response: SuccessfulLoginResponse = await login.login_user(login_request, test_db)
 
     user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
     assert user_tokens.scalar() is not None
 
-    assert response["result"] is True
-    assert response["access_token"] == expected_access_token
-    assert response["refresh_token"] == expected_refresh_token
+    assert_successful_login_dict(
+        response, expected_access_token, expected_refresh_token
+    )
 
 
 @pytest.mark.asyncio
@@ -51,11 +53,10 @@ async def test_successful_login_with_email_direct(
         email="testuser@example.com", password="testpassword"
     )
 
-    response = await login.login_user(login_request, Response(), test_db)
-
-    assert response["result"] is True
-    assert response["access_token"] == expected_access_token
-    assert response["refresh_token"] == expected_refresh_token
+    response: SuccessfulLoginResponse = await login.login_user(login_request, test_db)
+    assert_successful_login_dict(
+        response, expected_access_token, expected_refresh_token
+    )
 
 
 @pytest.mark.asyncio
@@ -66,10 +67,11 @@ async def test_invalid_request_missing_password_direct(
     """Test invalid request with missing password."""
     login_request = login.LoginRequest(username="testuser", password="")
 
-    response = await login.login_user(login_request, Response(), test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
-    assert response["result"] is False
-    assert response["message"] == "Invalid request"
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -80,10 +82,11 @@ async def test_invalid_request_missing_email_and_username_direct(
     """Test invalid request with missing email and username."""
     login_request = login.LoginRequest(password="testpassword")
 
-    response = await login.login_user(login_request, Response(), test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
-    assert response["result"] is False
-    assert response["message"] == "Invalid request"
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -95,11 +98,11 @@ async def test_invalid_email_or_username_direct(
     login_request = login.LoginRequest(
         email="nonexistent@example.com", password="testpassword"
     )
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
-    response = await login.login_user(login_request, Response(), test_db)
-
-    assert response["result"] is False
-    assert response["message"] == "Invalid email/username or password"
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -109,11 +112,11 @@ async def test_invalid_password_direct(
 ) -> None:
     """Test invalid password."""
     login_request = login.LoginRequest(username="testuser", password="wrongpassword")
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
-    response = await login.login_user(login_request, Response(), test_db)
-
-    assert response["result"] is False
-    assert response["message"] == "Invalid email/username or password"
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Invalid email/username or password"
 
 
 @pytest.mark.asyncio
@@ -133,11 +136,11 @@ async def test_database_error_during_login_direct(
     mock_commit.side_effect = mock_commit_side_effect
 
     login_request = login.LoginRequest(username="testuser", password="testpassword")
-
-    response = await login.login_user(login_request, Response(), test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
     assert_sqalchemy_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
         "Login failed",
     )
@@ -162,11 +165,11 @@ async def test_integrity_error_during_login_direct(
     mock_commit.side_effect = mock_commit_side_effect
 
     login_request = login.LoginRequest(username="testuser", password="testpassword")
-
-    response = await login.login_user(login_request, Response(), test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
     assert_integrity_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
     )
 
@@ -189,9 +192,14 @@ async def test_unexpected_error_during_login_direct(
 
     login_request = login.LoginRequest(username="testuser", password="testpassword")
 
-    response = await login.login_user(login_request, Response(), test_db)
+    with pytest.raises(HTTPException) as exc_info:
+        await login.login_user(login_request, test_db)
 
-    assert_exception_error_response(response, mock_logger_error, "Login failed")
+    assert_exception_error_response(
+        exc_info.value,
+        mock_logger_error,
+        "Login failed",
+    )
 
 
 @pytest.mark.asyncio

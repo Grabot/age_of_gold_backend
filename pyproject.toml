@@ -57,6 +57,7 @@ dev = [
     "pylint>=4.0.2,<5",
     "bandit>=1.8.6,<2",
     "toml>=0.10.2",
+    "fakeredis>=2.32.1",
 ]
 
 [tool.black]

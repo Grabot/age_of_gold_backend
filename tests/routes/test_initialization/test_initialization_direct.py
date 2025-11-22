@@ -27,7 +27,7 @@ async def test_successful_initialization_direct_avatar() -> None:
 
         response = await initialization.initialize_folders()
 
-        assert response["result"] is True
+        assert response["success"] is True
         mock_makedirs.assert_called_with(settings.UPLOAD_FOLDER_AVATARS)
         mock_chmod.assert_called_with(
             settings.UPLOAD_FOLDER_AVATARS, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO
@@ -53,7 +53,7 @@ async def test_successful_initialization_direct_crest() -> None:
 
         response = await initialization.initialize_folders()
 
-        assert response["result"] is True
+        assert response["success"] is True
         mock_makedirs.assert_called_with(settings.UPLOAD_FOLDER_CRESTS)
         mock_chmod.assert_called_with(
             settings.UPLOAD_FOLDER_CRESTS, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO

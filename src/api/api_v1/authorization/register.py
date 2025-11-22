@@ -3,7 +3,7 @@
 import asyncio
 from typing import Any
 
-from fastapi import Depends, Response, status
+from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,8 +18,8 @@ from src.models.user import create_salt, hash_email
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.util import (
-    get_failed_response,
-    get_successful_user_response,
+    SuccessfulLoginResponse,
+    get_successful_login_response,
     get_user_tokens,
     hash_password,
 )
@@ -37,15 +37,14 @@ class RegisterRequest(BaseModel):
 @handle_db_errors("Registration failed")
 async def register_user(
     register_request: RegisterRequest,
-    response: Response,
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+) -> SuccessfulLoginResponse:
     """Handle user registration request."""
     if not all(
         [register_request.email, register_request.username, register_request.password]
     ):
-        return get_failed_response(
-            "Invalid request", response, status.HTTP_400_BAD_REQUEST
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request"
         )
 
     results = await db.execute(
@@ -54,8 +53,8 @@ async def register_user(
         )
     )
     if results.first():
-        return get_failed_response(
-            "Username already taken", response, status.HTTP_409_CONFLICT
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Username already taken"
         )
 
     email_hash = hash_email(register_request.email, settings.PEPPER)
@@ -63,8 +62,8 @@ async def register_user(
         select(User).where(User.origin == 0, User.email_hash == email_hash)
     )
     if results.first():
-        return get_failed_response(
-            "Email already used", response, status.HTTP_409_CONFLICT
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already used"
         )
 
     salt = create_salt()
@@ -84,7 +83,8 @@ async def register_user(
     await db.commit()
 
     _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
-    return get_successful_user_response(user, user_token)
+
+    return get_successful_login_response(user_token, user)
 
 
 class AvatarCreatedRequest(BaseModel):
@@ -110,6 +110,5 @@ async def avatar_created(
     )
 
     return {
-        "result": True,
-        "message": "Avatar creation done!",
+        "success": True,
     }

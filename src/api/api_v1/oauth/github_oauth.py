@@ -1,18 +1,20 @@
+"""Handler for the Github oauth2 flow"""
+
 import secrets
 from urllib.parse import urlencode
+import httpx
+from fastapi import Depends
 from fastapi.responses import RedirectResponse
-from src.api.api_v1.oauth.login_oauth import login_user_oauth
+from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
 from src.api.api_v1.router import api_router_v1
-from fastapi import Depends, HTTPException, status
 from src.config.config import settings
-from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.sockets.sockets import redis
-import requests
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @api_router_v1.get("/auth/github")
-async def github_login():
+async def github_login() -> RedirectResponse:
     """Start Github OAuth2 login"""
     state = secrets.token_urlsafe(16)
     await redis.setex(f"oauth_state:{state}", settings.OAUTH_LIFETIME, "valid")
@@ -28,49 +30,51 @@ async def github_login():
     return RedirectResponse(url=authorization_url)
 
 
+async def _fetch_github_access_token(code: str) -> str:
+    params = {
+        "client_id": settings.GITHUB_CLIENT_ID,
+        "client_secret": settings.GITHUB_CLIENT_SECRET,
+        "code": code,
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://github.com/login/oauth/access_token",
+            params=params,
+            headers={"Accept": "application/json"},
+            timeout=10,
+        )
+        response_dict: dict[str, str] = response.json()
+        return response_dict["access_token"]
+
+
+async def _fetch_github_user(access_token: str) -> dict[str, str]:
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            settings.GITHUB_USER,
+            headers=headers,
+            timeout=10,
+        )
+        response_dict: dict[str, str] = response.json()
+        return response_dict
+
+
 @api_router_v1.get("/auth/callback/github")
 async def github_callback(
     code: str,
     state: str,
     db: AsyncSession = Depends(get_db),
-):
-    """Handle Github OAuth2 callback"""
-    if not await redis.exists(f"oauth_state:{state}"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid state"
-        )
-    await redis.delete(f"oauth_state:{state}")
-    # TODO: from settings?
-    access_base_url = "https://github.com/login/oauth/access_token"
-    params = dict()
-    params["client_id"] = settings.GITHUB_CLIENT_ID
-    params["client_secret"] = settings.GITHUB_CLIENT_SECRET
-    params["code"] = code
+) -> RedirectResponse:
+    """Handle GitHub OAuth2 callback"""
+    await validate_oauth_state(state)
 
-    url_params = urlencode(params)
-    github_post_url = access_base_url + "/?" + url_params
-
-    headers = {
-        "Accept": "application/json",
-    }
-    token_response = requests.post(github_post_url, headers=headers)
-
-    github_response_json = token_response.json()
-
-    headers_authorization = {
-        "Accept": "application/json",
-        "Authorization": "Bearer %s" % github_response_json["access_token"],
-    }
-    authorization_url = settings.GITHUB_USER
-
-    authorization_response = requests.get(
-        authorization_url, headers=headers_authorization
-    )
-
-    github_user = authorization_response.json()
+    access_token = await _fetch_github_access_token(code)
+    github_user = await _fetch_github_user(access_token)
 
     username = github_user["login"]
     email = github_user["email"]
-
-    return login_user_oauth(username, email, 2, db)
+    return await login_user_oauth(username, email, 2, db)

@@ -4,17 +4,19 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import Response
+from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.authorization import token_refresh
+from src.util.util import SuccessfulLoginResponse
 from tests.conftest import add_token
 from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
     assert_sqalchemy_error_response,
+    assert_successful_login_dict_key,
 )
 
 
@@ -23,19 +25,16 @@ async def test_successful_refresh_direct(
     test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test successful token refresh."""
-    user, user_token = await add_token(-1000, 1000, test_db)
+    _, user_token = await add_token(-1000, 1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
         refresh_token=user_token.refresh_token
     )
 
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), user_token.access_token, test_db
+    response_dict: SuccessfulLoginResponse = await token_refresh.refresh_user(
+        refresh_request, user_token.access_token, test_db
     )
 
-    assert response["result"] is True
-    assert "access_token" in response
-    assert "refresh_token" in response
-    assert response["user"] == user.serialize
+    assert_successful_login_dict_key(response_dict)
 
 
 @pytest.mark.asyncio
@@ -45,12 +44,11 @@ async def test_invalid_request_no_tokens_direct(
     """Test invalid request with no tokens."""
     refresh_request = token_refresh.RefreshRequest(refresh_token="")
 
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), "", test_db
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(refresh_request, "", test_db)
 
-    assert response["result"] is False
-    assert response["message"] == "Invalid request"
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -62,13 +60,13 @@ async def test_invalid_request_invalid_tokens_direct(
     refresh_request = token_refresh.RefreshRequest(
         refresh_token="invalid_refresh_token2"
     )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(
+            refresh_request, "invalid_access_token2", test_db
+        )
 
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), "invalid_access_token2", test_db
-    )
-
-    assert response["result"] is False
-    assert response["message"] == "Invalid or expired tokens"
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid or expired tokens"
 
 
 @pytest.mark.asyncio
@@ -80,13 +78,13 @@ async def test_invalid_or_expired_tokens_direct(
     refresh_request = token_refresh.RefreshRequest(
         refresh_token=user_token.refresh_token
     )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(
+            refresh_request, user_token.access_token, test_db
+        )
 
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), user_token.access_token, test_db
-    )
-
-    assert response["result"] is False
-    assert response["message"] == "Invalid or expired tokens"
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid or expired tokens"
 
 
 @pytest.mark.asyncio
@@ -108,13 +106,13 @@ async def test_database_error_during_refresh_direct(
         raise SQLAlchemyError("Database error")
 
     mock_commit.side_effect = mock_commit_side_effect
-
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), user_token.access_token, test_db
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(
+            refresh_request, user_token.access_token, test_db
+        )
 
     assert_sqalchemy_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
         "Token refresh failed",
     )
@@ -141,13 +139,13 @@ async def test_integrity_error_during_login_direct(
         )
 
     mock_commit.side_effect = mock_commit_side_effect
-
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), user_token.access_token, test_db
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(
+            refresh_request, user_token.access_token, test_db
+        )
 
     assert_integrity_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
     )
 
@@ -173,13 +171,13 @@ async def test_unexpected_error_during_refresh_direct(
         raise Exception("Unexpected error")
 
     mock_commit.side_effect = mock_commit_side_effect
-
-    response = await token_refresh.refresh_user(
-        refresh_request, Response(), user_token.access_token, test_db
-    )
+    with pytest.raises(HTTPException) as exc_info:
+        await token_refresh.refresh_user(
+            refresh_request, user_token.access_token, test_db
+        )
 
     assert_exception_error_response(
-        response,
+        exc_info.value,
         mock_logger_error,
         "Token refresh failed",
     )

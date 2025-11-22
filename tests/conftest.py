@@ -81,13 +81,40 @@ async def test_db() -> AsyncGenerator[AsyncSession, None]:
         app.dependency_overrides.pop(get_db, None)
 
 
+async def add_user(
+    username: str,
+    origin: int,
+    test_db_for_user: AsyncSession,
+    email_domain: str = "example.com",
+) -> User:
+    """Helper function to add a user to the database."""
+    password = "testpassword"
+    salt = "salt"
+    password_with_salt = password + salt
+    password_hash = hash_password(password=password_with_salt)
+    email_hash = hash_email(f"{username}@{email_domain}", settings.PEPPER)
+    user = User(
+        username=username,
+        email_hash=email_hash,
+        password_hash=password_hash,
+        salt=salt,
+        origin=origin,
+    )
+    test_db_for_user.add(user)
+    await test_db_for_user.commit()
+    return user
+
+
 async def add_token(
     add_access_expiration: int,
     add_refresh_expiration: int,
     test_db_for_token: AsyncSession,
+    id_user: int | None = None,
 ) -> Tuple[User, UserToken]:
     """Helper function to add a token to the database."""
     user_id = 1
+    if id_user:
+        user_id = id_user
     user: Optional[User] = await test_db_for_token.get(User, user_id)
     assert user is not None
     user_token = UserToken(

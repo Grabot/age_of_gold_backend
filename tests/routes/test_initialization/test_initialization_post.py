@@ -4,9 +4,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
+from fastapi import status
 
 from main import app
-from tests.helpers import assert_successful_response
+from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -21,7 +22,10 @@ async def test_successful_initialization_get(
     with TestClient(app) as client:
         headers = {"Authorization": "Bearer valid_access_token"}
         response = client.get(
-            "/api/v1.0/initialize",
+            f"{settings.API_V1_STR}/initialize",
             headers=headers,
         )
-        assert_successful_response(response)
+        assert response.status_code == status.HTTP_200_OK
+        response_dict = response.json()
+        assert "success" in response_dict
+        assert response_dict["success"]

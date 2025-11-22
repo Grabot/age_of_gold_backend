@@ -5,30 +5,17 @@ from typing import Optional
 from unittest.mock import MagicMock
 
 import pytest
-from fastapi import Response, status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import User, UserToken
 from src.util.util import (
     delete_user_token_and_return,
-    get_failed_response,
     get_user_tokens,
     hash_password,
     refresh_user_token,
 )
 from tests.conftest import add_token
-
-
-def test_get_failed_response() -> None:
-    """Test the get_failed_response function."""
-    response = Response()
-    result = get_failed_response("Test message", response)
-    assert result == {
-        "result": False,
-        "message": "Test message",
-    }
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_hash_password() -> None:

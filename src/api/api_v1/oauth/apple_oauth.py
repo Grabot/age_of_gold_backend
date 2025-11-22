@@ -1,22 +1,23 @@
-from typing import Annotated
+"""Handler for the Apple oauth2 flow"""
+
+import secrets
+import time
+from typing import Annotated, Any
 from urllib.parse import urlencode
+import httpx
+import jwt as pyjwt
+from fastapi import Depends, Form, HTTPException, status
 from fastapi.responses import RedirectResponse
-from fastapi import status
-from src.api.api_v1.oauth.login_oauth import login_user_oauth
+from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
 from src.api.api_v1.router import api_router_v1
-from fastapi import Depends, Form, HTTPException, Request
 from src.config.config import settings
-from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.sockets.sockets import redis
-import requests
-import secrets
-import jwt as pyjwt
-import time
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @api_router_v1.get("/auth/apple")
-async def apple_login(request: Request):
+async def apple_login() -> RedirectResponse:
     """Start Apple OAuth2 login"""
     auth_url = settings.APPLE_AUTHORIZE
     state = secrets.token_urlsafe(16)
@@ -34,7 +35,8 @@ async def apple_login(request: Request):
     return RedirectResponse(url=authorization_url)
 
 
-def generate_token():
+def generate_token() -> str:
+    """Generates a JWT token for Apple OAuth2 authentication."""
     private_key = settings.APPLE_AUTH_KEY
     team_id = settings.APPLE_TEAM_ID
     client_id = settings.APPLE_CLIENT_ID
@@ -58,54 +60,52 @@ def generate_token():
     return token
 
 
-def decode_apple_token(token):
-    try:
-        return pyjwt.decode(
-            token, audience=settings.APPLE_CLIENT_ID, options={"verify_signature": False}
-        )
-    except pyjwt.PyJWTError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid ID token")
+def decode_apple_token(token: str) -> Any:
+    """Decodes an Apple OAuth token."""
+    return pyjwt.decode(
+        token,
+        audience=settings.APPLE_CLIENT_ID,
+        options={"verify_signature": False},
+    )
 
 
 @api_router_v1.post("/auth/callback/apple")
 async def apple_callback(
     code: Annotated[str, Form()],
-    state: Annotated[str, Form()], # TODO: Test if this works, maybe state is url param?
+    state: Annotated[str, Form()],
     db: AsyncSession = Depends(get_db),
-):
+) -> RedirectResponse:
     """Handle Apple OAuth2 callback"""
-    if not await redis.exists(f"oauth_state:{state}"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid state"
-        )
-    await redis.delete(f"oauth_state:{state}")
+    await validate_oauth_state(state)
     apple_key_url = settings.APPLE_AUTHORIZE_TOKEN
-    userinfo_response = requests.post(
-        apple_key_url,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={
-            "client_id": settings.APPLE_CLIENT_ID,
-            "client_secret": generate_token(),
-            "code": code,
-            "grant_type": settings.APPLE_GRANT_TYPE,
-            "redirect_uri": settings.APPLE_REDIRECT_URL,
-        },
-    )
-
-    if (
-        not userinfo_response.json().get("access_token")
-        or not userinfo_response.json().get("refresh_token")
-        or not userinfo_response.json().get("id_token")
-    ):
-        return HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="There was an error creating the user",
+    async with httpx.AsyncClient() as client:
+        userinfo_response = await client.post(
+            apple_key_url,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data={
+                "client_id": settings.APPLE_CLIENT_ID,
+                "client_secret": generate_token(),
+                "code": code,
+                "grant_type": settings.APPLE_GRANT_TYPE,
+                "redirect_uri": settings.APPLE_REDIRECT_URL,
+            },
+            timeout=30,
         )
 
-    id_token = userinfo_response.json()["id_token"]
-    apple_token = decode_apple_token(id_token)
-    email = apple_token["email"]
-    username = apple_token["email"].split("@")[0]
+        user_info = userinfo_response.json()
+        if (
+            not user_info.get("access_token")
+            or not user_info.get("refresh_token")
+            or not user_info.get("id_token")
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="There was an error creating the user",
+            )
 
-    return login_user_oauth(username, email, 4, db)
+        id_token = user_info["id_token"]
+        apple_token = decode_apple_token(id_token)
+        email = apple_token["email"]
+        username = apple_token["email"].split("@")[0]
+
+        return await login_user_oauth(username, email, 4, db)

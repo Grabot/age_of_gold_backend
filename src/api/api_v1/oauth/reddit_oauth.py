@@ -1,29 +1,31 @@
-from base64 import b64encode
+"""Handler for the Reddit oauth2 flow"""
+
 import secrets
+from base64 import b64encode
 from urllib.parse import urlencode
+import httpx
+from fastapi import Depends
 from fastapi.responses import RedirectResponse
-from src.api.api_v1.oauth.login_oauth import login_user_oauth
+from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
 from src.api.api_v1.router import api_router_v1
-from fastapi import Depends, HTTPException, status
 from src.config.config import settings
-from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.sockets.sockets import redis
-import requests
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @api_router_v1.get("/auth/reddit")
-async def reddit_login():
+async def reddit_login() -> RedirectResponse:
     """Start Reddit OAuth2 login"""
     state = secrets.token_urlsafe(16)
     await redis.setex(f"oauth_state:{state}", settings.OAUTH_LIFETIME, "valid")
     auth_url = settings.REDDIT_AUTHORIZE
     params = {
         "client_id": settings.REDDIT_CLIENT_ID,
-        "duration": "temporary",
         "redirect_uri": settings.REDDIT_REDIRECT,
         "response_type": "code",
         "scope": "identity",
+        "duration": "temporary",
         "state": state,
     }
 
@@ -33,60 +35,63 @@ async def reddit_login():
     return RedirectResponse(url=authorization_url)
 
 
-@api_router_v1.get("/auth/callback/reddit")
-async def reddit_callback(
-    code: str,
-    state: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """Handle Reddit OAuth2 callback"""
-    if not await redis.exists(f"oauth_state:{state}"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid state"
-        )
-    await redis.delete(f"oauth_state:{state}")
+async def _fetch_reddit_access_token(code: str) -> str:
+    """Fetch the Reddit access token."""
     access_base_url = settings.REDDIT_ACCESS
-
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
         "redirect_uri": settings.REDDIT_REDIRECT,
     }
 
-    encoded_authorization = "%s:%s" % (
-        settings.REDDIT_CLIENT_ID,
-        settings.REDDIT_CLIENT_SECRET,
+    encoded_authorization = (
+        f"{settings.REDDIT_CLIENT_ID}:{settings.REDDIT_CLIENT_SECRET}"
     )
-
     http_auth = b64encode(encoded_authorization.encode("utf-8")).decode("utf-8")
-    authorization = "Basic %s" % http_auth
     headers = {
         "Accept": "application/json",
         "User-agent": "age of gold login bot 0.1",
-        "Authorization": authorization,
+        "Authorization": f"Basic {http_auth}",
     }
 
-    token_response = requests.post(
-        access_base_url, headers=headers, data=token_post_data
-    )
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            access_base_url, headers=headers, data=token_post_data, timeout=30
+        )
+        reddit_response_json: dict[str, str] = token_response.json()
+        return reddit_response_json["access_token"]
 
-    reddit_response_json = token_response.json()
 
+async def _fetch_reddit_user(access_token: str) -> dict[str, str]:
+    """Fetch the Reddit user information."""
     headers_authorization = {
         "Accept": "application/json",
         "User-agent": "age of gold login bot 0.1",
-        "Authorization": "bearer %s" % reddit_response_json["access_token"],
+        "Authorization": f"Bearer {access_token}",
     }
+
     authorization_url = settings.REDDIT_USER
+    async with httpx.AsyncClient() as client:
+        authorization_response = await client.get(
+            authorization_url, headers=headers_authorization, timeout=30
+        )
+        response_dict: dict[str, str] = authorization_response.json()
+        return response_dict
 
-    authorization_response = requests.get(
-        authorization_url, headers=headers_authorization
-    )
 
-    reddit_user = authorization_response.json()
+@api_router_v1.get("/auth/callback/reddit")
+async def reddit_callback(
+    code: str,
+    state: str,
+    db: AsyncSession = Depends(get_db),
+) -> RedirectResponse:
+    """Handle Reddit OAuth2 callback"""
+    await validate_oauth_state(state)
+
+    access_token = await _fetch_reddit_access_token(code)
+    reddit_user = await _fetch_reddit_user(access_token)
 
     username = reddit_user["name"]
-    email = "%s@reddit.com" % username  # Reddit gives no email
+    email = f"{username}@reddit.com"  # Reddit does not provide an email
 
-    return login_user_oauth(username, email, 3, db)
+    return await login_user_oauth(username, email, 3, db)

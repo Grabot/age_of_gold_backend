@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, Union, cast
 
 import socketio
 
+from redis.asyncio import Redis
 from src.config.config import settings
 from src.database import async_session
 from src.models.user import User
@@ -13,7 +14,7 @@ sio = socketio.AsyncServer(
 )
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
-redis = aioredis.from_url(settings.REDIS_URI)
+redis: Redis = aioredis.from_url(settings.REDIS_URI)  # type: ignore[no-untyped-call]
 
 
 @sio.on("connect")

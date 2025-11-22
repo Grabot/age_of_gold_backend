@@ -1,5 +1,6 @@
 """User model"""
 
+import os
 import secrets
 import time
 import uuid
@@ -43,13 +44,17 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     salt: str
     origin: int
     default_avatar: bool = Field(default=True)
+    profile_version: int = Field(default=1)
+    avatar_version: int = Field(default=1)
 
     tokens: List["UserToken"] = Relationship(back_populates="user")
 
-    def avatar_filename(self):
+    def avatar_filename(self) -> str:
+        """get the name of the avatar file for this user."""
         return md5(self.email_hash.encode("utf-8")).hexdigest()
 
-    def avatar_filename_default(self):
+    def avatar_filename_default(self) -> str:
+        """get the name of the default avatar file for this user."""
         return self.avatar_filename() + "_default"
 
     def verify_password(self, hashed_password: str, provided_password: str) -> bool:
@@ -58,6 +63,23 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             return ph.verify(hashed_password, provided_password)
         except exceptions.VerificationError:
             return False
+
+    def create_avatar(self, avatar_bytes: bytes) -> None:
+        """Create an avatar for the user."""
+        file_folder = settings.UPLOAD_FOLDER_AVATARS
+        file_name = self.avatar_filename() + ".png"
+
+        file_path = os.path.join(file_folder, file_name)
+        with open(file_path, "wb") as f:
+            f.write(avatar_bytes)
+
+    def remove_avatar(self) -> None:
+        """Remove the avatar for the user."""
+        file_folder = settings.UPLOAD_FOLDER_AVATARS
+        file_name = self.avatar_filename() + ".png"
+
+        if os.path.exists(os.path.join(file_folder, file_name)):
+            os.remove(os.path.join(file_folder, file_name))
 
     def generate_auth_token(
         self, expires_in: int = 1800, scopes: Optional[List[str]] = None

@@ -37,7 +37,7 @@ async def test_get_valid_auth_token_invalid() -> None:
     credentials.credentials = ""
     with pytest.raises(HTTPException) as exc_info:
         await get_valid_auth_token(credentials)
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == 400
 
 
 @pytest.mark.asyncio

@@ -3,15 +3,17 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from fastapi import Response, status
+from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.authorization import register
+from src.util.util import SuccessfulLoginResponse
 from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
     assert_sqalchemy_error_response,
+    assert_successful_login_dict,
 )
 
 
@@ -30,60 +32,63 @@ async def test_successful_register_direct(
         username="new_test1",
         password="new_test1password",
     )
-    response_object = Response()
 
-    response = await register.register_user(login_request, response_object, test_db)
+    response_dict: SuccessfulLoginResponse = await register.register_user(
+        login_request, test_db
+    )
 
-    assert response["result"] is True
-    assert response["access_token"] == expected_access_token
-    assert response["refresh_token"] == expected_refresh_token
+    assert_successful_login_dict(
+        response_dict, expected_access_token, expected_refresh_token
+    )
     mock_task_generate_avatar.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_register_missing_fields(
+async def test_register_missing_fields_email(
     test_setup: MagicMock,
     test_db: AsyncSession,
 ) -> None:
-    """Test user registration with missing fields."""
+    """Test user registration with missing email field."""
     register_request_email = register.RegisterRequest(
         email="", username="new_test2", password="new_test2password"
     )
-    response_object_email = Response()
+    with pytest.raises(HTTPException) as exc_info:
+        await register.register_user(register_request_email, test_db)
 
-    response_email = await register.register_user(
-        register_request_email, response_object_email, test_db
-    )
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid request"
 
-    assert response_email["result"] is False
-    assert response_email["message"] == "Invalid request"
-    assert response_object_email.status_code == status.HTTP_400_BAD_REQUEST
 
+@pytest.mark.asyncio
+async def test_register_missing_fields_username(
+    test_setup: MagicMock,
+    test_db: AsyncSession,
+) -> None:
+    """Test user registration with missing username field."""
     register_request_username = register.RegisterRequest(
         email="new_test3@test.test", username="", password="new_test3password"
     )
-    response_object_username = Response()
+    with pytest.raises(HTTPException) as exc_info:
+        await register.register_user(register_request_username, test_db)
 
-    response_username = await register.register_user(
-        register_request_username, response_object_username, test_db
-    )
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid request"
 
-    assert response_username["result"] is False
-    assert response_username["message"] == "Invalid request"
-    assert response_object_username.status_code == status.HTTP_400_BAD_REQUEST
 
+@pytest.mark.asyncio
+async def test_register_missing_fields_password(
+    test_setup: MagicMock,
+    test_db: AsyncSession,
+) -> None:
+    """Test user registration with missing password field."""
     register_request_password = register.RegisterRequest(
         email="new_test4@test.test", username="new_test4", password=""
     )
-    response_object_password = Response()
+    with pytest.raises(HTTPException) as exc_info:
+        await register.register_user(register_request_password, test_db)
 
-    response_password = await register.register_user(
-        register_request_password, response_object_password, test_db
-    )
-
-    assert response_password["result"] is False
-    assert response_password["message"] == "Invalid request"
-    assert response_object_password.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Invalid request"
 
 
 @pytest.mark.asyncio
@@ -101,26 +106,24 @@ async def test_register_username_already_taken(
         username="new_test5",
         password="new_test5password",
     )
-    response_object = Response()
+    response_dict: SuccessfulLoginResponse = await register.register_user(
+        register_request, test_db
+    )
 
-    response = await register.register_user(register_request, response_object, test_db)
-
-    assert response["result"] is True
-    assert response["access_token"] == expected_access_token
-    assert response["refresh_token"] == expected_refresh_token
+    assert_successful_login_dict(
+        response_dict, expected_access_token, expected_refresh_token
+    )
 
     register_request = register.RegisterRequest(
         email="new_test5_2@test.test",
         username="new_test5",
         password="new_test5password",
     )
-    response_object = Response()
+    with pytest.raises(HTTPException) as exc_info:
+        await register.register_user(register_request, test_db)
 
-    response = await register.register_user(register_request, response_object, test_db)
-
-    assert response["result"] is False
-    assert response["message"] == "Username already taken"
-    assert response_object.status_code == status.HTTP_409_CONFLICT
+    assert exc_info.value.status_code == status.HTTP_409_CONFLICT
+    assert exc_info.value.detail == "Username already taken"
     mock_task_generate_avatar.assert_called_once()
 
 
@@ -139,26 +142,23 @@ async def test_register_email_already_used(
         username="new_test6",
         password="new_test6password",
     )
-    response_object = Response()
+    response_dict: SuccessfulLoginResponse = await register.register_user(
+        register_request, test_db
+    )
 
-    response = await register.register_user(register_request, response_object, test_db)
-
-    assert response["result"] is True
-    assert response["access_token"] == expected_access_token
-    assert response["refresh_token"] == expected_refresh_token
+    assert_successful_login_dict(
+        response_dict, expected_access_token, expected_refresh_token
+    )
 
     register_request = register.RegisterRequest(
         email="new_test6@test.test",
         username="new_test6_2",
         password="new_test6password",
     )
-    response_object = Response()
-
-    response = await register.register_user(register_request, response_object, test_db)
-
-    assert response["result"] is False
-    assert response["message"] == "Email already used"
-    assert response_object.status_code == status.HTTP_409_CONFLICT
+    with pytest.raises(HTTPException) as exc_info:
+        await register.register_user(register_request, test_db)
+    assert exc_info.value.status_code == status.HTTP_409_CONFLICT
+    assert exc_info.value.detail == "Email already used"
 
 
 @pytest.mark.asyncio
@@ -182,16 +182,13 @@ async def test_register_database_integrity_error(
             username="new_test7",
             password="new_test7password",
         )
-        response_object = Response()
-        response = await register.register_user(
-            register_request, response_object, test_db
-        )
+        with pytest.raises(HTTPException) as exc_info:
+            await register.register_user(register_request, test_db)
 
-        assert response_object.status_code == status.HTTP_409_CONFLICT
         mock_rollback.assert_called_once()
 
         assert_integrity_error_response(
-            response,
+            exc_info.value,
             mock_logger_error,
         )
 
@@ -213,16 +210,13 @@ async def test_register_database_error(
             username="new_test8",
             password="new_test8password",
         )
-        response_object = Response()
-        response = await register.register_user(
-            register_request, response_object, test_db
-        )
+        with pytest.raises(HTTPException) as exc_info:
+            await register.register_user(register_request, test_db)
 
-        assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         mock_rollback.assert_called_once()
 
         assert_sqalchemy_error_response(
-            response,
+            exc_info.value,
             mock_logger_error,
             "Registration failed",
         )
@@ -245,16 +239,13 @@ async def test_register_unexpected_error(
             username="new_test9",
             password="new_test9password",
         )
-        response_object = Response()
-        response = await register.register_user(
-            register_request, response_object, test_db
-        )
+        with pytest.raises(HTTPException) as exc_info:
+            await register.register_user(register_request, test_db)
 
-        assert response_object.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
         mock_rollback.assert_called_once()
 
         assert_exception_error_response(
-            response,
+            exc_info.value,
             mock_logger_error,
             "Registration failed",
         )

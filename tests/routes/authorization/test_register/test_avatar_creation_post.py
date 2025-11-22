@@ -4,9 +4,9 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
-
-from tests.helpers import assert_successful_response
+from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -24,12 +24,13 @@ async def test_avatar_created_success_post(
     mock_sio.emit = MagicMock(side_effect=mock_emit)
 
     response = test_setup.post(
-        "/api/v1.0/avatar/created",
+        f"{settings.API_V1_STR}/avatar/created",
         json={"user_id": 1},
     )
 
-    response_json = assert_successful_response(response)
-    assert response_json["message"] == "Avatar creation done!"
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert response_json["success"]
 
     mock_sleep.assert_any_call(1)
     mock_sio.emit.assert_called_once_with(

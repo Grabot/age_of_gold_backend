@@ -1,8 +1,7 @@
 import time
-from typing import Dict, Optional, Union
+from typing import Optional, TypedDict
 
 from argon2 import PasswordHasher
-from fastapi import Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
@@ -12,27 +11,29 @@ from src.models import User, UserToken
 ph = PasswordHasher()
 
 
-def get_failed_response(
-    message: str,
-    response: Response,
-    status_code: int = status.HTTP_400_BAD_REQUEST,
-) -> Dict[str, Union[bool, str]]:
-    response.status_code = status_code
-    return {
-        "result": False,
-        "message": message,
-    }
+class UserTokenData(TypedDict):
+    access_token: str
+    refresh_token: str
+    profile_version: int
+    avatar_version: int
 
 
-def get_successful_user_response(
-    user: User,
-    user_token: UserToken,
-) -> Dict[str, Union[bool, str, Dict[str, Union[Optional[int], str]]]]:
+class SuccessfulLoginResponse(TypedDict):
+    success: bool
+    data: UserTokenData
+
+
+def get_successful_login_response(
+    user_token: UserToken, user: User
+) -> SuccessfulLoginResponse:
     return {
-        "result": True,
-        "access_token": user_token.access_token,
-        "refresh_token": user_token.refresh_token,
-        "user": user.serialize,
+        "success": True,
+        "data": {
+            "access_token": user_token.access_token,
+            "refresh_token": user_token.refresh_token,
+            "profile_version": user.profile_version,
+            "avatar_version": user.avatar_version,
+        },
     }
 
 
