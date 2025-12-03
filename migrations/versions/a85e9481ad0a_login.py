@@ -27,22 +27,22 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column(
             "username",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column(
             "email_hash",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column(
             "password_hash",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column(
             "salt",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column("origin", sa.Integer(), nullable=False),
@@ -55,13 +55,13 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column(
             "access_token",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column("token_expiration", sa.Integer(), nullable=False),
         sa.Column(
             "refresh_token",
-            sqlmodel.sql.sqltypes.AutoString(),  # pyright: ignore[reportAttributeAccessIssue]
+            sqlmodel.sql.sqltypes.AutoString(),  # type: ignore[attr-defined]
             nullable=False,
         ),
         sa.Column("refresh_token_expiration", sa.Integer(), nullable=False),
