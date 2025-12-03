@@ -1,16 +1,19 @@
 from typing import Any, Dict, Optional, Union, cast
 
 import socketio
-
+from redis import asyncio as aioredis
 from redis.asyncio import Redis
+
 from src.config.config import settings
 from src.database import async_session
 from src.models.user import User
-from redis import asyncio as aioredis
+from src.util.util import get_user_room
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(
-    async_mode="asgi", client_manager=mgr, cors_allowed_origins="*"
+    async_mode="asgi",
+    client_manager=mgr,
+    cors_allowed_origins=settings.ALLOWED_ORIGINS_LIST,
 )
 sio_app = socketio.ASGIApp(socketio_server=sio, socketio_path="/socket.io")
 
@@ -36,7 +39,7 @@ async def handle_message_event(sid: str, *args: Any, **kwargs: Any) -> None:
 async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
     data: Dict[str, Union[int, str]] = args[0]
     user_id: int = cast(int, data["user_id"])
-    room: str = f"room_{user_id}"
+    room: str = get_user_room(user_id)
     await sio.enter_room(sid, room)
     await sio.emit(
         "message_event",

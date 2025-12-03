@@ -1,9 +1,9 @@
 """Test for get user detail endpoint via direct get call."""
 
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import status
 
 from src.config.config import settings
 from tests.conftest import add_token

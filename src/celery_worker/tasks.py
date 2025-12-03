@@ -1,7 +1,6 @@
 import logging
 from typing import Optional
 
-import requests
 from celery import Celery
 
 from src.config.config import settings
@@ -29,11 +28,5 @@ def task_generate_avatar(
     if not user_id:
         return {"success": False}
     generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
-
-    base_url = settings.BASE_URL
-    api_prefix = settings.API_V1_STR
-    endpoint = "/avatar/created"
-    total_url = base_url + api_prefix + endpoint
-    requests.post(total_url, json={"user_id": user_id})
 
     return {"success": True}

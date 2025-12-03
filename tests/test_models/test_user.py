@@ -1,8 +1,10 @@
 """Test file for user model."""
 
 from pathlib import Path
+
 import jwt as pyjwt
 from pytest_mock import MockerFixture
+
 from src.config.config import settings
 from src.models import User
 from src.models.user import create_salt, hash_email

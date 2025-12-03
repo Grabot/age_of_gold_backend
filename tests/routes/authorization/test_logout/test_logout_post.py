@@ -4,8 +4,9 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from tests.conftest import add_token
+
 from src.config.config import settings
+from tests.conftest import add_token
 
 
 @pytest.mark.asyncio

@@ -3,11 +3,12 @@
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import Mock
+
 import pytest
-from pytest_mock import MockerFixture
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import status
+from fastapi.testclient import TestClient
+from pytest_mock import MockerFixture
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.config import settings
 from src.models.user import User

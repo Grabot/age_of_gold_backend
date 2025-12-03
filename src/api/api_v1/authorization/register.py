@@ -1,8 +1,5 @@
 """Endpoint for user registration."""
 
-import asyncio
-from typing import Any
-
 from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -15,7 +12,6 @@ from src.config.config import settings
 from src.database import get_db
 from src.models import User
 from src.models.user import create_salt, hash_email
-from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.util import (
     SuccessfulLoginResponse,
@@ -85,30 +81,3 @@ async def register_user(
     _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
 
     return get_successful_login_response(user_token, user)
-
-
-class AvatarCreatedRequest(BaseModel):
-    """Request model for avatar creation notification."""
-
-    user_id: int
-
-
-@api_router_v1.post("/avatar/created", status_code=200)
-async def avatar_created(
-    avatar_created_request: AvatarCreatedRequest,
-) -> dict[str, Any]:
-    """Handle avatar creation notification."""
-    user_id = avatar_created_request.user_id
-    room = f"room_{user_id}"
-
-    await asyncio.sleep(1)
-
-    await sio.emit(
-        "message_event",
-        "Avatar creation done!",
-        room=room,
-    )
-
-    return {
-        "success": True,
-    }

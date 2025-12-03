@@ -4,7 +4,7 @@ import os
 import secrets
 import time
 import uuid
-from hashlib import sha512, md5
+from hashlib import md5, sha512
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import jwt as pyjwt

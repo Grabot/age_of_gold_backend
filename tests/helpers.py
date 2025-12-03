@@ -3,9 +3,9 @@
 from typing import Any
 from unittest.mock import MagicMock
 
+import httpx
 from fakeredis import FakeRedis
 from fastapi import HTTPException, status
-import httpx
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from src.util.util import SuccessfulLoginResponse, UserTokenData

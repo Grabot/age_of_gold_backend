@@ -23,7 +23,6 @@ app.add_middleware(
 api_router = APIRouter()
 api_router.include_router(api_v1.api_router_v1, tags=["api_v1"])
 
-
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 app.mount("/", sio_app)

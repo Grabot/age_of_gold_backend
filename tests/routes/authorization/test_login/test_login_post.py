@@ -7,8 +7,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
 
-from tests.helpers import assert_successful_login
 from src.config.config import settings
+from tests.helpers import assert_successful_login
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,6 @@
 """Test for token login endpoint via direct function call."""
 
+import time
 from typing import Any, Tuple
 from unittest.mock import MagicMock, patch
 
@@ -20,7 +21,6 @@ from tests.helpers import (
     assert_sqalchemy_error_response,
     assert_successful_login_dict_key,
 )
-import time
 
 
 @pytest.mark.asyncio

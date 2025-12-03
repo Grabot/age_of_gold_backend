@@ -33,6 +33,7 @@ async def change_username(
     """Handle change username request."""
     user, _ = user_and_token
     user.username = change_username_request.new_username
+    user.profile_version += 1
     db.add(user)
     await db.commit()
     logger.info("User %s changed their username", user.username)

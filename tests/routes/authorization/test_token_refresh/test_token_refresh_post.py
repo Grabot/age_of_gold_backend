@@ -1,13 +1,13 @@
 """Test for token refresh endpoint via direct post call."""
 
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import status
+from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.config import settings
 from tests.conftest import add_token
 from tests.helpers import assert_successful_login_key
-from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -17,11 +17,12 @@ async def test_successful_refresh_post(
 ) -> None:
     """Test successful token refresh via POST request."""
     _, user_token = await add_token(-1000, 1000, test_db)
-    headers = {"Authorization": f"Bearer {user_token.access_token}"}
     response = test_setup.post(
         f"{settings.API_V1_STR}/login/token/refresh",
-        json={"refresh_token": user_token.refresh_token},
-        headers=headers,
+        json={
+            "refresh_token": user_token.refresh_token,
+            "access_token": user_token.access_token,
+        },
     )
     assert_successful_login_key(response)
 
@@ -33,11 +34,12 @@ async def test_invalid_request_invalid_tokens_post(
 ) -> None:
     """Test invalid token refresh request with invalid tokens via POST request."""
     await add_token(-1000, 1000, test_db)
-    headers = {"Authorization": "Bearer invalid_access_token"}
     response = test_setup.post(
         f"{settings.API_V1_STR}/login/token/refresh",
-        json={"refresh_token": "invalid_refresh_token"},
-        headers=headers,
+        json={
+            "refresh_token": "invalid_refresh_token",
+            "access_token": "invalid_access_token",
+        },
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     response_json = response.json()
@@ -51,11 +53,12 @@ async def test_invalid_or_expired_tokens_post(
 ) -> None:
     """Test token refresh request with invalid or expired tokens via POST request."""
     _, user_token = await add_token(-1000, -1000, test_db)
-    headers = {"Authorization": f"Bearer {user_token.access_token}"}
     response = test_setup.post(
         f"{settings.API_V1_STR}/login/token/refresh",
-        json={"refresh_token": user_token.refresh_token},
-        headers=headers,
+        json={
+            "refresh_token": user_token.refresh_token,
+            "access_token": user_token.access_token,
+        },
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     response_json = response.json()

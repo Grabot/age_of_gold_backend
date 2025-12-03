@@ -2,15 +2,22 @@
 
 import secrets
 from urllib.parse import urlencode
+
 import httpx
 from fastapi import Depends
 from fastapi.responses import RedirectResponse
-from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.api_v1.oauth.login_oauth import (
+    login_user_oauth,
+    redirect_oauth,
+    validate_oauth_state,
+)
 from src.api.api_v1.router import api_router_v1
 from src.config.config import settings
 from src.database import get_db
 from src.sockets.sockets import redis
-from sqlalchemy.ext.asyncio import AsyncSession
+from src.util.util import get_user_tokens
 
 
 @api_router_v1.get("/auth/github")
@@ -77,4 +84,8 @@ async def github_callback(
 
     username = github_user["login"]
     email = github_user["email"]
-    return await login_user_oauth(username, email, 2, db)
+    user = await login_user_oauth(username, email, 2, db)
+    user_token = get_user_tokens(user, 120, 120)
+    db.add(user_token)
+    await db.commit()
+    return redirect_oauth(user_token.access_token)

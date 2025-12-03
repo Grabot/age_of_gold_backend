@@ -7,8 +7,8 @@ import pytest
 from fastapi import HTTPException, status
 from fastapi.responses import FileResponse
 from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession
 from pytest_mock import MockerFixture
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.settings import get_avatar
 from src.config.config import settings

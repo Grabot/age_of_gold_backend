@@ -1,6 +1,6 @@
 """Endpoint for getting user detail."""
 
-from typing import Any, Tuple, Dict
+from typing import Any, Dict, Tuple
 
 from fastapi import Depends, Security
 from sqlalchemy.ext.asyncio import AsyncSession

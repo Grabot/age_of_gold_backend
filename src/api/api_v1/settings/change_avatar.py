@@ -30,9 +30,9 @@ async def change_avatar(
     user, _ = user_and_token
 
     if not avatar:
-        # TODO: remove not default image?
         user.remove_avatar()
         user.default_avatar = True
+        user.avatar_version += 1
         db.add(user)
         await db.commit()
         return {"success": True}
@@ -46,11 +46,12 @@ async def change_avatar(
 
     avatar_bytes = await avatar.read()
     user.create_avatar(avatar_bytes)
+    user.avatar_version += 1
 
     if user.default_avatar:
         user.default_avatar = False
-        db.add(user)
-        await db.commit()
+    db.add(user)
+    await db.commit()
 
     logger.info("User %s changed their avatar", user.username)
     return {

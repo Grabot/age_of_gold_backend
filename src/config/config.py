@@ -94,6 +94,7 @@ class Settings(BaseSettings):
     MAIL_SENDERNAME: str
     UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
+    SHARED_DIR: str
 
     PEPPER: str
 
@@ -106,7 +107,6 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str
     ALLOWED_ORIGINS: str
-    SHARED_DIR: str
 
     @property
     def ALLOWED_ORIGINS_LIST(self) -> list[str]:

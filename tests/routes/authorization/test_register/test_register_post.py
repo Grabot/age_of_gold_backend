@@ -1,12 +1,12 @@
 """Test for register endpoint via direct post call."""
 
 from unittest.mock import MagicMock, patch
-from fastapi import status
 
 import pytest
+from fastapi import status
 
-from tests.helpers import assert_successful_login
 from src.config.config import settings
+from tests.helpers import assert_successful_login
 
 
 @pytest.mark.asyncio

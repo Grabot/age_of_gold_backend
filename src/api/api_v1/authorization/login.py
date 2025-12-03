@@ -1,12 +1,14 @@
 """endpoint for login"""
 
 from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from sqlmodel import select
+
 from src.api.api_v1.router import api_router_v1
 from src.config.config import settings
 from src.database import get_db

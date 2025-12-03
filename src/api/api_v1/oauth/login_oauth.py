@@ -1,16 +1,17 @@
 """Login user with oauth2"""
 
 import re
+
 from fastapi import HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
+
 from src.celery_worker.tasks import task_generate_avatar
 from src.config.config import settings
 from src.models.user import User, hash_email
-from src.util.util import get_user_tokens
 from src.sockets.sockets import redis
 
 
@@ -82,7 +83,7 @@ async def login_user_oauth(
     email: str,
     origin: int,
     db: AsyncSession,
-) -> RedirectResponse:
+) -> User:
     """Login user with OAuth2"""
     username = _sanitize_username(username)
     hashed_email = hash_email(email, settings.PEPPER)
@@ -94,7 +95,7 @@ async def login_user_oauth(
     result_user_origin = results_origin.first()
 
     if result_user_origin:
-        user = result_user_origin.User
+        user: User = result_user_origin.User
         user_created = False
     else:
         user, user_created = await _create_user(db, username, hashed_email, origin)
@@ -109,11 +110,10 @@ async def login_user_oauth(
         await db.refresh(user)
         task_generate_avatar.delay(user.avatar_filename(), user.id)
 
-    user_token = get_user_tokens(user, 60, 120)
-    db.add(user_token)
-    await db.commit()
+    return user
 
-    redirect_url = (
-        f"{settings.FRONTEND_URL}/auth/callback?token={user_token.access_token}"
-    )
+
+def redirect_oauth(access_token: str) -> RedirectResponse:
+    """Redirects the user to the frontend URL with the access token as a query parameter."""
+    redirect_url = f"{settings.FRONTEND_URL}/auth/callback?token={access_token}"
     return RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)

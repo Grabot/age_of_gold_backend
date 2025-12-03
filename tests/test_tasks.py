@@ -14,10 +14,9 @@ def test_task_initialize() -> None:
 
 
 @patch("src.celery_worker.tasks.generate_avatar")
-@patch("src.celery_worker.tasks.requests.post")
 @patch("src.celery_worker.tasks.settings")
 def test_task_generate_avatar(
-    mock_settings: MagicMock, mock_post: MagicMock, mock_generate_avatar: MagicMock
+    mock_settings: MagicMock, mock_generate_avatar: MagicMock
 ) -> None:
     """Test the task_generate_avatar function."""
     mock_settings.BASE_URL = "http://example.com"
@@ -26,15 +25,10 @@ def test_task_generate_avatar(
 
     mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_post.return_value = mock_response
 
     result = task_generate_avatar("avatar.png", 1)
 
     mock_generate_avatar.assert_called_once_with("avatar.png", "/path/to/avatars")
-    mock_post.assert_called_once_with(
-        "http://example.com/api/v1/avatar/created",
-        json={"user_id": 1},
-    )
     assert result == {"success": True}
 
 

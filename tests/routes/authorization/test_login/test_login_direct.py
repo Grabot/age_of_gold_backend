@@ -14,9 +14,9 @@ from src.api.api_v1.authorization import login
 from src.models.user_token import UserToken
 from src.util.util import SuccessfulLoginResponse
 from tests.helpers import (
-    assert_sqalchemy_error_response,
-    assert_integrity_error_response,
     assert_exception_error_response,
+    assert_integrity_error_response,
+    assert_sqalchemy_error_response,
     assert_successful_login_dict,
 )
 

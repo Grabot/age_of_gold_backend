@@ -2,7 +2,7 @@
 
 import inspect
 from functools import wraps
-from typing import Any, Callable, Coroutine, TypeVar, cast, get_type_hints, ParamSpec
+from typing import Any, Callable, Coroutine, ParamSpec, TypeVar, cast, get_type_hints
 
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError

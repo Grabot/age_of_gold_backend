@@ -27,11 +27,11 @@ async def test_successful_refresh_direct(
     """Test successful token refresh."""
     _, user_token = await add_token(-1000, 1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token=user_token.refresh_token
+        refresh_token=user_token.refresh_token, access_token=user_token.access_token
     )
 
     response_dict: SuccessfulLoginResponse = await token_refresh.refresh_user(
-        refresh_request, user_token.access_token, test_db
+        refresh_request, test_db
     )
 
     assert_successful_login_dict_key(response_dict)
@@ -42,10 +42,10 @@ async def test_invalid_request_no_tokens_direct(
     test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test invalid request with no tokens."""
-    refresh_request = token_refresh.RefreshRequest(refresh_token="")
+    refresh_request = token_refresh.RefreshRequest(refresh_token="", access_token="")
 
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(refresh_request, "", test_db)
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "Invalid request"
@@ -58,12 +58,10 @@ async def test_invalid_request_invalid_tokens_direct(
     """Test invalid request with invalid tokens."""
     await add_token(-1000, 1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token="invalid_refresh_token2"
+        refresh_token="invalid_refresh_token2", access_token="invalid_access_token2"
     )
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(
-            refresh_request, "invalid_access_token2", test_db
-        )
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "Invalid or expired tokens"
@@ -76,12 +74,10 @@ async def test_invalid_or_expired_tokens_direct(
     """Test invalid or expired tokens."""
     _, user_token = await add_token(-1000, -1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token=user_token.refresh_token
+        refresh_token=user_token.refresh_token, access_token=user_token.access_token
     )
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(
-            refresh_request, user_token.access_token, test_db
-        )
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "Invalid or expired tokens"
@@ -99,7 +95,7 @@ async def test_database_error_during_refresh_direct(
     """Test database error during token refresh."""
     _, user_token = await add_token(-1000, -1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token=user_token.refresh_token
+        refresh_token=user_token.refresh_token, access_token=user_token.access_token
     )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
@@ -107,9 +103,7 @@ async def test_database_error_during_refresh_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(
-            refresh_request, user_token.access_token, test_db
-        )
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert_sqalchemy_error_response(
         exc_info.value,
@@ -130,7 +124,7 @@ async def test_integrity_error_during_login_direct(
     """Test integrity error during login."""
     _, user_token = await add_token(-1000, -1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token=user_token.refresh_token
+        refresh_token=user_token.refresh_token, access_token=user_token.access_token
     )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
@@ -140,9 +134,7 @@ async def test_integrity_error_during_login_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(
-            refresh_request, user_token.access_token, test_db
-        )
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert_integrity_error_response(
         exc_info.value,
@@ -164,7 +156,7 @@ async def test_unexpected_error_during_refresh_direct(
     """Test unexpected error during token refresh."""
     _, user_token = await add_token(-1000, -1000, test_db)
     refresh_request = token_refresh.RefreshRequest(
-        refresh_token=user_token.refresh_token
+        refresh_token=user_token.refresh_token, access_token=user_token.access_token
     )
 
     async def mock_commit_side_effect(*args: Any, **kwargs: Any) -> None:
@@ -172,9 +164,7 @@ async def test_unexpected_error_during_refresh_direct(
 
     mock_commit.side_effect = mock_commit_side_effect
     with pytest.raises(HTTPException) as exc_info:
-        await token_refresh.refresh_user(
-            refresh_request, user_token.access_token, test_db
-        )
+        await token_refresh.refresh_user(refresh_request, test_db)
 
     assert_exception_error_response(
         exc_info.value,

@@ -90,3 +90,7 @@ async def refresh_user_token(
 
 def hash_password(password: str) -> str:
     return ph.hash(password)
+
+
+def get_user_room(user_id: int) -> str:
+    return f"room_{user_id}"

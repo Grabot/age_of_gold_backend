@@ -13,8 +13,8 @@ from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import (
     SuccessfulLoginResponse,
-    get_user_tokens,
     get_successful_login_response,
+    get_user_tokens,
 )
 
 

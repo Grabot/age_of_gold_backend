@@ -3,10 +3,10 @@
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Tuple
-
-from fastapi import HTTPException, UploadFile
-import pytest
 from unittest.mock import Mock
+
+import pytest
+from fastapi import HTTPException, UploadFile
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession

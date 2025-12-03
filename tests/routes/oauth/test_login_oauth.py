@@ -1,18 +1,17 @@
 """Test for login oauth fuctionality."""
 
 from unittest.mock import AsyncMock, patch
-from fastapi.responses import RedirectResponse
+
 import pytest
+from fakeredis import FakeRedis
+from fastapi import HTTPException, status
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.oauth import login_oauth
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.testclient import TestClient
-from fastapi import HTTPException, status
-from fakeredis import FakeRedis
-
+from src.config.config import settings
 from src.models.user import User, hash_email
 from tests.helpers import AsyncFakeRedis
-from src.config.config import settings
 
 
 @pytest.mark.asyncio
@@ -153,20 +152,10 @@ async def test_login_user_oauth_existing_user(
     test_db.add(login_user)
     await test_db.commit()
 
-    with patch("src.models.User.generate_auth_token") as mock_generate_auth_token:
-        access_token_login: str = "login_access_token"
-        mock_generate_auth_token.return_value = access_token_login
-
-        response: RedirectResponse = await login_oauth.login_user_oauth(
-            test_user_login, test_email, test_origin, test_db
-        )
-
-        assert isinstance(response, RedirectResponse)
-        assert response.status_code == status.HTTP_303_SEE_OTHER
-        assert (
-            response.headers["location"]
-            == f"{settings.FRONTEND_URL}/auth/callback?token={access_token_login}"
-        )
+    return_user = await login_oauth.login_user_oauth(
+        test_user_login, test_email, test_origin, test_db
+    )
+    assert login_user == return_user
 
 
 @pytest.mark.asyncio
@@ -176,7 +165,6 @@ async def test_login_user_oauth_new_user(
     test_username: str = "test_user"
     test_email: str = "test@example.com"
     test_origin: int = 1
-    test_access_token: str = "test_access_token"
     login_user: User = User(
         id=11,
         username=test_username,
@@ -189,26 +177,19 @@ async def test_login_user_oauth_new_user(
         patch(
             "src.api.api_v1.oauth.login_oauth._create_user", new_callable=AsyncMock
         ) as mock_create,
-        patch("src.models.User.generate_auth_token") as mock_generate_auth_token,
         patch(
             "src.api.api_v1.oauth.login_oauth.task_generate_avatar.delay"
         ) as mock_avatar_task,
         patch.object(test_db, "refresh", new_callable=AsyncMock) as mock_refresh,
     ):
         mock_create.return_value = (login_user, True)
-        mock_generate_auth_token.return_value = test_access_token
 
-        response: RedirectResponse = await login_oauth.login_user_oauth(
+        return_user = await login_oauth.login_user_oauth(
             test_username, test_email, test_origin, test_db
         )
 
         mock_refresh.assert_called_once_with(login_user)
-        assert isinstance(response, RedirectResponse)
-        assert response.status_code == status.HTTP_303_SEE_OTHER
-        assert (
-            response.headers["location"]
-            == f"{settings.FRONTEND_URL}/auth/callback?token={test_access_token}"
-        )
+        assert login_user == return_user
         mock_avatar_task.assert_called_once_with(
             login_user.avatar_filename(), login_user.id
         )

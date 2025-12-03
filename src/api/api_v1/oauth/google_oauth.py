@@ -2,15 +2,70 @@
 
 import secrets
 from urllib.parse import urlencode
+
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
-from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.api_v1.oauth.login_oauth import (
+    login_user_oauth,
+    redirect_oauth,
+    validate_oauth_state,
+)
 from src.api.api_v1.router import api_router_v1
 from src.config.config import settings
 from src.database import get_db
+from src.models.user import User
 from src.sockets.sockets import redis
-from sqlalchemy.ext.asyncio import AsyncSession
+from src.util.util import (
+    SuccessfulLoginResponse,
+    get_successful_login_response,
+    get_user_tokens,
+)
+
+
+async def validate_google_user(google_access_token: str, db: AsyncSession) -> User:
+    """Validates a Google user using their access token."""
+    userinfo_url = settings.GOOGLE_ACCESS_TOKEN_URL
+    async with httpx.AsyncClient() as client:
+        userinfo_response = await client.get(
+            userinfo_url, headers={"Authorization": f"Bearer {google_access_token}"}
+        )
+        if userinfo_response.status_code != 200:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to fetch user info",
+            )
+        user_info = userinfo_response.json()
+        if not user_info.get("email_verified"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Email not verified"
+            )
+        email = user_info["email"]
+        username = user_info.get("given_name", "User")
+        return await login_user_oauth(username, email, 1, db)
+
+
+class GoogleTokenRequest(BaseModel):
+    """A Pydantic model representing a Google token request."""
+
+    access_token: str
+
+
+@api_router_v1.post("/auth/google/token", status_code=200)
+async def login_google_token(
+    google_token_request: GoogleTokenRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SuccessfulLoginResponse:
+    """Logs in a user using their Google token."""
+    user = await validate_google_user(google_token_request.access_token, db)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
+
+    return get_successful_login_response(user_token, user)
 
 
 @api_router_v1.get("/auth/google")
@@ -66,21 +121,11 @@ async def google_callback(
                 detail=f"Error getting Google access token: {token_data.get('error_description', token_data['error'])}",
             )
 
-        access_token = token_data["access_token"]
-        userinfo_url = settings.GOOGLE_ACCESS_TOKEN_URL
-        userinfo_response = await client.get(
-            userinfo_url, headers={"Authorization": f"Bearer {access_token}"}
-        )
-        if userinfo_response.status_code != 200:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to fetch user info",
-            )
-        user_info = userinfo_response.json()
-        if not user_info.get("email_verified"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Email not verified"
-            )
-        email = user_info["email"]
-        username = user_info.get("given_name", "User")
-        return await login_user_oauth(username, email, 1, db)
+        google_access_token = token_data["access_token"]
+
+        user = await validate_google_user(google_access_token, db)
+        user_token = get_user_tokens(user, 120, 120)
+        db.add(user_token)
+        await db.commit()
+
+        return redirect_oauth(user_token.access_token)

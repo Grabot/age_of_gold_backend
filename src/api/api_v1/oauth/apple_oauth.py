@@ -4,16 +4,57 @@ import secrets
 import time
 from typing import Annotated, Any
 from urllib.parse import urlencode
+
 import httpx
 import jwt as pyjwt
 from fastapi import Depends, Form, HTTPException, status
 from fastapi.responses import RedirectResponse
-from src.api.api_v1.oauth.login_oauth import login_user_oauth, validate_oauth_state
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.api.api_v1.oauth.login_oauth import (
+    login_user_oauth,
+    redirect_oauth,
+    validate_oauth_state,
+)
 from src.api.api_v1.router import api_router_v1
 from src.config.config import settings
 from src.database import get_db
+from src.models.user import User
 from src.sockets.sockets import redis
-from sqlalchemy.ext.asyncio import AsyncSession
+from src.util.util import (
+    SuccessfulLoginResponse,
+    get_successful_login_response,
+    get_user_tokens,
+)
+
+
+async def validate_apple_user(apple_access_token: str, db: AsyncSession) -> User:
+    """Validates an Apple user using the provided access token."""
+    apple_token = decode_apple_token(apple_access_token)
+    email = apple_token["email"]
+    username = apple_token["email"].split("@")[0]
+
+    return await login_user_oauth(username, email, 4, db)
+
+
+class AppleTokenRequest(BaseModel):
+    """A Pydantic model representing a request to validate an Apple token."""
+
+    access_token: str
+
+
+@api_router_v1.post("/auth/apple/token", status_code=200)
+async def login_apple_token(
+    apple_token_request: AppleTokenRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SuccessfulLoginResponse:
+    """Validates an Apple token and logs in the user."""
+    user = await validate_apple_user(apple_token_request.access_token, db)
+    user_token = get_user_tokens(user)
+    db.add(user_token)
+    await db.commit()
+    return get_successful_login_response(user_token, user)
 
 
 @api_router_v1.get("/auth/apple")
@@ -103,9 +144,11 @@ async def apple_callback(
                 detail="There was an error creating the user",
             )
 
-        id_token = user_info["id_token"]
-        apple_token = decode_apple_token(id_token)
-        email = apple_token["email"]
-        username = apple_token["email"].split("@")[0]
+        apple_access_token = user_info["id_token"]
 
-        return await login_user_oauth(username, email, 4, db)
+        user = await validate_apple_user(apple_access_token, db)
+        user_token = get_user_tokens(user, 120, 120)
+        db.add(user_token)
+        await db.commit()
+
+        return redirect_oauth(user_token.access_token)

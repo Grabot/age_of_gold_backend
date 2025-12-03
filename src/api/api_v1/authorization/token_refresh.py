@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,11 +11,11 @@ from src.database import get_db
 from src.models import User
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
-from src.util.security import decode_token, get_valid_auth_token
+from src.util.security import decode_token
 from src.util.util import (
     SuccessfulLoginResponse,
-    get_user_tokens,
     get_successful_login_response,
+    get_user_tokens,
     refresh_user_token,
 )
 
@@ -23,6 +23,7 @@ from src.util.util import (
 class RefreshRequest(BaseModel):
     """Request model for token refresh."""
 
+    access_token: str
     refresh_token: str
 
 
@@ -30,17 +31,16 @@ class RefreshRequest(BaseModel):
 @handle_db_errors("Token refresh failed")
 async def refresh_user(
     refresh_request: RefreshRequest,
-    access_token: str = Security(get_valid_auth_token, scopes=["user"]),
     db: AsyncSession = Depends(get_db),
 ) -> SuccessfulLoginResponse:
     """Handle token refresh request."""
-    if not refresh_request.refresh_token:
+    if not refresh_request.access_token or not refresh_request.refresh_token:
         logger.warning("Refresh failed: Invalid request")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request"
         )
     user: Optional[User] = await refresh_user_token(
-        db, access_token, refresh_request.refresh_token
+        db, refresh_request.access_token, refresh_request.refresh_token
     )
     if not user or not decode_token(refresh_request.refresh_token, "refresh"):
         raise HTTPException(

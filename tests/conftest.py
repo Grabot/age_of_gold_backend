@@ -7,7 +7,10 @@ from unittest.mock import MagicMock, patch
 import pytest_asyncio
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker  # type: ignore[attr-defined]
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    create_async_engine,
+)
 from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 

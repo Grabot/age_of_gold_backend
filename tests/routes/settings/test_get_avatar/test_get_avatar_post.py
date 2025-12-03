@@ -1,12 +1,12 @@
 """Test for get avatar endpoint via direct get call."""
 
 from pathlib import Path
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import status
-from pytest_mock import MockerFixture
 
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
+from pytest_mock import MockerFixture
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.config import settings
 from src.models.user import User

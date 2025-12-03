@@ -1,14 +1,16 @@
 """Test for GitHub oauth endpoints direct."""
 
 from unittest.mock import AsyncMock, patch
-from fastapi.responses import RedirectResponse
+
 import pytest
+from fakeredis import FakeRedis
+from fastapi.responses import RedirectResponse
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.api.api_v1.oauth import github_oauth
-from tests.conftest import add_token, add_user
 from src.config.config import settings
-from fakeredis import FakeRedis
+from tests.conftest import add_token, add_user
 from tests.helpers import AsyncFakeRedis
 
 
