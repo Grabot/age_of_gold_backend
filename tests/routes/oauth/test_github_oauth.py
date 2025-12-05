@@ -1,6 +1,7 @@
 """Test for GitHub oauth endpoints direct."""
 
 from unittest.mock import AsyncMock, patch
+from urllib.parse import urlencode
 
 import pytest
 from fakeredis import FakeRedis
@@ -77,6 +78,7 @@ async def test_github_callback_flow_direct(
                 "client_id": settings.GITHUB_CLIENT_ID,
                 "client_secret": settings.GITHUB_CLIENT_SECRET,
                 "code": "test_code",
+                "redirect_uri": settings.GITHUB_REDIRECT_URL,
             },
             headers={"Accept": "application/json"},
             timeout=10,
@@ -130,9 +132,14 @@ async def test_github_login_endpoint_direct(test_setup: TestClient) -> None:
         assert isinstance(response, RedirectResponse)
         assert response.status_code == 307
 
-        expected_url = (
-            f"{mock_auth_url}/?client_id={mock_client_id}&state={fixed_state}"
-        )
+        params = {
+            "client_id": mock_client_id,
+            "state": fixed_state,
+            "redirect_uri": settings.GITHUB_REDIRECT_URL,
+        }
+
+        url_params = urlencode(params)
+        expected_url = f"{mock_auth_url}?{url_params}"
         assert response.headers["location"] == expected_url
 
         assert await fake_redis.exists(f"oauth_state:{fixed_state}")

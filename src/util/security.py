@@ -10,6 +10,7 @@ from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.config.config import settings
+from src.config.jwt_key import jwt_public_key
 from src.database import get_db
 from src.models.user import User
 from src.models.user_token import UserToken
@@ -35,7 +36,7 @@ def decode_token(token: str, token_type: str) -> bool:
     try:
         payload: dict[str, Any] = pyjwt.decode(
             token,
-            settings.jwt_pem,
+            jwt_public_key,
             algorithms=[settings.header["alg"]],
             audience=settings.JWT_AUD,
             issuer=settings.JWT_ISS,

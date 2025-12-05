@@ -15,7 +15,6 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import SQLModel
 
 from main import app
-from src.config.config import settings
 from src.database import get_db
 from src.models import User
 from src.models.user import hash_email
@@ -43,7 +42,7 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
         salt = "salt"
         password_with_salt = password + salt
         password_hash = hash_password(password=password_with_salt)
-        email_hash = hash_email("testuser@example.com", settings.PEPPER)
+        email_hash = hash_email("testuser@example.com")
         user = User(
             id=1,
             username="testuser",
@@ -95,7 +94,7 @@ async def add_user(
     salt = "salt"
     password_with_salt = password + salt
     password_hash = hash_password(password=password_with_salt)
-    email_hash = hash_email(f"{username}@{email_domain}", settings.PEPPER)
+    email_hash = hash_email(f"{username}@{email_domain}")
     user = User(
         username=username,
         email_hash=email_hash,

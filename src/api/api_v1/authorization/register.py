@@ -8,7 +8,6 @@ from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
 from src.celery_worker.tasks import task_generate_avatar
-from src.config.config import settings
 from src.database import get_db
 from src.models import User
 from src.models.user import create_salt, hash_email
@@ -53,7 +52,7 @@ async def register_user(
             status_code=status.HTTP_409_CONFLICT, detail="Username already taken"
         )
 
-    email_hash = hash_email(register_request.email, settings.PEPPER)
+    email_hash = hash_email(register_request.email)
     results = await db.execute(
         select(User).where(User.origin == 0, User.email_hash == email_hash)
     )

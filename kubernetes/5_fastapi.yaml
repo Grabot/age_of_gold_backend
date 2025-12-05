@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  namespace: <namespace>
+  labels:
+    app: fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      namespace: <namespace>
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: <docker_hub_name>/<image_name>:<tag>
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - mountPath: /app/static/uploads
+              name: hostvol
+          envFrom:
+            - secretRef:
+                name: fastapi-secret
+          env:
+            - name: POSTGRES_URL
+              value: service-postgres.<namespace>.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: REDIS_URL
+              value: redis-service.<namespace>.svc.cluster.local
+            - name: REDIS_PORT
+              value: "6379"
+            - name: GOOGLE_CLIENT_ID
+              value: "<google_client_id>"
+            - name: GOOGLE_CLIENT_SECRET
+              value: "<google_client_secret>"
+            - name: GOOGLE_REDIRECT_URL
+              value: "<google_redirect_url>"
+            - name: GITHUB_CLIENT_ID
+              value: "<github_client_id>"
+            - name: GITHUB_CLIENT_SECRET
+              value: "<github_client_secret>"
+            - name: GITHUB_REDIRECT_URL
+              value: "<github_redirect_url>"
+            - name: REDDIT_CLIENT_ID
+              value: "<reddit_client_id"
+            - name: REDDIT_CLIENT_SECRET
+              value: "<reddit_client_secret>"
+            - name: JWT_ALG
+              value: "ES256"
+            - name: JWT_KID
+              value: "<jwt_kid>"
+            - name: JWT_TYP
+              value: "jwt"
+            - name: JWT_ISS
+              value: "<base_url>"
+            - name: JWT_AUD
+              value: "<api_version>"
+            - name: BASE_URL
+              value: "<base_url>"
+            - name: FRONTEND_URL
+              value: "<frontend_url>"
+            - name: PEPPER
+              value: "<pepper>"
+            - name: APPLE_AUTH_KEY
+              value: "<apple_auth_key>"
+            - name: APPLE_CLIENT_ID
+              value: "<apple_client_id>"
+            - name: APPLE_KEY_ID
+              value: "<apple_key_id>"
+            - name: APPLE_TEAM_ID
+              value: "<apple_team_id>"
+            - name: APPLE_GRANT_TYPE
+              value: "authorization_code"
+            - name: APPLE_REDIRECT_URL
+              value: "<apple_redirect_url>"
+            - name: JWT_PEM
+              value: "<jwt_pem>"
+            - name: REDDIT_REDIRECT
+              value: "<reddit_redirect>"
+            - name: SHARED_DIR
+              value: "<shared_dir>"
+            - name: ALLOWED_ORIGINS
+              value: "<allowed_origins>"
+            - name: MAIL_API_KEY
+              value: "<mail_api_key>"
+            - name: SENDER_MAIL
+              value: "<sender_mail>"
+          args:
+            - /bin/sh
+            - boot.sh
+      volumes:
+        - name: hostvol
+          hostPath:
+            path: /data/avatars
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: <namespace>
+  name: fastapi-service
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: fastapi
+  type: LoadBalancer

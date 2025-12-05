@@ -1,4 +1,4 @@
-"""Test for change username endpoint via direct get call."""
+"""Test for reset password endpoint via direct get call."""
 
 import pytest
 from fastapi import status
@@ -11,21 +11,21 @@ from tests.conftest import add_token
 
 
 @pytest.mark.asyncio
-async def test_successful_change_username(
+async def test_successful_reset_password(
     test_setup: TestClient,
     test_db: AsyncSession,
 ) -> None:
-    """Test successful change username with valid token."""
+    """Test successful reset password with valid token."""
     test_user, user_token = await add_token(1000, 1000, test_db)
     test_user_id = test_user.id
-    test_user_username = test_user.username
-    new_username = "new_username"
+    test_user_password_hash = test_user.password_hash
+    new_password = "new_password"
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
     response = test_setup.patch(
-        f"{settings.API_V1_STR}/user/username",
+        f"{settings.API_V1_STR}/password/reset",
         headers=headers,
         json={
-            "new_username": new_username,
+            "new_password": new_password,
         },
     )
 
@@ -35,5 +35,6 @@ async def test_successful_change_username(
     test_user_result = await test_db.get(User, test_user_id)
     assert test_user_result is not None
     assert test_user_result.id == test_user_id
-    assert test_user_result.username != test_user_username
-    assert test_user_result.username == new_username
+    assert test_user_result.password_hash != test_user_password_hash
+    password_with_salt = new_password + test_user.salt
+    assert test_user.verify_password(test_user_result.password_hash, password_with_salt)

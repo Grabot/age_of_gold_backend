@@ -86,7 +86,7 @@ async def login_user_oauth(
 ) -> User:
     """Login user with OAuth2"""
     username = _sanitize_username(username)
-    hashed_email = hash_email(email, settings.PEPPER)
+    hashed_email = hash_email(email)
 
     statement_origin: Select = (
         select(User).where(User.origin == origin).where(User.email_hash == hashed_email)

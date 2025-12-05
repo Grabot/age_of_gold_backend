@@ -29,7 +29,7 @@ async def reddit_login() -> RedirectResponse:
     auth_url = settings.REDDIT_AUTHORIZE
     params = {
         "client_id": settings.REDDIT_CLIENT_ID,
-        "redirect_uri": settings.REDDIT_REDIRECT,
+        "redirect_uri": settings.REDDIT_REDIRECT_URL,
         "response_type": "code",
         "scope": "identity",
         "duration": "temporary",
@@ -48,7 +48,7 @@ async def _fetch_reddit_access_token(code: str) -> str:
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": settings.REDDIT_REDIRECT,
+        "redirect_uri": settings.REDDIT_REDIRECT_URL,
     }
 
     encoded_authorization = (

@@ -12,6 +12,7 @@ from argon2 import PasswordHasher, exceptions
 from sqlmodel import Field, Relationship, SQLModel
 
 from src.config.config import settings
+from src.config.jwt_key import jwt_private_key
 
 ph = PasswordHasher()
 
@@ -19,10 +20,10 @@ if TYPE_CHECKING:
     from src.models.user_token import UserToken
 
 
-def hash_email(email: str, pepper: str) -> str:
+def hash_email(email: str) -> str:
     """Hash the email address with a pepper."""
     normalized_email = email.lower().encode("utf-8")
-    peppered_email = normalized_email + pepper.encode("utf-8")
+    peppered_email = normalized_email + settings.PEPPER.encode("utf-8")
     return sha512(peppered_email).hexdigest()
 
 
@@ -98,7 +99,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             payload["scope"] = " ".join(scopes)
         return pyjwt.encode(
             payload,
-            settings.jwt_pem,
+            jwt_private_key,
             algorithm=settings.header["alg"],
             headers=settings.header,
         )
@@ -118,7 +119,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         }
         return pyjwt.encode(
             payload,
-            settings.jwt_pem,
+            jwt_private_key,
             algorithm=settings.header["alg"],
             headers=settings.header,
         )

@@ -6,6 +6,7 @@ import jwt as pyjwt
 from pytest_mock import MockerFixture
 
 from src.config.config import settings
+from src.config.jwt_key import jwt_public_key
 from src.models import User
 from src.models.user import create_salt, hash_email
 from src.util.util import hash_password
@@ -14,8 +15,7 @@ from src.util.util import hash_password
 def test_hash_email() -> None:
     """Test that the hash_email function returns a string of length 128"""
     email = "test@example.com"
-    pepper = "pepper"
-    expected_hash = hash_email(email, pepper)
+    expected_hash = hash_email(email)
     assert isinstance(expected_hash, str)
     assert len(expected_hash) == 128
 
@@ -60,7 +60,7 @@ def test_user_generate_auth_token() -> None:
     assert len(token) > 0
     decoded_token = pyjwt.decode(
         token,
-        settings.jwt_pem,
+        jwt_public_key,
         algorithms=[settings.header["alg"]],
         options={"verify_aud": False},
     )
@@ -83,7 +83,7 @@ def test_user_generate_refresh_token() -> None:
     assert len(token) > 0
     decoded_token = pyjwt.decode(
         token,
-        settings.jwt_pem,
+        jwt_public_key,
         algorithms=[settings.header["alg"]],
         options={"verify_aud": False},
     )

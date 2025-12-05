@@ -83,7 +83,7 @@ async def test_google_callback_flow_direct(
                 "client_secret": settings.GOOGLE_CLIENT_SECRET,
                 "code": "test_code",
                 "grant_type": "authorization_code",
-                "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+                "redirect_uri": settings.GOOGLE_REDIRECT_URL,
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -127,7 +127,7 @@ async def test_google_login_endpoint_direct(test_setup: TestClient) -> None:
             mock_client_id,
         ),
         patch(
-            "src.api.api_v1.oauth.google_oauth.settings.GOOGLE_REDIRECT_URI",
+            "src.api.api_v1.oauth.google_oauth.settings.GOOGLE_REDIRECT_URL",
             mock_redirect_uri,
         ),
         patch(

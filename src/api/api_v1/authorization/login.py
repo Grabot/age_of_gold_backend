@@ -10,7 +10,6 @@ from sqlalchemy.orm import joinedload
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
-from src.config.config import settings
 from src.database import get_db
 from src.models import User
 from src.models.user import hash_email
@@ -25,7 +24,7 @@ from src.util.util import (
 
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Retrieve a user by their email address."""
-    email_hash = hash_email(email, settings.PEPPER)
+    email_hash = hash_email(email)
     results_user = await db.execute(
         select(User)
         .where(User.origin == 0, User.email_hash == email_hash)

@@ -86,7 +86,7 @@ async def test_reddit_callback_flow_direct(
             data={
                 "grant_type": "authorization_code",
                 "code": "test_code",
-                "redirect_uri": settings.REDDIT_REDIRECT,
+                "redirect_uri": settings.REDDIT_REDIRECT_URL,
             },
             timeout=30,
         )
@@ -135,7 +135,7 @@ async def test_reddit_login_endpoint_direct(test_setup: TestClient) -> None:
             mock_client_id,
         ),
         patch(
-            "src.api.api_v1.oauth.reddit_oauth.settings.REDDIT_REDIRECT",
+            "src.api.api_v1.oauth.reddit_oauth.settings.REDDIT_REDIRECT_URL",
             mock_redirect_uri,
         ),
         patch(

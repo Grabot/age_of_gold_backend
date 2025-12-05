@@ -29,10 +29,11 @@ async def github_login() -> RedirectResponse:
     params = {
         "client_id": settings.GITHUB_CLIENT_ID,
         "state": state,
+        "redirect_uri": settings.GITHUB_REDIRECT_URL,
     }
 
     url_params = urlencode(params)
-    authorization_url = auth_url + "/?" + url_params
+    authorization_url = auth_url + "?" + url_params
 
     return RedirectResponse(url=authorization_url)
 
@@ -42,6 +43,7 @@ async def _fetch_github_access_token(code: str) -> str:
         "client_id": settings.GITHUB_CLIENT_ID,
         "client_secret": settings.GITHUB_CLIENT_SECRET,
         "code": code,
+        "redirect_uri": settings.GITHUB_REDIRECT_URL,
     }
 
     async with httpx.AsyncClient() as client:

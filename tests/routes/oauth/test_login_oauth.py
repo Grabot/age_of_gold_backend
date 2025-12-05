@@ -9,7 +9,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.oauth import login_oauth
-from src.config.config import settings
 from src.models.user import User, hash_email
 from tests.helpers import AsyncFakeRedis
 
@@ -120,9 +119,7 @@ async def test_find_available_username_all_taken(
 @pytest.mark.asyncio
 async def test_create_user(test_setup: TestClient, test_db: AsyncSession) -> None:
     new_username: str = "test_user_login_create"
-    new_hashed_email: str = hash_email(
-        "test_user_login_create@example.com", settings.PEPPER
-    )
+    new_hashed_email: str = hash_email("test_user_login_create@example.com")
     user: User | None
     created: bool
     user, created = await login_oauth._create_user(
@@ -144,7 +141,7 @@ async def test_login_user_oauth_existing_user(
     test_origin: int = 1
     login_user: User = User(
         username=test_user_login,
-        email_hash=hash_email(test_email, settings.PEPPER),
+        email_hash=hash_email(test_email),
         password_hash="",
         salt="",
         origin=test_origin,
@@ -168,7 +165,7 @@ async def test_login_user_oauth_new_user(
     login_user: User = User(
         id=11,
         username=test_username,
-        email_hash=hash_email(test_email, settings.PEPPER),
+        email_hash=hash_email(test_email),
         password_hash="",
         salt="",
         origin=test_origin,

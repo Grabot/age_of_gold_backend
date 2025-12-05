@@ -76,7 +76,7 @@ async def google_login() -> RedirectResponse:
     await redis.setex(f"oauth_state:{state}", settings.OAUTH_LIFETIME, "valid")
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URL,
         "response_type": "code",
         "scope": "email profile",
         "access_type": "offline",
@@ -105,7 +105,7 @@ async def google_callback(
         "client_secret": settings.GOOGLE_CLIENT_SECRET,
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URL,
     }
 
     async with httpx.AsyncClient() as client:

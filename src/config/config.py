@@ -32,11 +32,10 @@ class Settings(BaseSettings):
         return "redis://{url}:{port}".format(url=self.REDIS_URL, port=self.REDIS_PORT)
 
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
-    SECRET_KEY: str
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
-    GOOGLE_REDIRECT_URI: str
+    GOOGLE_REDIRECT_URL: str
     GOOGLE_DISCOVERY_URL: str = (
         "https://accounts.google.com/.well-known/openid-configuration"
     )
@@ -49,13 +48,14 @@ class Settings(BaseSettings):
     GITHUB_USER: str = "https://api.github.com/user"
     GITHUB_CLIENT_ID: str
     GITHUB_CLIENT_SECRET: str
+    GITHUB_REDIRECT_URL: str
 
     REDDIT_AUTHORIZE: str = "https://www.reddit.com/api/v1/authorize"
     REDDIT_ACCESS: str = "https://www.reddit.com/api/v1/access_token"
     REDDIT_USER: str = "https://oauth.reddit.com/api/v1/me"
     REDDIT_CLIENT_ID: str
     REDDIT_CLIENT_SECRET: str
-    REDDIT_REDIRECT: str
+    REDDIT_REDIRECT_URL: str
 
     APPLE_AUTHORIZE_TOKEN: str = "https://appleid.apple.com/auth/token"
     APPLE_AUTHORIZE: str = "https://appleid.apple.com/auth/authorize"
@@ -69,10 +69,11 @@ class Settings(BaseSettings):
 
     OAUTH_LIFETIME: int = 600
 
-    jwt_pem: str
+    JWT_PEM: str
     jwt_alg: str
     jwt_kid: str
     jwt_typ: str
+    PRIVATE_KEY_PASSPHRASE: str
 
     @property
     def header(self) -> Dict[str, str]:
@@ -86,12 +87,8 @@ class Settings(BaseSettings):
     JWT_AUD: str
     API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
 
-    MAIL_SERVER: str
-    MAIL_PORT: int
-    MAIL_USE_TLS: bool
-    MAIL_USERNAME: str
-    MAIL_PASSWORD: str
-    MAIL_SENDERNAME: str
+    MAIL_API_KEY: str
+
     UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
     SHARED_DIR: str
@@ -111,6 +108,9 @@ class Settings(BaseSettings):
     @property
     def ALLOWED_ORIGINS_LIST(self) -> list[str]:
         return self.ALLOWED_ORIGINS.split(",")
+
+    SENDER_MAIL: str
+    SENDER_NAME: str = "Age of Gold"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
