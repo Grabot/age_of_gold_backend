@@ -50,7 +50,7 @@ spec:
           - shared_buffers=10240MB
           volumeMounts:
             - name: data-storage-volume
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/<project_name>/postgresql/data
       volumes:
         - name: data-storage-volume
           persistentVolumeClaim:
@@ -59,7 +59,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-postgres
+  name: postgres-service
   namespace: <namespace>
   labels:
     name: postgres

@@ -30,7 +30,7 @@ spec:
                 name: fastapi-secret
           env:
             - name: POSTGRES_URL
-              value: service-postgres.<namespace>.svc.cluster.local
+              value: postgres-service.<namespace>.svc.cluster.local
             - name: POSTGRES_PORT
               value: "5432"
             - name: REDIS_URL
@@ -83,8 +83,8 @@ spec:
               value: "<apple_redirect_url>"
             - name: JWT_PEM
               value: "<jwt_pem>"
-            - name: REDDIT_REDIRECT
-              value: "<reddit_redirect>"
+            - name: REDDIT_REDIRECT_URL
+              value: "<reddit_redirect_url>"
             - name: SHARED_DIR
               value: "<shared_dir>"
             - name: ALLOWED_ORIGINS
