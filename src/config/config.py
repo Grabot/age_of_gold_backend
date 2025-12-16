@@ -87,8 +87,6 @@ class Settings(BaseSettings):
     JWT_AUD: str
     API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
 
-    MAIL_API_KEY: str
-
     UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
     SHARED_DIR: str
@@ -109,8 +107,11 @@ class Settings(BaseSettings):
     def ALLOWED_ORIGINS_LIST(self) -> list[str]:
         return self.ALLOWED_ORIGINS.split(",")
 
-    SENDER_MAIL: str
-    SENDER_NAME: str = "Age of Gold"
+    SMTP_PASSWORD: str
+    SMTP_ACCOUNT: str
+    SMTP_USER: str
+    SMTP_HOST: str
+    SMTP_PORT: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

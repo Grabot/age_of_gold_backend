@@ -7,6 +7,7 @@ from . import (
     get_avatar,
     get_user_detail,
     reset_password,
+    delete_account
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "forgot_password",
     "get_avatar",
     "reset_password",
+    "delete_account"
 ]

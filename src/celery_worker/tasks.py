@@ -5,7 +5,7 @@ from celery import Celery
 
 from src.config.config import settings
 from src.util.avatar import generate_avatar
-from src.util.mail.reset_password_mail import send_reset_email
+from src.util.mail_util import send_reset_email
 
 logging.basicConfig(
     level=logging.INFO,
