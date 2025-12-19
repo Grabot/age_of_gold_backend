@@ -89,10 +89,16 @@ spec:
               value: "<shared_dir>"
             - name: ALLOWED_ORIGINS
               value: "<allowed_origins>"
-            - name: MAIL_API_KEY
-              value: "<mail_api_key>"
-            - name: SENDER_MAIL
-              value: "<sender_mail>"
+            - name: SMTP_PASSWORD
+              value: "<smtp_password>"
+            - name: SMTP_ACCOUNT
+              value: "<smtp_account>"
+            - name: SMTP_USER
+              value: "<smtp_user>"
+            - name: SMTP_HOST
+              value: "<smtp_host>"
+            - name: SMTP_PORT
+              value: "<smtp_port>"
           args:
             - poetry
             - run

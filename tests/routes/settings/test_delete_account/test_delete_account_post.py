@@ -4,7 +4,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlmodel import select
 
 from src.config.config import settings
 from src.models.user import User

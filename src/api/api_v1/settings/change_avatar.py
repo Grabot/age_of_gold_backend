@@ -34,6 +34,7 @@ async def change_avatar(
         user.default_avatar = True
         user.avatar_version += 1
         db.add(user)
+        user.remove_avatar()
         await db.commit()
         return {"success": True}
 

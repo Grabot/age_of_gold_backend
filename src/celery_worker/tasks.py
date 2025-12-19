@@ -5,7 +5,7 @@ from celery import Celery
 
 from src.config.config import settings
 from src.util.avatar import generate_avatar
-from src.util.mail_util import send_reset_email
+from src.util.mail_util import send_delete_account, send_reset_email
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,4 +41,13 @@ def task_send_email_forgot_password(
 ) -> dict[str, bool]:
     """Send email to reset password."""
     send_reset_email(to_email, subject, access_token)
+    return {"success": True}
+
+
+@celery_app.task
+def task_send_email_delete_account(
+    to_email: str, subject: str, access_token: str
+) -> dict[str, bool]:
+    """Send email to reset password."""
+    send_delete_account(to_email, subject, access_token)
     return {"success": True}

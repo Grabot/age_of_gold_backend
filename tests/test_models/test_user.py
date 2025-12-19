@@ -147,3 +147,46 @@ def test_user_create_avatar(
     assert not expected_path.is_file(), "Avatar file was not removed"
 
     temp_upload_folder.rmdir()
+
+
+def test_delete_default_avatar(
+    mocker: MockerFixture,
+) -> None:
+    """Test that the default avatar deletion function works."""
+    test_user = User(
+        username="testuser",
+        email_hash="test@example.com",
+        password_hash="hashedpassword",
+        salt="salt",
+        origin=0,
+    )
+
+    test_image_path = Path(__file__).parent.parent / "data" / "test_default_copy.png"
+    assert test_image_path.is_file(), "Test image must exist"
+
+    test_image_bytes = test_image_path.read_bytes()
+
+    temp_upload_folder = Path(__file__).parent / "temp_avatars"
+    temp_upload_folder.mkdir(exist_ok=True)
+
+    mocker.patch.object(settings, "UPLOAD_FOLDER_AVATARS", str(temp_upload_folder))
+
+    avatar_filename = test_user.avatar_filename_default() + ".png"
+    avatar_path = temp_upload_folder / avatar_filename
+    avatar_path.write_bytes(test_image_bytes)
+
+    expected_filename = test_user.avatar_filename_default() + ".png"
+    expected_path = temp_upload_folder / expected_filename
+
+    assert expected_path.is_file(), "Avatar file was not created"
+
+    created_content = expected_path.read_bytes()
+    assert created_content == test_image_bytes, "Avatar file content does not match"
+
+    test_user.remove_avatar_default()
+    assert not expected_path.is_file(), "Avatar file was not removed"
+
+    test_user.remove_avatar_default()
+    assert not expected_path.is_file(), "Avatar file was not removed"
+
+    temp_upload_folder.rmdir()

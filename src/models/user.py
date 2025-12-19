@@ -82,6 +82,14 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         if os.path.exists(os.path.join(file_folder, file_name)):
             os.remove(os.path.join(file_folder, file_name))
 
+    def remove_avatar_default(self) -> None:
+        """Remove the default avatar for the user."""
+        file_folder = settings.UPLOAD_FOLDER_AVATARS
+        file_name = self.avatar_filename_default() + ".png"
+
+        if os.path.exists(os.path.join(file_folder, file_name)):
+            os.remove(os.path.join(file_folder, file_name))
+
     def generate_auth_token(
         self, expires_in: int = 1800, scopes: Optional[List[str]] = None
     ) -> str:

@@ -1,12 +1,15 @@
+"""Email utilities for sending emails."""
+
 import datetime
 from pathlib import Path
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import Any
 from src.config.config import settings
 
 
-def load_template(template_path: str, **kwargs) -> str:
+def load_template(template_path: str, **kwargs: Any) -> str:
     """Load and render an email template with placeholders."""
     template_file = Path(template_path)
     template = template_file.read_text()
@@ -15,7 +18,7 @@ def load_template(template_path: str, **kwargs) -> str:
     return template
 
 
-def render_text_content(template: str, **kwargs) -> str:
+def render_text_content(template: str, **kwargs: Any) -> str:
     """Render a plain text email template with placeholders."""
     for key, value in kwargs.items():
         template = template.replace(f"{{{key}}}", str(value))
@@ -56,47 +59,54 @@ def send_email(
 def send_reset_email(to_email: str, subject: str, access_token: str) -> None:
     """Send a password reset email."""
     html_content = load_template(
-        "src/templates/password_reset_template.html",
-        base_url=settings.BASE_URL,
+        "src/templates/password_reset_email.html",
+        frontend_url=settings.FRONTEND_URL,
         token=access_token,
         year=datetime.datetime.now().year,
     )
     text_content = render_text_content(
         """Hi,
         We received a request to reset your password. Go to the link below to proceed:
-        "{base_url}/password?access_token={token}"
+        "{frontend_url}/password?access_token={token}"
         If you didn't request this, please ignore this email or contact support.
         {year} Zwaar Developers. All rights reserved.""",
-        base_url=settings.BASE_URL,
+        frontend_url=settings.FRONTEND_URL,
         token=access_token,
         year=datetime.datetime.now().year,
     )
-    send_email(to_email, subject, html_content, text_content)
+    send_email(
+        to_email=to_email,
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content,
+    )
 
 
 def send_delete_account(
     to_email: str,
     subject: str,
     access_token: str,
-    origin: str,
 ) -> None:
     """Send an account deletion email."""
     html_content = load_template(
         "src/templates/delete_account_email.html",
-        base_url=settings.BASE_URL,
+        frontend_url=settings.FRONTEND_URL,
         token=access_token,
         year=datetime.datetime.now().year,
     )
-    html_content = html_content.replace("{origin}", str(origin))
     text_content = render_text_content(
         """Hi,
         We received a request to delete your account. Go to the link below to proceed:
-        "{base_url}/deletion?access_token={token}&origin={origin}"
+        "{frontend_url}/deletion?access_token={token}"
         If you didn't request this, please ignore this email or contact support.
         {year} Zwaar Developers. All rights reserved.""",
-        base_url=settings.BASE_URL,
+        frontend_url=settings.FRONTEND_URL,
         token=access_token,
-        origin=origin,
         year=datetime.datetime.now().year,
     )
-    send_email(to_email, subject, html_content, text_content)
+    send_email(
+        to_email=to_email,
+        subject=subject,
+        html_content=html_content,
+        text_content=text_content,
+    )

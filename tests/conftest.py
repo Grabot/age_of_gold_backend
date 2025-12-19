@@ -88,13 +88,17 @@ async def add_user(
     origin: int,
     test_db_for_user: AsyncSession,
     email_domain: str = "example.com",
+    full_email: str | None = None,
 ) -> User:
     """Helper function to add a user to the database."""
     password = "testpassword"
     salt = "salt"
     password_with_salt = password + salt
     password_hash = hash_password(password=password_with_salt)
-    email_hash = hash_email(f"{username}@{email_domain}")
+    if not full_email:
+        email_hash = hash_email(f"{username}@{email_domain}")
+    else:
+        email_hash = hash_email(full_email)
     user = User(
         username=username,
         email_hash=email_hash,
