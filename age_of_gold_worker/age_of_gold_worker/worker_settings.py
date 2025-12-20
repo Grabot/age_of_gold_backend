@@ -1,10 +1,12 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class WorkerSettings(BaseSettings):
     BASE_URL: str
 
     REDIS_URL: str
     REDIS_PORT: int
+
     @property
     def REDIS_URI(self) -> str:
         return "redis://{url}:{port}".format(url=self.REDIS_URL, port=self.REDIS_PORT)

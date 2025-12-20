@@ -4,7 +4,7 @@ import datetime
 from unittest.mock import patch, MagicMock
 import pytest
 from pytest_mock import MockerFixture
-from src.util.mail_util import (
+from age_of_gold_worker.age_of_gold_worker.util.mail_util import (
     load_template,
     render_text_content,
     send_email,

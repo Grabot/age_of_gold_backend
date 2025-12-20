@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: <docker_hub_name>/<image_name>:<tag>
+          image: <docker_hub_name>/<worker_image_name>:<tag>
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
@@ -100,11 +100,9 @@ spec:
             - name: SMTP_PORT
               value: "<smtp_port>"
           args:
-            - poetry
-            - run
             - celery
             - -A
-            - src.celery_worker.tasks
+            - age_of_gold_worker.age_of_gold_worker.tasks
             - worker
             - -l
             - info

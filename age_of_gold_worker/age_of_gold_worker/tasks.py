@@ -2,7 +2,10 @@ from typing import Optional
 import logging
 from celery import Celery
 from age_of_gold_worker.age_of_gold_worker.worker_settings import worker_settings
-from age_of_gold_worker.age_of_gold_worker.util.mail_util import send_reset_email, send_delete_account
+from age_of_gold_worker.age_of_gold_worker.util.mail_util import (
+    send_reset_email,
+    send_delete_account,
+)
 from .util import avatar
 
 

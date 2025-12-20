@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from PIL import Image
 
-from src.util.avatar import (
+from age_of_gold_worker.age_of_gold_worker.util.avatar import (
     Line,
     Plane,
     Point,

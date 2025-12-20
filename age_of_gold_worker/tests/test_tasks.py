@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.celery_worker.tasks import (
+from age_of_gold_worker.age_of_gold_worker.tasks import (
     task_generate_avatar,
     task_initialize,
     task_send_email_delete_account,
