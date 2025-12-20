@@ -1,0 +1,25 @@
+FROM python:3.14.1-slim
+
+WORKDIR /
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir uv
+
+ENV PYTHONPATH=${PYTHONPATH}:/src
+
+COPY age_of_gold_cron/pyproject.toml /pyproject.toml
+COPY age_of_gold_cron/README.md /README.md
+
+RUN uv pip install --system --no-cache-dir -e .
+
+COPY age_of_gold_cron/main_cron.py /main_cron.py
+COPY /src/database.py /src/database.py
+COPY /src/config/config.py src/config/config.py
+COPY /src/config/jwt_key.py src/config/jwt_key.py
+COPY /src/models/ src/models/
+
+RUN mkdir -p /src/static/uploads

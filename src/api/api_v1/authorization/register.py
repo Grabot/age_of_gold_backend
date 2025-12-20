@@ -6,8 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from age_of_gold_worker.age_of_gold_worker import task_generate_avatar
 from src.api.api_v1.router import api_router_v1
-from src.celery_worker.tasks import task_generate_avatar
 from src.database import get_db
 from src.models import User
 from src.models.user import create_salt, hash_email

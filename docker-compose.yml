@@ -52,9 +52,9 @@ services:
   worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: age_of_gold_worker/Dockerfile_worker
     user: celery
-    env_file: .env
+    env_file: age_of_gold_worker/.env
     networks:
       - default
     restart: always
@@ -63,19 +63,4 @@ services:
     depends_on:
       - redis
       - age_of_db
-    command: "poetry run celery -A src.celery_worker.tasks worker -l info"
-
-  cron_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file: .env
-    networks:
-      - default
-    restart: always
-    volumes:
-      - ${SHARED_DIR}:/src/static/uploads/
-    depends_on:
-      - redis
-      - age_of_db
-    command: "python main_cron.py"
+    command: "celery -A age_of_gold_worker.age_of_gold_worker.tasks worker -l info"

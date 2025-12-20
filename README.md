@@ -60,16 +60,31 @@ Some services need to be running and configured; you can start them with podman-
 
 Build the AoG image:
 
-    podman build -t aog .
+    podman build -t age_of_gold:<version> .
     or
     podman-compose build
 
 Run the image you just built:
 
-    podman run -it aog
+    podman run -it age_of_gold:<version>
     or
     podman-compose up
 
+
+### Build the worker
+
+There is a celery worker which is used to create the avatars and to send the emails without stopping the endpoint calls.
+To build the container of the worker you can run
+
+    podman build -f age_of_gold_worker/Dockerfile_worker -t age_of_gold_worker:<worker_version> .
+
+
+### Build the cron worker
+
+There is a simple cron job which is used to remove expired tokens from the database. It only uses the files required to remove the tokens instead of the entire project.
+To build the container of the cron worker you can run
+
+    podman build -f age_of_gold_cron/Dockerfile_cron -t age_of_gold_cron:<worker_version> .
 
 ## Upload to docker hub
 

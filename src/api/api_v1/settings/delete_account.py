@@ -11,7 +11,7 @@ from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
-from src.celery_worker.tasks import task_send_email_delete_account
+from age_of_gold_worker.age_of_gold_worker import task_send_email_delete_account
 from src.database import get_db
 from src.models.user import User, hash_email
 from src.models.user_token import UserToken

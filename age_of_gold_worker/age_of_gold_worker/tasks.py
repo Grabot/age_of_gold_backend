@@ -1,11 +1,10 @@
-import logging
 from typing import Optional
-
+import logging
 from celery import Celery
+from age_of_gold_worker.age_of_gold_worker.worker_settings import worker_settings
+from age_of_gold_worker.age_of_gold_worker.util.mail_util import send_reset_email, send_delete_account
+from .util import avatar
 
-from src.config.config import settings
-from src.util.avatar import generate_avatar
-from src.util.mail_util import send_delete_account, send_reset_email
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,7 +12,8 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 logger = logging.getLogger(__name__)
-celery_app = Celery("tasks", broker=settings.REDIS_URI, backend="rpc://")
+
+celery_app = Celery("tasks", broker=worker_settings.REDIS_URI, backend="rpc://")
 
 
 @celery_app.task
@@ -30,7 +30,7 @@ def task_generate_avatar(
     """Generate avatar for a new user."""
     if not user_id:
         return {"success": False}
-    generate_avatar(avatar_filename, settings.UPLOAD_FOLDER_AVATARS)
+    avatar.generate_avatar(avatar_filename, worker_settings.UPLOAD_FOLDER_AVATARS)
 
     return {"success": True}
 

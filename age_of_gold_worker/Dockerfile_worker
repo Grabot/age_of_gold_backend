@@ -1,0 +1,22 @@
+FROM python:3.14.1-slim
+
+WORKDIR /
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir uv
+
+ENV PYTHONPATH=${PYTHONPATH}:/age_of_gold_worker
+
+COPY /age_of_gold_worker /age_of_gold_worker
+COPY pyproject.toml /pyproject.toml
+COPY README.md /README.md
+
+RUN uv pip install --system --no-cache-dir -e .
+
+RUN useradd -r -s /bin/false -m celery && \
+    mkdir -p /home/celery/ static/uploads && \
+    chown -R celery:celery /home/celery

@@ -1,10 +1,12 @@
 *
 !src/
 !migrations/
+!age_of_gold_cron/
+!age_of_gold_worker/
 !pyproject.toml
 !boot.sh
 !alembic.ini
 !main.py
-!main_cron.py
+!README.md
 !.pre-commit-config.yaml
 !.flake8

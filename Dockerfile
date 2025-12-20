@@ -1,28 +1,29 @@
 FROM python:3.14.1-slim
 
 WORKDIR /
-ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
-RUN apt-get update &&\
-    apt install -y git gcc libpq-dev &&\
-    pip3 install --no-cache-dir --upgrade pip && \
-    pip3 install --no-cache-dir poetry && \
-    pip3 install --no-cache-dir pre-commit && \
-    poetry config virtualenvs.create false
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir uv
+
+ENV PYTHONPATH=${PYTHONPATH}:/src
+
+COPY /age_of_gold_worker/age_of_gold_worker /age_of_gold_worker/age_of_gold_worker
+COPY age_of_gold_worker/pyproject.toml age_of_gold_worker/pyproject.toml
+COPY age_of_gold_worker/README.md age_of_gold_worker/README.md
 
 COPY pyproject.toml /pyproject.toml
+COPY README.md /README.md
+
+RUN uv pip install --system --no-cache-dir -e .
+
 COPY boot.sh /boot.sh
 COPY main.py /main.py
-COPY main_cron.py /main_cron.py
 COPY migrations/ /migrations/
 COPY alembic.ini /alembic.ini
-
-RUN useradd -r -s /bin/false -m celery && \
-    mkdir -p /home/celery/ && \
-    chown -R celery:celery /home/celery
-
-RUN poetry install --no-root --only main
-
 COPY src/ /src/
-RUN mkdir -p static/uploads
-RUN chown -R celery:celery /src
+
+RUN mkdir -p /src/static/uploads

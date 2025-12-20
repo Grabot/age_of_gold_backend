@@ -6,7 +6,7 @@ import os
 import stat
 
 from src.api.api_v1.router import api_router_v1
-from src.celery_worker.tasks import task_initialize
+from age_of_gold_worker.age_of_gold_worker import task_initialize
 from src.config.config import settings
 
 

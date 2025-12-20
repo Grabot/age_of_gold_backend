@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "age_of_gold"
-version = "0.1.1"
+version = "1.0.0"
 description = "Age of Gold is a fun trading game. The first single player game that you play with multiple people"
 authors = [{ name = "Grabot" }]
 requires-python = "==3.14.1"
@@ -19,6 +19,9 @@ dependencies = [
     "websockets>=15.0.1,<16",
     "asyncio-redis>=0.16.0,<0.17",
     "redis>=7.0.0,<8",
+    "cryptography>=46.0.3,<47",
+    "httpx>=0.28.1,<0.29",
+    "aiosqlite>=0.21.0,<0.22",
     "fastapi-pagination>=0.14.3,<0.15",
     "celery>=5.5.3,<6",
     "pydantic-settings>=2.11.0,<3",
@@ -46,12 +49,9 @@ dev = [
     "pytest>=8.4.2,<9",
     "pytest-asyncio>=1.2.0,<2",
     "pytest-mock>=3.15.1,<4",
-    "aiosqlite>=0.21.0,<0.22",
-    "httpx>=0.28.1,<0.29",
     "podman-compose>=1.5.0,<2",
     "bump-pydantic>=0.8.0,<0.9",
     "types-requests>=2.32.4.20250913,<3",
-    "cryptography>=46.0.3,<47",
     "pytest-cov>=7.0.0,<8",
     "sqlalchemy2-stubs>=0.0.2a38,<0.0.3",
     "tox>=4.31.0,<5",
@@ -102,3 +102,6 @@ disable = [
     "W0719", # broad-exception-raised, covered by Ruff TRY002
     "W0212", # private member accessed, covered by Ruff SLF001
 ]
+
+[tool.uv.sources]
+age-of-gold-worker = { path = "../../../../../usr/local/age_of_gold/age_of_gold_worker" }
