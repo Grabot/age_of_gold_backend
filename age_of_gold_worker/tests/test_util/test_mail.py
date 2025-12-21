@@ -13,12 +13,12 @@ from age_of_gold_worker.age_of_gold_worker.util.mail_util import (
 )
 from age_of_gold_worker.age_of_gold_worker.worker_settings import worker_settings
 
-worker_settings.WORKER_SMTP_HOST = "smtp.test.com"
-worker_settings.WORKER_SMTP_PORT = "587"
-worker_settings.WORKER_SMTP_USER = "test_user"
-worker_settings.WORKER_SMTP_ACCOUNT = "test_account"
-worker_settings.WORKER_SMTP_PASSWORD = "test_password"
-worker_settings.WORKER_FRONTEND_URL = "https://test.frontend"
+worker_settings.SMTP_HOST = "smtp.test.com"
+worker_settings.SMTP_PORT = "587"
+worker_settings.SMTP_USER = "test_user"
+worker_settings.SMTP_ACCOUNT = "test_account"
+worker_settings.SMTP_PASSWORD = "test_password"
+worker_settings.FRONTEND_URL = "https://test.frontend"
 
 
 @pytest.fixture(name="mocked_template")

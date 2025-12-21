@@ -4,8 +4,8 @@ import time
 
 from sqlmodel import delete
 
-from src.database import async_session
-from src.models.user_token import UserToken
+from age_of_gold_cron.age_of_gold_cron.database import async_session
+from age_of_gold_cron.age_of_gold_cron.models.user_token import UserToken
 
 logging.basicConfig(
     level=logging.INFO,

@@ -36,6 +36,7 @@ dependencies = [
     "numpy>=2.3.4,<3",
     "python-multipart>=0.0.20",
     "sib-api-v3-sdk>=7.6.0",
+    "age-of-gold-worker",
 ]
 
 [dependency-groups]
@@ -59,6 +60,7 @@ dev = [
     "bandit>=1.8.6,<2",
     "toml>=0.10.2",
     "fakeredis>=2.32.1",
+    "pytest-mypy-plugins>=3.2.0",
 ]
 
 [tool.black]
@@ -104,4 +106,9 @@ disable = [
 ]
 
 [tool.uv.sources]
-age-of-gold-worker = { path = "../../../../../usr/local/age_of_gold/age_of_gold_worker" }
+age-of-gold-worker = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "age_of_gold_worker",
+]

@@ -1,58 +1,26 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
-name = "age_of_gold_worker"
+name = "age-of-gold-worker"
 version = "1.0.0"
 description = "The worker for the Age of Gold project to create default avatars and to send emails."
 authors = [{ name = "Grabot" }]
 license = "GPL-3.0-or-later"
 requires-python = ">=3.14.1"
 
+
 dependencies = [
     "celery>=5.5.3,<6",
     "pydantic-settings>=2.11.0,<3",
     "pillow>=12.0.0,<13",
+    "asyncio-redis>=0.16.0,<0.17",
+    "redis>=7.0.0,<8",
 ]
 
-[dependency-groups]
-dev = [
-    "celery-stubs>=0.1.3,<0.2",
-]
+[tool.hatch.build.targets.sdist]
+include = ["."]
 
-[tool.black]
-line-length = 100
-
-[tool.mypy]
-strict = true
-disallow_untyped_defs = true
-ignore_missing_imports = true
-show_error_codes = true
-exclude = "_ignore"
-
-[tool.coverage.run]
-branch = true
-parallel = true
-omit = [
-]
-
-[tool.coverage.report]
-fail_under = 100
-precision = 0
-show_missing = true
-skip_covered = false
-skip_empty = false
-sort = "Cover"
-
-[tool.pylint]
-disable = [
-    "W0511", # https://pylint.pycqa.org/en/latest/user_guide/messages/warning/fixme.html
-    "C0411", # Conflicts with ruff's isort
-    "W0613", # unused-argument, this is covered by Ruff ARG001
-    "W0611", # unused-import, covered by Ruff F401
-    "C0301", # line-too-long, covered by Ruff E501
-    "W0718", # broad-exception-caught, covered by Ruff BLE001
-    "W0719", # broad-exception-raised, covered by Ruff TRY002
-    "W0212", # private member accessed, covered by Ruff SLF001
-]
+[tool.hatch.build.targets.wheel]
+include = ["."]

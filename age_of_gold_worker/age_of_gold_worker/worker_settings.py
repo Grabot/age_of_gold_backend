@@ -22,6 +22,10 @@ class WorkerSettings(BaseSettings):
     UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
     UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file="age_of_gold_worker/.env",
+        env_file_encoding="utf-8",
+    )
+
 
 worker_settings = WorkerSettings()  # type: ignore[call-arg]

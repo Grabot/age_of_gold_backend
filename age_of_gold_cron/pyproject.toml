@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "age_of_gold_cron"
+name = "age-of-gold-cron"
 version = "1.0.0"
-description = "Age of Gold cron worker"
+description = "The Age of Gold cron worker to remove expired tokens"
 authors = [{ name = "Grabot" }]
 requires-python = "==3.14.1"
 license = "GPL-3.0-or-later"

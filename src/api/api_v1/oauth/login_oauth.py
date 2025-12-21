@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from age_of_gold_worker.age_of_gold_worker import task_generate_avatar
+from age_of_gold_worker.age_of_gold_worker.tasks import task_generate_avatar
 from src.config.config import settings
 from src.models.user import User, hash_email
 from src.sockets.sockets import redis

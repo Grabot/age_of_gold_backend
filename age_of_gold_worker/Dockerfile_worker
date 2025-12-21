@@ -11,9 +11,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 ENV PYTHONPATH=${PYTHONPATH}:/age_of_gold_worker
 
-COPY /age_of_gold_worker /age_of_gold_worker
-COPY pyproject.toml /pyproject.toml
-COPY README.md /README.md
+COPY /age_of_gold_worker/age_of_gold_worker /age_of_gold_worker/age_of_gold_worker
+COPY /age_of_gold_worker/__init__.py /age_of_gold_worker/__init__.py
+COPY /age_of_gold_worker/pyproject.toml /pyproject.toml
+COPY /age_of_gold_worker/README.md /README.md
 
 RUN uv pip install --system --no-cache-dir -e .
 
