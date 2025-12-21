@@ -28,7 +28,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     results_user = await db.execute(
         select(User)
         .where(User.origin == 0, User.email_hash == email_hash)
-        .options(joinedload(User.tokens))  # type: ignore[attr-defined]
+        .options(joinedload(User.tokens))
     )
     result_user = results_user.first()
     if result_user is None:
@@ -43,7 +43,7 @@ async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User
     results_user = await db.execute(
         select(User)
         .where(User.origin == 0, func.lower(User.username) == username.lower())
-        .options(joinedload(User.tokens))  # type: ignore[attr-defined]
+        .options(joinedload(User.tokens))
     )
     result_user = results_user.first()
     if result_user is None:

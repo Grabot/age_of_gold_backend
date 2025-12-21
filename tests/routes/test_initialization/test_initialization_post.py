@@ -12,7 +12,7 @@ from src.config.config import settings
 
 @pytest.mark.asyncio
 @patch("os.path.exists", return_value=True)
-@patch("src.celery_worker.tasks.task_initialize.delay")
+@patch("age_of_gold_worker.age_of_gold_worker.tasks.task_initialize.delay")
 async def test_successful_initialization_get(
     mock_task_initialize_delay: MagicMock,
     mock_exists: MagicMock,

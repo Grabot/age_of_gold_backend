@@ -29,7 +29,7 @@ async def test_successful_change_avatar_direct(
     test_db.add(test_user)
     await test_db.commit()
 
-    test_path = Path(__file__).parent.parent.parent.parent / "data"
+    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
     file_name = "test_default_copy"
     file_name_ext = file_name + ".png"
     full_path = test_path / file_name_ext

@@ -1,5 +1,6 @@
 """Test for forgot password endpoint via direct function call."""
 
+from typing import Any
 from fastapi import HTTPException, status
 import pytest
 from fastapi.testclient import TestClient
@@ -40,7 +41,8 @@ async def test_successful_forgot_password_direct(
         result = await test_db.execute(
             select(UserToken).where(UserToken.user_id == test_user.id)
         )
-        user_token: UserToken = result.scalars().first()
+        user_token: Any = result.scalars().first()
+        assert isinstance(user_token, UserToken)
         assert user_token is not None
         assert user_token.token_expiration is not None
 

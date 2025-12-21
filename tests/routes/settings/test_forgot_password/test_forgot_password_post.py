@@ -1,5 +1,6 @@
 """Test for forgot password endpoint via direct get call."""
 
+from typing import Any
 from unittest.mock import patch
 import pytest
 from fastapi import status
@@ -44,6 +45,7 @@ async def test_successful_forgot_password(
         result = await test_db.execute(
             select(UserToken).where(UserToken.user_id == test_user.id)
         )
-        user_token: UserToken = result.scalars().first()
+        user_token: Any = result.scalars().first()
+        assert isinstance(user_token, UserToken)
         assert user_token is not None
         assert user_token.token_expiration is not None

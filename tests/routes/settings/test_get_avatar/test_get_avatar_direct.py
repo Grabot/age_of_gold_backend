@@ -24,7 +24,7 @@ async def test_successful_get_avatar_default_direct(
     """Test successful get default avatar via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
-    test_path = Path(__file__).parent.parent.parent.parent / "data"
+    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
     file_name = "test_default_copy"
     file_name_ext = file_name + ".png"
     full_path = test_path / file_name_ext
@@ -59,7 +59,7 @@ async def test_successful_get_avatar_regular_direct(
     test_db.add(user)
     await test_db.commit()
     auth: Tuple[User, UserToken] = (user, test_user_token)
-    test_path = Path(__file__).parent.parent.parent.parent / "data"
+    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
     file_name = "test_default_copy"
     file_name_ext = file_name + ".png"
     full_path = test_path / file_name_ext

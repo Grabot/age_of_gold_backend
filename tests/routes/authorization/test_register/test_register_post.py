@@ -10,7 +10,7 @@ from tests.helpers import assert_successful_login
 
 
 @pytest.mark.asyncio
-@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("age_of_gold_worker.age_of_gold_worker.tasks.task_generate_avatar.delay")
 async def test_successful_register_post(
     mock_task_generate_avatar: MagicMock,
     mock_tokens: tuple[str, str, MagicMock, MagicMock],
@@ -92,7 +92,7 @@ async def test_register_missing_fields_post_password(
 
 
 @pytest.mark.asyncio
-@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("age_of_gold_worker.age_of_gold_worker.tasks.task_generate_avatar.delay")
 async def test_register_username_already_taken_post(
     mock_task_generate_avatar: MagicMock,
     mock_tokens: tuple[str, str, MagicMock, MagicMock],
@@ -129,7 +129,7 @@ async def test_register_username_already_taken_post(
 
 
 @pytest.mark.asyncio
-@patch("src.celery_worker.tasks.task_generate_avatar.delay")
+@patch("age_of_gold_worker.age_of_gold_worker.tasks.task_generate_avatar.delay")
 async def test_register_email_already_used_post(
     mock_task_generate_avatar: MagicMock,
     mock_tokens: tuple[str, str, MagicMock, MagicMock],

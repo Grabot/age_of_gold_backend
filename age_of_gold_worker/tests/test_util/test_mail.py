@@ -11,14 +11,14 @@ from age_of_gold_worker.age_of_gold_worker.util.mail_util import (
     send_reset_email,
     send_delete_account,
 )
-from src.config.config import settings
+from age_of_gold_worker.age_of_gold_worker.worker_settings import worker_settings
 
-settings.SMTP_HOST = "smtp.test.com"
-settings.SMTP_PORT = "587"
-settings.SMTP_USER = "test_user"
-settings.SMTP_ACCOUNT = "test_account"
-settings.SMTP_PASSWORD = "test_password"
-settings.FRONTEND_URL = "https://test.frontend"
+worker_settings.WORKER_SMTP_HOST = "smtp.test.com"
+worker_settings.WORKER_SMTP_PORT = "587"
+worker_settings.WORKER_SMTP_USER = "test_user"
+worker_settings.WORKER_SMTP_ACCOUNT = "test_account"
+worker_settings.WORKER_SMTP_PASSWORD = "test_password"
+worker_settings.WORKER_FRONTEND_URL = "https://test.frontend"
 
 
 @pytest.fixture(name="mocked_template")
@@ -62,9 +62,9 @@ def test_send_email(mock_smtp: MagicMock) -> None:
     mock_smtp_instance.send_message.assert_called_once()
 
 
-@patch("src.util.mail_util.load_template")
-@patch("src.util.mail_util.render_text_content")
-@patch("src.util.mail_util.send_email")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.load_template")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.render_text_content")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.send_email")
 def test_send_reset_email(
     mock_send_email: MagicMock,
     mock_render_text: MagicMock,
@@ -104,9 +104,9 @@ def test_send_reset_email(
     )
 
 
-@patch("src.util.mail_util.load_template")
-@patch("src.util.mail_util.render_text_content")
-@patch("src.util.mail_util.send_email")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.load_template")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.render_text_content")
+@patch("age_of_gold_worker.age_of_gold_worker.util.mail_util.send_email")
 def test_send_delete_account(
     mock_send_email: MagicMock,
     mock_render_text: MagicMock,

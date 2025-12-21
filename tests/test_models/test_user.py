@@ -119,7 +119,9 @@ def test_user_create_avatar(
         origin=0,
     )
 
-    test_image_path = Path(__file__).parent.parent / "data" / "test_default_copy.png"
+    test_image_path = (
+        Path(__file__).parent.parent.parent / "test_data" / "test_default_copy.png"
+    )
     assert test_image_path.is_file(), "Test image must exist"
 
     test_image_bytes = test_image_path.read_bytes()
@@ -161,7 +163,9 @@ def test_delete_default_avatar(
         origin=0,
     )
 
-    test_image_path = Path(__file__).parent.parent / "data" / "test_default_copy.png"
+    test_image_path = (
+        Path(__file__).parent.parent.parent / "test_data" / "test_default_copy.png"
+    )
     assert test_image_path.is_file(), "Test image must exist"
 
     test_image_bytes = test_image_path.read_bytes()

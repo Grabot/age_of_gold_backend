@@ -10,8 +10,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from src.api.api_v1.router import api_router_v1
 from age_of_gold_worker.age_of_gold_worker import task_send_email_delete_account
+from src.api.api_v1.router import api_router_v1
 from src.database import get_db
 from src.models.user import User, hash_email
 from src.models.user_token import UserToken
@@ -32,7 +32,7 @@ async def delete_account(
     """Delete the user's account."""
     me, _ = user_and_token
     logger.info("Deleting account for user: %s", me.username)
-    await db.execute(delete(UserToken).where(UserToken.user_id == me.id))  # type: ignore[arg-type]
+    await db.execute(delete(UserToken).where(UserToken.user_id == me.id))
     me.remove_avatar()
     me.remove_avatar_default()
     await db.delete(me)
@@ -87,17 +87,17 @@ async def delete_account_all(
     """Delete all accounts associated with the user's email."""
     me, _ = user_and_token
 
-    origins_statement = (
+    origins_statement: Select = (
         select(User)
         .where(User.email_hash == me.email_hash)
-        .options(selectinload(User.tokens))  # type: ignore[attr-defined]
+        .options(selectinload(User.tokens))
     )
     origins_results = await db.execute(origins_statement)
     origins_result = origins_results.all()
 
     for origin_result in origins_result:
         user_delete: User = origin_result.User
-        await db.execute(delete(UserToken).where(UserToken.user_id == user_delete.id))  # type: ignore[arg-type]
+        await db.execute(delete(UserToken).where(UserToken.user_id == user_delete.id))
         user_delete.remove_avatar()
         user_delete.remove_avatar_default()
         await db.delete(user_delete)

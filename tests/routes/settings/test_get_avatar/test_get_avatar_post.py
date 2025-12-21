@@ -23,7 +23,7 @@ async def test_successful_get_avatar_default(
     user, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    test_path = Path(__file__).parent.parent.parent.parent / "data"
+    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
     file_name = "test_default_copy"
     file_name_ext = file_name + ".png"
     full_path = test_path / file_name_ext
@@ -63,7 +63,7 @@ async def test_successful_get_avatar_regular(
     await test_db.commit()
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    test_path = Path(__file__).parent.parent.parent.parent / "data"
+    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
     file_name = "test_default_copy"
     file_name_ext = file_name + ".png"
     full_path = test_path / file_name_ext

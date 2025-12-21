@@ -32,11 +32,11 @@ def send_email(
     text_content: str,
 ) -> None:
     """Send a multipart email."""
-    smtp_host = worker_settings.SMTP_HOST
-    smtp_port = int(worker_settings.SMTP_PORT)
-    smtp_user = worker_settings.SMTP_USER
-    smtp_account = worker_settings.SMTP_ACCOUNT
-    smtp_password = worker_settings.SMTP_PASSWORD
+    smtp_host = worker_settings.WORKER_SMTP_HOST
+    smtp_port = int(worker_settings.WORKER_SMTP_PORT)
+    smtp_user = worker_settings.WORKER_SMTP_USER
+    smtp_account = worker_settings.WORKER_SMTP_ACCOUNT
+    smtp_password = worker_settings.WORKER_SMTP_PASSWORD
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
@@ -60,7 +60,7 @@ def send_reset_email(to_email: str, subject: str, access_token: str) -> None:
     """Send a password reset email."""
     html_content = load_template(
         "src/templates/password_reset_email.html",
-        frontend_url=worker_settings.FRONTEND_URL,
+        frontend_url=worker_settings.WORKER_FRONTEND_URL,
         token=access_token,
         year=datetime.datetime.now().year,
     )
@@ -70,7 +70,7 @@ def send_reset_email(to_email: str, subject: str, access_token: str) -> None:
         "{frontend_url}/password?access_token={token}"
         If you didn't request this, please ignore this email or contact support.
         {year} Zwaar Developers. All rights reserved.""",
-        frontend_url=worker_settings.FRONTEND_URL,
+        frontend_url=worker_settings.WORKER_FRONTEND_URL,
         token=access_token,
         year=datetime.datetime.now().year,
     )

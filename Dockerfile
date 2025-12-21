@@ -12,8 +12,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 ENV PYTHONPATH=${PYTHONPATH}:/src
 
 COPY /age_of_gold_worker/age_of_gold_worker /age_of_gold_worker/age_of_gold_worker
-COPY age_of_gold_worker/pyproject.toml age_of_gold_worker/pyproject.toml
-COPY age_of_gold_worker/README.md age_of_gold_worker/README.md
 
 COPY pyproject.toml /pyproject.toml
 COPY README.md /README.md

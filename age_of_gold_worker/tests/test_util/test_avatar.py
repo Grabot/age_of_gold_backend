@@ -32,7 +32,7 @@ current_dir = Path(__file__).parent
 
 def test_generate_avatar() -> None:
     """Test the generate_avatar function."""
-    test_path = os.path.join(current_dir.parent, "data")
+    test_path = os.path.join(current_dir.parent.parent.parent, "test_data")
     generate_avatar(file_name="test", file_path=str(test_path))
     generated_avatar_path = os.path.join(test_path, "test_default.png")
     default_avatar_path = os.path.join(test_path, "test_default_copy.png")
@@ -61,10 +61,13 @@ def get_add_square_clean_none(
     return None, None, None
 
 
-@patch("src.util.avatar.add_square_clean", side_effect=get_add_square_clean_none)
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.add_square_clean",
+    side_effect=get_add_square_clean_none,
+)
 def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
     """Test the generate_avatar function when it fails to add a square."""
-    test_path = os.path.join(current_dir.parent, "data")
+    test_path = os.path.join(current_dir.parent.parent.parent, "test_data")
 
     generate_avatar(file_name="test", file_path=str(test_path))
 
@@ -213,7 +216,7 @@ def get_point_on_line_side_effect_none(
 
 
 @patch(
-    "src.util.avatar.get_point_on_line",
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.get_point_on_line",
     side_effect=get_point_on_line_side_effect_none,
 )
 def test_add_square_no_point(mock_get_point_on_line: MagicMock) -> None:
@@ -244,9 +247,12 @@ def get_point_on_line_side_effect(
     return (100, 0)
 
 
-@patch("src.util.avatar.point_on_line", side_effect=point_on_line_side_effect)
 @patch(
-    "src.util.avatar.get_point_on_line",
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.point_on_line",
+    side_effect=point_on_line_side_effect,
+)
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.get_point_on_line",
     side_effect=get_point_on_line_side_effect,
 )
 def test_add_square_no_point_on_line(
@@ -273,7 +279,7 @@ def point_on_plane_border_side_effect(_plane: Plane, _point: Point) -> bool:
 
 
 @patch(
-    "src.util.avatar.point_on_plane_border",
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.point_on_plane_border",
     side_effect=point_on_plane_border_side_effect,
 )
 def test_add_square_no_point_on_plane_border(
@@ -299,7 +305,10 @@ def check_lengths_side_effect(_plane: Plane, _point: Point) -> bool:
     return False
 
 
-@patch("src.util.avatar.check_lengths", side_effect=check_lengths_side_effect)
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.check_lengths",
+    side_effect=check_lengths_side_effect,
+)
 def test_add_square_no_check_lengths(mock_check_lengths: MagicMock) -> None:
     """Test the add_square_clean function when the lengths check fails."""
     random.seed("test")
@@ -334,12 +343,18 @@ def check_lengths_side_effect_true(_plane: Plane, _point: Point) -> bool:
     return True
 
 
-@patch("src.util.avatar.point_on_line", side_effect=get_point_on_line_true)
 @patch(
-    "src.util.avatar.get_point_on_line",
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.point_on_line",
+    side_effect=get_point_on_line_true,
+)
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.get_point_on_line",
     side_effect=get_point_on_line_side_effect,
 )
-@patch("src.util.avatar.check_lengths", side_effect=check_lengths_side_effect_true)
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.util.avatar.check_lengths",
+    side_effect=check_lengths_side_effect_true,
+)
 @patch("builtins.abs", side_effect=abs_side_effect)
 def test_add_square_no_abs(
     mock_get_point_on_line_true: MagicMock,

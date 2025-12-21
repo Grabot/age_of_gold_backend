@@ -83,7 +83,9 @@ async def test_successful_delete_account_all_direct(
 
 
 @pytest.mark.asyncio
-@patch("src.celery_worker.tasks.task_send_email_delete_account.delay")
+@patch(
+    "age_of_gold_worker.age_of_gold_worker.tasks.task_send_email_delete_account.delay"
+)
 async def test_successful_delete_account_request_direct(
     mock_task_send_email_delete_account: MagicMock,
     test_setup: TestClient,

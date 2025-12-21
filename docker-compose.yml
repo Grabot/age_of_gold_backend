@@ -64,3 +64,16 @@ services:
       - redis
       - age_of_db
     command: "celery -A age_of_gold_worker.age_of_gold_worker.tasks worker -l info"
+
+  cron_worker:
+    build:
+      context: .
+      dockerfile: age_of_gold_cron/Dockerfile_cron
+    env_file: age_of_gold_cron/.env
+    networks:
+      - default
+    restart: always
+    depends_on:
+      - redis
+      - age_of_db
+    command: "sh -c 'sleep 20 && python main_cron.py'"

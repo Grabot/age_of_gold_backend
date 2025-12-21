@@ -20,7 +20,7 @@ async def remove_expired_tokens() -> None:
     async with async_session() as session:
         async with session.begin():
             await session.execute(
-                delete(UserToken).where(  # type: ignore[arg-type]
+                delete(UserToken).where(
                     UserToken.refresh_token_expiration < int(time.time())
                 )
             )
