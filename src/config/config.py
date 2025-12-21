@@ -107,12 +107,6 @@ class Settings(BaseSettings):
     def ALLOWED_ORIGINS_LIST(self) -> list[str]:
         return self.ALLOWED_ORIGINS.split(",")
 
-    SMTP_PASSWORD: str
-    SMTP_ACCOUNT: str
-    SMTP_USER: str
-    SMTP_HOST: str
-    SMTP_PORT: str
-
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

@@ -22,83 +22,35 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "512Mi"
           volumeMounts:
-            - mountPath: /app/static/uploads
-              name: hostvol
+            - mountPath: /src/static/uploads
+              name: postgres-data
           envFrom:
             - secretRef:
                 name: fastapi-secret
           env:
-            - name: POSTGRES_URL
-              value: postgres-service.<namespace>.svc.cluster.local
-            - name: POSTGRES_PORT
-              value: "5432"
             - name: REDIS_URL
-              value: redis-service.<namespace>.svc.cluster.local
+              value: <redis_url>
             - name: REDIS_PORT
-              value: "6379"
-            - name: GOOGLE_CLIENT_ID
-              value: "<google_client_id>"
-            - name: GOOGLE_CLIENT_SECRET
-              value: "<google_client_secret>"
-            - name: GOOGLE_REDIRECT_URL
-              value: "<google_redirect_url>"
-            - name: GITHUB_CLIENT_ID
-              value: "<github_client_id>"
-            - name: GITHUB_CLIENT_SECRET
-              value: "<github_client_secret>"
-            - name: GITHUB_REDIRECT_URL
-              value: "<github_redirect_url>"
-            - name: REDDIT_CLIENT_ID
-              value: "<reddit_client_id"
-            - name: REDDIT_CLIENT_SECRET
-              value: "<reddit_client_secret>"
-            - name: JWT_ALG
-              value: "ES256"
-            - name: JWT_KID
-              value: "<jwt_kid>"
-            - name: JWT_TYP
-              value: "jwt"
-            - name: JWT_ISS
-              value: "<base_url>"
-            - name: JWT_AUD
-              value: "<api_version>"
+              value: <redis_port>
             - name: BASE_URL
-              value: "<base_url>"
+              value: <base_url>
             - name: FRONTEND_URL
-              value: "<frontend_url>"
-            - name: PEPPER
-              value: "<pepper>"
-            - name: APPLE_AUTH_KEY
-              value: "<apple_auth_key>"
-            - name: APPLE_CLIENT_ID
-              value: "<apple_client_id>"
-            - name: APPLE_KEY_ID
-              value: "<apple_key_id>"
-            - name: APPLE_TEAM_ID
-              value: "<apple_team_id>"
-            - name: APPLE_GRANT_TYPE
-              value: "authorization_code"
-            - name: APPLE_REDIRECT_URL
-              value: "<apple_redirect_url>"
-            - name: JWT_PEM
-              value: "<jwt_pem>"
-            - name: REDDIT_REDIRECT_URL
-              value: "<reddit_redirect_url>"
-            - name: SHARED_DIR
-              value: "<shared_dir>"
-            - name: ALLOWED_ORIGINS
-              value: "<allowed_origins>"
+              value: <frontend_url>
             - name: SMTP_PASSWORD
-              value: "<smtp_password>"
+              value: <smtp_password>
             - name: SMTP_ACCOUNT
-              value: "<smtp_account>"
+              value: <smtp_account>
             - name: SMTP_USER
-              value: "<smtp_user>"
+              value: <smtp_user>
             - name: SMTP_HOST
-              value: "<smtp_host>"
+              value: <smtp_host>
             - name: SMTP_PORT
-              value: "<smtp_port>"
+              value: <smtp_port>
           args:
             - celery
             - -A
@@ -107,6 +59,6 @@ spec:
             - -l
             - info
       volumes:
-        - name: hostvol
-          hostPath:
-            path: /data/avatars
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: local-age-of-gold-pvc

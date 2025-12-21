@@ -16,89 +16,87 @@ spec:
       labels:
         app: fastapi
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: <kubernetes-node-name>
       containers:
         - name: fastapi
           image: <docker_hub_name>/<image_name>:<tag>
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "256Mi"
           volumeMounts:
-            - mountPath: /app/static/uploads
-              name: hostvol
+            - mountPath: /src/static/uploads
+              name: postgres-data
           envFrom:
             - secretRef:
                 name: fastapi-secret
           env:
             - name: POSTGRES_URL
-              value: postgres-service.<namespace>.svc.cluster.local
+              value: <postgres_url>
             - name: POSTGRES_PORT
               value: "5432"
             - name: REDIS_URL
-              value: redis-service.<namespace>.svc.cluster.local
+              value: <redis_url>
             - name: REDIS_PORT
-              value: "6379"
+              value: <redis_port>
             - name: GOOGLE_CLIENT_ID
-              value: "<google_client_id>"
+              value: <google_client_id>
             - name: GOOGLE_CLIENT_SECRET
-              value: "<google_client_secret>"
+              value: <google_client_secret>
             - name: GOOGLE_REDIRECT_URL
-              value: "<google_redirect_url>"
+              value: <google_redirect_url>
             - name: GITHUB_CLIENT_ID
-              value: "<github_client_id>"
+              value: <github_client_id>
             - name: GITHUB_CLIENT_SECRET
-              value: "<github_client_secret>"
+              value: <github_client_secret>
             - name: GITHUB_REDIRECT_URL
-              value: "<github_redirect_url>"
+              value: <github_redirect_url>
             - name: REDDIT_CLIENT_ID
-              value: "<reddit_client_id"
+              value: <reddit_client_id>
             - name: REDDIT_CLIENT_SECRET
-              value: "<reddit_client_secret>"
+              value: <reddit_client_secret>
+            - name: REDDIT_REDIRECT_URL
+              value: <reddit_redirect_url>
             - name: JWT_ALG
-              value: "ES256"
+              value: <jwt_alg>
             - name: JWT_KID
-              value: "<jwt_kid>"
+              value: <jwt_kid>
             - name: JWT_TYP
               value: "jwt"
             - name: JWT_ISS
-              value: "<base_url>"
+              value: <jwt_iss>
             - name: JWT_AUD
-              value: "<api_version>"
+              value: <jwt_aud>
             - name: BASE_URL
-              value: "<base_url>"
+              value: <base_url>
             - name: FRONTEND_URL
-              value: "<frontend_url>"
+              value: <frontend_url>
             - name: PEPPER
-              value: "<pepper>"
+              value: <pepper>
             - name: APPLE_AUTH_KEY
-              value: "<apple_auth_key>"
+              value: <apple_auth_key>
             - name: APPLE_CLIENT_ID
-              value: "<apple_client_id>"
+              value: <apple_client_id>
             - name: APPLE_KEY_ID
-              value: "<apple_key_id>"
+              value: <apple_key_id>
             - name: APPLE_TEAM_ID
-              value: "<apple_team_id>"
+              value: <apple_team_id>
             - name: APPLE_GRANT_TYPE
-              value: "authorization_code"
+              value: <apple_grant_type>
             - name: APPLE_REDIRECT_URL
-              value: "<apple_redirect_url>"
+              value: <apple_redirect_url>
             - name: JWT_PEM
-              value: "<jwt_pem>"
-            - name: REDDIT_REDIRECT_URL
-              value: "<reddit_redirect_url>"
+              value: <jwt_pem>
+            - name: PRIVATE_KEY_PASSPHRASE
+              value: <private_key_passphrase>
             - name: SHARED_DIR
-              value: "<shared_dir>"
+              value: <shared_dir>
             - name: ALLOWED_ORIGINS
-              value: "<allowed_origins>"
-            - name: SMTP_PASSWORD
-              value: "<smtp_password>"
-            - name: SMTP_ACCOUNT
-              value: "<smtp_account>"
-            - name: SMTP_USER
-              value: "<smtp_user>"
-            - name: SMTP_HOST
-              value: "<smtp_host>"
-            - name: SMTP_PORT
-              value: "<smtp_port>"
+              value: <allowed_origins>
           args:
             - /bin/sh
             - boot.sh
@@ -113,10 +111,10 @@ metadata:
   namespace: <namespace>
   name: fastapi-service
 spec:
-  ports:
-  - port: 5000
-    protocol: TCP
-    targetPort: 5000
+  type: ClusterIP
   selector:
     app: fastapi
-  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: <exposed_port>
+      targetPort: <project_port>
