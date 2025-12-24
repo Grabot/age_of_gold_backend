@@ -87,8 +87,6 @@ class Settings(BaseSettings):
     JWT_AUD: str
     API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
 
-    UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
-    UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
     SHARED_DIR: str
 
     PEPPER: str
@@ -106,6 +104,21 @@ class Settings(BaseSettings):
     @property
     def ALLOWED_ORIGINS_LIST(self) -> list[str]:
         return self.ALLOWED_ORIGINS.split(",")
+
+    SMTP_PASSWORD: str
+    SMTP_ACCOUNT: str
+    SMTP_USER: str
+    SMTP_HOST: str
+    SMTP_PORT: str
+
+    S3_ENDPOINT: str
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_BUCKET_NAME: str
+    S3_SECURE: bool
+
+    S3_ENCRYPTION_KEY: str
+    PROJECT_NAME: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

@@ -2,7 +2,7 @@
 
 from typing import Tuple
 
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, Security, status, Request
 from pydantic import BaseModel
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,17 +24,19 @@ from src.util.util import get_user_tokens
 @api_router_v1.delete("/delete/account", status_code=status.HTTP_200_OK)
 @handle_db_errors("Delete account failed")
 async def delete_account(
+    request: Request,
     user_and_token: Tuple[User, UserToken] = Security(
         checked_auth_token, scopes=["user"]
     ),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, bool]:
     """Delete the user's account."""
+    s3_client = request.app.state.s3
     me, _ = user_and_token
     logger.info("Deleting account for user: %s", me.username)
-    await db.execute(delete(UserToken).where(UserToken.user_id == me.id))
-    me.remove_avatar()
-    me.remove_avatar_default()
+    await db.execute(delete(UserToken).where(UserToken.user_id == me.id))  # type: ignore
+    me.remove_avatar(s3_client)
+    me.remove_avatar_default(s3_client)
     await db.delete(me)
     await db.commit()
     return {"success": True}
@@ -79,6 +81,7 @@ async def delete_account_request_call(
 @api_router_v1.delete("/delete/account/all", status_code=200)
 @handle_db_errors("Delete accounts failed")
 async def delete_account_all(
+    request: Request,
     user_and_token: Tuple[User, UserToken] = Security(
         checked_auth_token, scopes=["user"]
     ),
@@ -90,16 +93,18 @@ async def delete_account_all(
     origins_statement: Select = (
         select(User)
         .where(User.email_hash == me.email_hash)
-        .options(selectinload(User.tokens))
+        .options(selectinload(User.tokens))  # type: ignore
     )
     origins_results = await db.execute(origins_statement)
     origins_result = origins_results.all()
 
+    s3_client = request.app.state.s3
+
     for origin_result in origins_result:
         user_delete: User = origin_result.User
-        await db.execute(delete(UserToken).where(UserToken.user_id == user_delete.id))
-        user_delete.remove_avatar()
-        user_delete.remove_avatar_default()
+        await db.execute(delete(UserToken).where(UserToken.user_id == user_delete.id))  # type: ignore
+        user_delete.remove_avatar(s3_client)
+        user_delete.remove_avatar_default(s3_client)
         await db.delete(user_delete)
     await db.commit()
 

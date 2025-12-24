@@ -28,7 +28,13 @@ async def test_successful_delete_account_direct(
     test_user_id = test_user_1.id
     await test_db.refresh(test_user_token_1)
     auth: Tuple[User, UserToken] = (test_user_1, test_user_token_1)
-    response_json: dict[str, Any] = await delete_account.delete_account(auth, test_db)
+
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+
+    response_json: dict[str, Any] = await delete_account.delete_account(
+        request, auth, test_db
+    )
 
     assert response_json["success"]
     test_user_result = await test_db.get(User, test_user_id)
@@ -69,8 +75,12 @@ async def test_successful_delete_account_all_direct(
     await test_db.refresh(test_user_4)
     test_user_id = test_user_0.id
     auth: Tuple[User, UserToken] = (test_user_0, test_user_token_0)
+
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+
     response_json: dict[str, Any] = await delete_account.delete_account_all(
-        auth, test_db
+        request, auth, test_db
     )
 
     assert response_json["success"]
@@ -115,6 +125,7 @@ async def test_delete_account_request_no_account(
     delete_account_request: delete_account.DeleteAccountRequest = (
         delete_account.DeleteAccountRequest(email="testuserdelete@example.com")
     )
+
     with pytest.raises(HTTPException) as exc_info:
         await delete_account.delete_account_request_call(
             delete_account_request, test_db

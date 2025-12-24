@@ -68,7 +68,7 @@ async def test_user_token_reference(
 ) -> None:
     """Test that the user token correctly references the user and vice versa"""
     statement: Select = (
-        select(User).where(User.id == 1).options(joinedload(User.tokens))
+        select(User).where(User.id == 1).options(joinedload(User.tokens))  # type: ignore
     )
     result = await test_db.execute(statement)
     user: Optional[User] = result.unique().scalar_one()

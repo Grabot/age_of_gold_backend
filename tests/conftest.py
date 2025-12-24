@@ -37,6 +37,9 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
+    app.state.s3 = MagicMock()
+    app.state.cipher = MagicMock()
+
     async with ASYNC_TESTING_SESSION_LOCAL() as session:
         password = "testpassword"
         salt = "salt"

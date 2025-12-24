@@ -18,8 +18,10 @@ services:
     command: "/bin/sh boot.sh"
     depends_on:
       - age_of_db
+      - minio
     links:
       - age_of_db
+      - minio
 
   age_of_db:
     container_name: age_of_db
@@ -63,7 +65,23 @@ services:
     depends_on:
       - redis
       - age_of_db
+      - minio
     command: "celery -A age_of_gold_worker.age_of_gold_worker.tasks worker -l info"
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - default
 
   # cron_worker:
   #   build:
@@ -77,3 +95,6 @@ services:
   #     - redis
   #     - age_of_db
   #   command: "sh -c 'sleep 10 && python main_cron.py'"
+
+volumes:
+  minio_data:

@@ -1,12 +1,15 @@
+from io import BytesIO
 from typing import Optional
 import logging
 from celery import Celery
+from age_of_gold_worker.age_of_gold_worker.util import util
 from age_of_gold_worker.age_of_gold_worker.worker_settings import worker_settings
 from age_of_gold_worker.age_of_gold_worker.util.mail_util import (
     send_reset_email,
     send_delete_account,
 )
 from .util import avatar
+from PIL import Image
 
 
 logging.basicConfig(
@@ -20,20 +23,23 @@ celery_app = Celery("tasks", broker=worker_settings.REDIS_URI, backend="rpc://")
 
 
 @celery_app.task
-def task_initialize() -> dict[str, bool]:
-    """Initialization."""
-    logger.info("initialize task")
-    return {"success": True}
-
-
-@celery_app.task
 def task_generate_avatar(
-    avatar_filename: str, user_id: Optional[int]
+    avatar_filename: str,
+    s3_key: str,
+    user_id: Optional[int],
 ) -> dict[str, bool]:
     """Generate avatar for a new user."""
     if not user_id:
         return {"success": False}
-    avatar.generate_avatar(avatar_filename, worker_settings.UPLOAD_FOLDER_AVATARS)
+
+    avatar_image: Image.Image | None = avatar.generate_avatar(avatar_filename)
+    if not avatar_image:
+        return {"success": False}
+
+    buffer = BytesIO()
+    avatar_image.save(buffer, format="PNG")
+    processed_bytes = buffer.getvalue()
+    util.worker_upload_image(processed_bytes, worker_settings.S3_BUCKET_NAME, s3_key)
 
     return {"success": True}
 

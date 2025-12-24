@@ -1,15 +1,18 @@
 """Test file for user model."""
 
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import jwt as pyjwt
-from pytest_mock import MockerFixture
 
 from src.config.config import settings
 from src.config.jwt_key import jwt_public_key
 from src.models import User
 from src.models.user import create_salt, hash_email
 from src.util.util import hash_password
+import pytest
+from botocore.exceptions import ClientError
+from fastapi import HTTPException, status
 
 
 def test_hash_email() -> None:
@@ -107,9 +110,7 @@ def test_user_serialize() -> None:
     assert serialized_user["username"] == "testuser"
 
 
-def test_user_create_avatar(
-    mocker: MockerFixture,
-) -> None:
+def test_user_create_avatar() -> None:
     """Test that create_avatar writes the avatar file correctly."""
     test_user = User(
         username="testuser",
@@ -119,41 +120,40 @@ def test_user_create_avatar(
         origin=0,
     )
 
+    mock_cipher = MagicMock()
+    mock_s3_client = MagicMock()
+
     test_image_path = (
         Path(__file__).parent.parent.parent / "test_data" / "test_default_copy.png"
     )
     assert test_image_path.is_file(), "Test image must exist"
 
     test_image_bytes = test_image_path.read_bytes()
+    mock_cipher.encrypt.return_value = test_image_bytes
+    mock_s3_client.upload_fileobj = MagicMock()
 
     temp_upload_folder = Path(__file__).parent / "temp_avatars"
     temp_upload_folder.mkdir(exist_ok=True)
 
-    mocker.patch.object(settings, "UPLOAD_FOLDER_AVATARS", str(temp_upload_folder))
+    test_user.create_avatar(mock_s3_client, mock_cipher, test_image_bytes)
 
-    test_user.create_avatar(test_image_bytes)
+    mock_cipher.encrypt.assert_called_once_with(test_image_bytes)
+    mock_s3_client.upload_fileobj.assert_called_once()
 
-    expected_filename = test_user.avatar_filename() + ".png"
-    expected_path = temp_upload_folder / expected_filename
+    args, kwargs = mock_s3_client.upload_fileobj.call_args
+    buffer, _, _ = args
+    extra_args = kwargs.get("ExtraArgs", {})
 
-    assert expected_path.is_file(), "Avatar file was not created"
+    buffer.seek(0)
+    buffer_content = buffer.read()
+    assert buffer_content == test_image_bytes, (
+        "Buffer content should match encrypted data"
+    )
 
-    created_content = expected_path.read_bytes()
-    assert created_content == test_image_bytes, "Avatar file content does not match"
-
-    test_user.remove_avatar()
-    assert not expected_path.is_file(), "Avatar file was not removed"
-
-    # Test remove with no file
-    test_user.remove_avatar()
-    assert not expected_path.is_file(), "Avatar file was not removed"
-
-    temp_upload_folder.rmdir()
+    assert extra_args.get("ContentType") == "application/octet-stream"
 
 
-def test_delete_default_avatar(
-    mocker: MockerFixture,
-) -> None:
+def test_delete_default_avatar() -> None:
     """Test that the default avatar deletion function works."""
     test_user = User(
         username="testuser",
@@ -163,34 +163,53 @@ def test_delete_default_avatar(
         origin=0,
     )
 
-    test_image_path = (
-        Path(__file__).parent.parent.parent / "test_data" / "test_default_copy.png"
+    mock_s3_client = MagicMock()
+    mock_s3_client.delete_object = MagicMock()
+
+    test_user.remove_avatar_default(mock_s3_client)
+
+
+def test_remove_avatar_client_error() -> None:
+    """Test that remove_avatar raises HTTPException on S3 ClientError."""
+    test_user = User(
+        username="testuser",
+        email_hash="test@example.com",
+        password_hash="hashedpassword",
+        salt="salt",
+        origin=0,
     )
-    assert test_image_path.is_file(), "Test image must exist"
 
-    test_image_bytes = test_image_path.read_bytes()
+    mock_s3_client = MagicMock()
+    mock_s3_client.delete_object.side_effect = ClientError(
+        {"Error": {"Code": "NoSuchKey", "Message": "The object does not exist."}},
+        "DeleteObject",
+    )
 
-    temp_upload_folder = Path(__file__).parent / "temp_avatars"
-    temp_upload_folder.mkdir(exist_ok=True)
+    with pytest.raises(HTTPException) as exc_info:
+        test_user.remove_avatar(mock_s3_client)
 
-    mocker.patch.object(settings, "UPLOAD_FOLDER_AVATARS", str(temp_upload_folder))
+    assert exc_info.value.status_code == status.HTTP_200_OK
+    assert "failed to remove avatar:" in exc_info.value.detail
 
-    avatar_filename = test_user.avatar_filename_default() + ".png"
-    avatar_path = temp_upload_folder / avatar_filename
-    avatar_path.write_bytes(test_image_bytes)
 
-    expected_filename = test_user.avatar_filename_default() + ".png"
-    expected_path = temp_upload_folder / expected_filename
+def test_remove_avatar_default_client_error() -> None:
+    """Test that remove_avatar_default raises HTTPException on S3 ClientError."""
+    test_user = User(
+        username="testuser",
+        email_hash="test@example.com",
+        password_hash="hashedpassword",
+        salt="salt",
+        origin=0,
+    )
 
-    assert expected_path.is_file(), "Avatar file was not created"
+    mock_s3_client = MagicMock()
+    mock_s3_client.delete_object.side_effect = ClientError(
+        {"Error": {"Code": "NoSuchKey", "Message": "The object does not exist."}},
+        "DeleteObject",
+    )
 
-    created_content = expected_path.read_bytes()
-    assert created_content == test_image_bytes, "Avatar file content does not match"
+    with pytest.raises(HTTPException) as exc_info:
+        test_user.remove_avatar_default(mock_s3_client)
 
-    test_user.remove_avatar_default()
-    assert not expected_path.is_file(), "Avatar file was not removed"
-
-    test_user.remove_avatar_default()
-    assert not expected_path.is_file(), "Avatar file was not removed"
-
-    temp_upload_folder.rmdir()
+    assert exc_info.value.status_code == status.HTTP_200_OK
+    assert "failed to remove avatar:" in exc_info.value.detail

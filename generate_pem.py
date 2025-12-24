@@ -1,6 +1,7 @@
 import base64
 import os
 from typing import cast
+from cryptography.fernet import Fernet
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -58,11 +59,17 @@ def generate_pem() -> str:
     return pem
 
 
+def generate_encryption_key() -> None:
+    key = Fernet.generate_key()
+    print("Save this key:", key.decode())
+
+
 if __name__ == "__main__":
     # Generate a PEM-encoded EC private key using a random private_key_hex
     # Convert it to bytes and do a base64 encoding and print that value
     # The single line of base64 encoded string is the value of JWT_PEM in the .env
     # Decode it and use it to get the private key (to test that it works)
+    generate_encryption_key()
     private_key_passphrase = os.getenv("PRIVATE_KEY_PASSPHRASE", None)
     if not private_key_passphrase:
         raise ValueError("PRIVATE_KEY_PASSPHRASE environment variable is not set")

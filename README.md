@@ -255,7 +255,7 @@ Execute the yamls in order, but for each yaml make sure you first do some pre wo
 			- kubectl exec -it restic-check -n <namespace> -- sh -c 'restic forget <snapshot_id>'
 		- Check only the latest snapshots for all the folders
 			- kubectl exec -it restic-check -n <namespace> -- sh -c 'restic snapshots --latest 1'
-		- Go through all the backed up files 
+		- Go through all the backed up files
 			- First restore it on the storage-box (and clear the folder your are restoring to)
                 - kubectl exec -it restic-check -n <namespace> -- sh -c 'rm -rf /tmp/restore/*'
 				- kubectl exec -it restic-check -n <namespace> -- sh -c 'restic restore <snapshot_id> --target /tmp/restore'
@@ -284,8 +284,8 @@ https://community.hetzner.com/tutorials/managed-kubernetes-with-hetzner-dedicate
 
 
 First we want to ensure that the dns of the domain is configured to point to the ip of the server.
-Do this in the DNS configuration of the domain by setting an A record to the ip of the server. 
-The url will be the `<url_dns_configuration>` 
+Do this in the DNS configuration of the domain by setting an A record to the ip of the server.
+The url will be the `<url_dns_configuration>`
 
 Second we want to create a directory for our website with the url the same as what we configured in the DNS.
 
@@ -307,7 +307,9 @@ server {
     index index.php index.html index.htm;
 
     server_name <url_dns_configuration> www.<url_dns_configuration>;
-	
+
+	client_max_body_size 1G; # Set this to the maximum file size you want to allow
+
     location / {
         try_files $uri $uri/ /index.html;
     }
@@ -340,7 +342,7 @@ Ensure the NGINX configuration is error-free.
     sudo nginx -t
 
 After setting up the server blocks, restart NGINX to apply the changes.
-    
+
     sudo systemctl restart nginx
 
 Now you should see the index html page when going to the url
@@ -393,7 +395,7 @@ Now you will see what you put in the `index.html` but on the secure `https`
 
 If you now view the nginx configuration again you will see that there have been newlines added automatically by the certbot -->
 
-<!-- ## Setup frontend 
+<!-- ## Setup frontend
 
 We assume that the frontend is containerized and also uploaded to the users docker hub.
 Simple pull the container as the project user and run it.
@@ -426,5 +428,5 @@ location / {
 
 reload nginx again and now you should see the container frontend.
 
-If all the endpoints in fronend and backend are correctly set to the secure url set in the dns configuration it should now work. 
+If all the endpoints in fronend and backend are correctly set to the secure url set in the dns configuration it should now work.
 The most important variables are `BASE_URL`, `FRONTEND_URL` and `ALLOWED_ORIGINS`. If they are set the basic functionality should be working. -->

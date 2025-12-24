@@ -1,6 +1,5 @@
 """User model"""
 
-import os
 import secrets
 import time
 import uuid
@@ -9,10 +8,14 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import jwt as pyjwt
 from argon2 import PasswordHasher, exceptions
+from botocore.exceptions import ClientError
+from cryptography.fernet import Fernet
+from fastapi import HTTPException, status
 from sqlmodel import Field, Relationship, SQLModel
 
 from src.config.config import settings
 from src.config.jwt_key import jwt_private_key
+from src.util.storage_util import upload_image
 
 ph = PasswordHasher()
 
@@ -65,30 +68,38 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         except exceptions.VerificationError:
             return False
 
-    def create_avatar(self, avatar_bytes: bytes) -> None:
-        """Create an avatar for the user."""
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
-        file_name = self.avatar_filename() + ".png"
+    def create_avatar(
+        self, s3_client: Any, cipher: Fernet, avatar_bytes: bytes
+    ) -> None:
+        """Upload an avatar for the user to S3."""
+        s3_key = self.avatar_s3_key(self.avatar_filename())
+        upload_image(s3_client, cipher, avatar_bytes, settings.S3_BUCKET_NAME, s3_key)
 
-        file_path = os.path.join(file_folder, file_name)
-        with open(file_path, "wb") as f:
-            f.write(avatar_bytes)
+    def avatar_s3_key(self, file_name: str) -> str:
+        """Generate the full S3 key for the avatar."""
+        return f"{settings.PROJECT_NAME}/avatars/{file_name}.png"
 
-    def remove_avatar(self) -> None:
+    def remove_avatar(self, s3_client: Any) -> None:
         """Remove the avatar for the user."""
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
-        file_name = self.avatar_filename() + ".png"
+        s3_key = self.avatar_s3_key(self.avatar_filename())
+        try:
+            s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
+        except ClientError as e:
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail="failed to remove avatar: " + str(e),
+            ) from e
 
-        if os.path.exists(os.path.join(file_folder, file_name)):
-            os.remove(os.path.join(file_folder, file_name))
-
-    def remove_avatar_default(self) -> None:
+    def remove_avatar_default(self, s3_client: Any) -> None:
         """Remove the default avatar for the user."""
-        file_folder = settings.UPLOAD_FOLDER_AVATARS
-        file_name = self.avatar_filename_default() + ".png"
-
-        if os.path.exists(os.path.join(file_folder, file_name)):
-            os.remove(os.path.join(file_folder, file_name))
+        s3_key = self.avatar_s3_key(self.avatar_filename_default())
+        try:
+            s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
+        except ClientError as e:
+            raise HTTPException(
+                status_code=status.HTTP_200_OK,
+                detail="failed to remove avatar: " + str(e),
+            ) from e
 
     def generate_auth_token(
         self, expires_in: int = 1800, scopes: Optional[List[str]] = None

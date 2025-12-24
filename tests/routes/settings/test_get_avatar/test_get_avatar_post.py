@@ -1,15 +1,17 @@
 """Test for get avatar endpoint via direct get call."""
 
-from pathlib import Path
-
+from io import BytesIO
 import pytest
+from unittest.mock import MagicMock
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi import FastAPI
+from typing import cast
+from botocore.exceptions import ClientError
 from src.config.config import settings
-from src.models.user import User
 from tests.conftest import add_token
 
 
@@ -23,23 +25,6 @@ async def test_successful_get_avatar_default(
     user, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
-    file_name = "test_default_copy"
-    file_name_ext = file_name + ".png"
-    full_path = test_path / file_name_ext
-
-    mocker.patch.object(
-        settings,
-        "UPLOAD_FOLDER_AVATARS",
-        str(test_path),
-    )
-    mocker.patch.object(
-        User,
-        "avatar_filename_default",
-        return_value=file_name,
-    )
-    assert full_path.is_file(), "Test avatar image must exist"
-
     response = test_setup.get(
         f"{settings.API_V1_STR}/user/avatar",
         headers=headers,
@@ -47,7 +32,6 @@ async def test_successful_get_avatar_default(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.headers["content-type"] == "image/png"
-    assert response.content == full_path.read_bytes()
 
 
 @pytest.mark.asyncio
@@ -63,22 +47,23 @@ async def test_successful_get_avatar_regular(
     await test_db.commit()
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
-    file_name = "test_default_copy"
-    file_name_ext = file_name + ".png"
-    full_path = test_path / file_name_ext
+    mock_s3 = MagicMock()
 
-    mocker.patch.object(
-        settings,
-        "UPLOAD_FOLDER_AVATARS",
-        str(test_path),
+    def mock_download_fileobj(bucket: str, key: str, buffer: BytesIO) -> None:
+        buffer.write(b"mocked_encrypted_data")
+        buffer.seek(0)
+
+    mock_s3.download_fileobj.side_effect = mock_download_fileobj
+    cast(FastAPI, test_setup.app).state.s3 = mock_s3
+
+    mocker.patch(
+        "src.util.storage_util.decrypt_image", return_value=b"mocked_decrypted_data"
     )
-    mocker.patch.object(
-        User,
-        "avatar_filename",
-        return_value=file_name,
+
+    response = test_setup.get(
+        f"{settings.API_V1_STR}/user/avatar",
+        headers=headers,
     )
-    assert full_path.is_file(), "Test avatar image must exist"
 
     response = test_setup.get(
         f"{settings.API_V1_STR}/user/avatar",
@@ -87,7 +72,6 @@ async def test_successful_get_avatar_regular(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.headers["content-type"] == "image/png"
-    assert response.content == full_path.read_bytes()
 
 
 @pytest.mark.asyncio
@@ -100,15 +84,23 @@ async def test_get_avatar_file_not_found(
     _, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    mocker.patch(
-        "os.path.isfile",
-        return_value=False,
+    mock_s3 = MagicMock()
+    mock_s3.download_fileobj.side_effect = ClientError(
+        {
+            "Error": {
+                "Code": "NoSuchKey",
+                "Message": "The specified key does not exist.",
+            }
+        },
+        "GetObject",
     )
+
+    cast(FastAPI, test_setup.app).state.s3 = mock_s3
 
     response = test_setup.get(
         f"{settings.API_V1_STR}/user/avatar",
         headers=headers,
     )
 
-    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
-    assert response.json() == {"detail": "An error occurred"}
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json() == {"detail": "Avatar not found"}

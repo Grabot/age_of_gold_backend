@@ -36,6 +36,8 @@ dependencies = [
     "numpy>=2.3.4,<3",
     "python-multipart>=0.0.20",
     "sib-api-v3-sdk>=7.6.0",
+    "boto3>=1.42.14",
+    "botocore>=1.42.14",
     "age-of-gold-worker",
 ]
 

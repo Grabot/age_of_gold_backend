@@ -1,4 +1,10 @@
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+import boto3
 import uvicorn
+from botocore import client as boto_client
+from cryptography.fernet import Fernet
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
@@ -8,7 +14,30 @@ from src.config.config import settings
 from src.sockets.sockets import sio_app
 from src.util.gold_logging import logger
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no cover
+    cipher = Fernet(settings.S3_ENCRYPTION_KEY.encode())
+    app.state.cipher = cipher
+    app.state.s3 = boto3.client(
+        "s3",
+        endpoint_url=settings.S3_ENDPOINT,
+        aws_access_key_id=settings.S3_ACCESS_KEY,
+        aws_secret_access_key=settings.S3_SECRET_KEY,
+        region_name="eu-central-1",
+        config=boto_client.Config(signature_version="s3v4"),
+    )
+    try:
+        logger.info("bucket")
+        app.state.s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
+    except Exception:
+        logger.info("CREATE!")
+        app.state.s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
+
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 add_pagination(app)
 

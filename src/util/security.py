@@ -58,13 +58,13 @@ async def check_token(
     if token_type == "access":
         token_statement = (
             select(UserToken)
-            .options(joinedload(UserToken.user))
+            .options(joinedload(UserToken.user))  # type: ignore
             .filter_by(access_token=token)
         )
     else:
         token_statement = (
             select(UserToken)
-            .options(joinedload(UserToken.user))
+            .options(joinedload(UserToken.user))  # type: ignore
             .filter_by(refresh_token=token)
         )
     results_token = await db.execute(token_statement)

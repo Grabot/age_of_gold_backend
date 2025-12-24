@@ -3,7 +3,7 @@
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Tuple
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from fastapi import HTTPException, UploadFile
@@ -46,8 +46,12 @@ async def test_successful_change_avatar_direct(
 
     mocker.patch.object(User, "create_avatar", new_callable=Mock)
 
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+    request.app.state.cipher.return_value = ""
+
     response_json: dict[str, Any] = await change_avatar.change_avatar(
-        avatar, auth, test_db
+        request, avatar, auth, test_db
     )
 
     assert response_json["success"]
@@ -69,8 +73,12 @@ async def test_successful_change_avatar_default_direct(
     test_db.add(test_user)
     await test_db.commit()
 
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+    request.app.state.cipher.return_value = ""
+
     response_json: dict[str, Any] = await change_avatar.change_avatar(
-        None, auth, test_db
+        request, None, auth, test_db
     )
 
     assert response_json["success"]
@@ -91,8 +99,12 @@ async def test_change_avatar_invalid_file_direct(
     avatar = UploadFile(filename="", file=BytesIO(b"fake content"))
     avatar.size = 0
 
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+    request.app.state.cipher.return_value = ""
+
     with pytest.raises(HTTPException) as exc_info:
-        await change_avatar.change_avatar(avatar, auth, test_db)
+        await change_avatar.change_avatar(request, avatar, auth, test_db)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Invalid avatar file"
@@ -112,8 +124,12 @@ async def test_change_avatar_too_large_direct(
     )
     avatar.size = 2 * 1024 * 1024 + 1
 
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+    request.app.state.cipher.return_value = ""
+
     with pytest.raises(HTTPException) as exc_info:
-        await change_avatar.change_avatar(avatar, auth, test_db)
+        await change_avatar.change_avatar(request, avatar, auth, test_db)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Avatar too large (max 2MB)"
@@ -132,8 +148,12 @@ async def test_change_avatar_invalid_extension_direct(
     avatar = UploadFile(filename="invalid_file.txt", file=BytesIO(b"fake content"))
     avatar.size = 1024  # Valid size
 
+    request = MagicMock()
+    request.app.state.s3.return_value = ""
+    request.app.state.cipher.return_value = ""
+
     with pytest.raises(HTTPException) as exc_info:
-        await change_avatar.change_avatar(avatar, auth, test_db)
+        await change_avatar.change_avatar(request, avatar, auth, test_db)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Only PNG/JPG allowed"

@@ -108,7 +108,8 @@ async def login_user_oauth(
 
     if user_created:
         await db.refresh(user)
-        task_generate_avatar.delay(user.avatar_filename(), user.id)
+        s3_key = user.avatar_s3_key(user.avatar_filename_default())
+        task_generate_avatar.delay(user.avatar_filename(), s3_key, user.id)
 
     return user
 

@@ -75,8 +75,12 @@ async def register_user(
 
     user_token = get_user_tokens(user)
     db.add(user_token)
+    s3_key = user.avatar_s3_key(user.avatar_filename_default())
     await db.commit()
-
-    _ = task_generate_avatar.delay(user.avatar_filename(), user.id)
+    _ = task_generate_avatar.delay(
+        user.avatar_filename(),
+        s3_key,
+        user.id,
+    )
 
     return get_successful_login_response(user_token, user)

@@ -33,21 +33,17 @@ current_dir = Path(__file__).parent
 def test_generate_avatar() -> None:
     """Test the generate_avatar function."""
     test_path = os.path.join(current_dir.parent.parent.parent, "test_data")
-    generate_avatar(file_name="test", file_path=str(test_path))
-    generated_avatar_path = os.path.join(test_path, "test_default.png")
+    result_image = generate_avatar(file_name="test")
     default_avatar_path = os.path.join(test_path, "test_default_copy.png")
 
     # Open the images and convert to numpy arrays
-    generated_img = np.array(Image.open(generated_avatar_path))
+    generated_img = np.array(result_image)
     default_img = np.array(Image.open(default_avatar_path))
 
     # Compare the arrays
     assert np.array_equal(generated_img, default_img), (
         "The generated avatar does not match the default avatar"
     )
-
-    # Clean up
-    os.remove(str(generated_avatar_path))
 
 
 def get_add_square_clean_none(
@@ -67,15 +63,9 @@ def get_add_square_clean_none(
 )
 def test_generate_avatar_fail(mock_add_square_clean: MagicMock) -> None:
     """Test the generate_avatar function when it fails to add a square."""
-    test_path = os.path.join(current_dir.parent.parent.parent, "test_data")
+    result_image = generate_avatar(file_name="test")
 
-    generate_avatar(file_name="test", file_path=str(test_path))
-
-    generated_avatar_path = os.path.join(test_path, "test_default.png")
-
-    assert not os.path.exists(generated_avatar_path), (
-        "The generated avatar should not exist"
-    )
+    assert result_image is None
 
 
 def test_line_class() -> None:

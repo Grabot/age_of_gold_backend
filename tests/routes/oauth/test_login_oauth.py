@@ -1,6 +1,6 @@
 """Test for login oauth fuctionality."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 from fakeredis import FakeRedis
@@ -188,7 +188,7 @@ async def test_login_user_oauth_new_user(
         mock_refresh.assert_called_once_with(login_user)
         assert login_user == return_user
         mock_avatar_task.assert_called_once_with(
-            login_user.avatar_filename(), login_user.id
+            login_user.avatar_filename(), ANY, login_user.id
         )
 
 

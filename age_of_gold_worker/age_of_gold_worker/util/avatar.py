@@ -1,7 +1,5 @@
 import math
-import os
 import random
-import stat
 from typing import List, Optional, Tuple
 
 from PIL import Image, ImageDraw
@@ -292,7 +290,7 @@ def background_square_clean(_width: int, _height: int, _index: int) -> Plane:
     return background_plane
 
 
-def generate_avatar(file_name: str, file_path: str) -> None:
+def generate_avatar(file_name: str) -> Image.Image | None:
     random.seed(file_name)
     file_name += "_default"
     planes: List[Plane] = []
@@ -311,7 +309,7 @@ def generate_avatar(file_name: str, file_path: str) -> None:
         )
         if plane_1 is None or plane_2 is None or chosen_plane is None:
             # TODO: Save default image?
-            return
+            return None
         else:
             del planes[chosen_plane]
             planes.append(plane_1)
@@ -331,7 +329,4 @@ def generate_avatar(file_name: str, file_path: str) -> None:
     bound_x = int(width / 2) + 1
     bound_y = int(height / 2) + 1
     box = (bound_x, bound_y, bound_x + width - 2, bound_y + height - 2)
-    im2 = im.crop(box)
-    file = os.path.join(file_path, "%s.png" % file_name)
-    im2.save(file)
-    os.chmod(file, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+    return im.crop(box)

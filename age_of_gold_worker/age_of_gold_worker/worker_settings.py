@@ -19,8 +19,13 @@ class WorkerSettings(BaseSettings):
     SMTP_HOST: str
     SMTP_PORT: str
 
-    UPLOAD_FOLDER_AVATARS: str = "/src/static/uploads/avatars"
-    UPLOAD_FOLDER_CRESTS: str = "/src/static/uploads/crests"
+    S3_ENDPOINT: str
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
+    S3_BUCKET_NAME: str
+    S3_SECURE: bool
+
+    S3_ENCRYPTION_KEY: str
 
     model_config = SettingsConfigDict(
         env_file="age_of_gold_worker/.env",
