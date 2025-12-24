@@ -28,13 +28,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no co
         config=boto_client.Config(signature_version="s3v4"),
     )
     try:
-        logger.info("bucket")
         app.state.s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
+        yield
     except Exception:
-        logger.info("CREATE!")
         app.state.s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
-
-    yield
+    finally:
+        pass
 
 
 app = FastAPI(lifespan=lifespan)
