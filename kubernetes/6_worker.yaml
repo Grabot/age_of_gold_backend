@@ -51,6 +51,30 @@ spec:
               value: <smtp_host>
             - name: SMTP_PORT
               value: <smtp_port>
+            - name: SMTP_PASSWORD
+              value: "<smtp_password>"
+            - name: SMTP_ACCOUNT
+              value: "<smtp_account>"
+            - name: SMTP_USER
+              value: "<smtp_user>"
+            - name: SMTP_HOST
+              value: "<smtp_host>"
+            - name: SMTP_PORT
+              value: "<smtp_port>"
+            - name: S3_ENDPOINT
+              value: "<s3_endpoint>"
+            - name: S3_ACCESS_KEY
+              value: "<s3_access_key>"
+            - name: S3_SECRET_KEY
+              value: "<s3_secret_key>"
+            - name: S3_BUCKET_NAME
+              value: "<s3_bucket_name>"
+            - name: S3_SECURE
+              value: "<s3_secure>"
+            - name: S3_ENCRYPTION_KEY
+              value: "<s3_encryption_key>"
+            - name: PROJECT_NAME
+              value: "<project_name>"
           args:
             - celery
             - -A

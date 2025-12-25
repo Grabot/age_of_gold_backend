@@ -10,12 +10,12 @@ import jwt as pyjwt
 from argon2 import PasswordHasher, exceptions
 from botocore.exceptions import ClientError
 from cryptography.fernet import Fernet
-from fastapi import HTTPException, status
 from sqlmodel import Field, Relationship, SQLModel
 
 from src.config.config import settings
 from src.config.jwt_key import jwt_private_key
 from src.util.storage_util import upload_image
+from src.util.gold_logging import logger
 
 ph = PasswordHasher()
 
@@ -85,10 +85,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         try:
             s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
         except ClientError as e:
-            raise HTTPException(
-                status_code=status.HTTP_200_OK,
-                detail="failed to remove avatar: " + str(e),
-            ) from e
+            logger.error("failed to remove avatar: %s", str(e))
 
     def remove_avatar_default(self, s3_client: Any) -> None:
         """Remove the default avatar for the user."""
@@ -96,10 +93,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
         try:
             s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
         except ClientError as e:
-            raise HTTPException(
-                status_code=status.HTTP_200_OK,
-                detail="failed to remove avatar: " + str(e),
-            ) from e
+            logger.error("failed to remove avatar: %s", str(e))
 
     def generate_auth_token(
         self, expires_in: int = 1800, scopes: Optional[List[str]] = None

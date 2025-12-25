@@ -1,7 +1,8 @@
 """Test file for user model."""
 
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import patch, MagicMock
+from botocore.exceptions import ClientError
 
 import jwt as pyjwt
 
@@ -10,9 +11,6 @@ from src.config.jwt_key import jwt_public_key
 from src.models import User
 from src.models.user import create_salt, hash_email
 from src.util.util import hash_password
-import pytest
-from botocore.exceptions import ClientError
-from fastapi import HTTPException, status
 
 
 def test_hash_email() -> None:
@@ -169,8 +167,8 @@ def test_delete_default_avatar() -> None:
     test_user.remove_avatar_default(mock_s3_client)
 
 
-def test_remove_avatar_client_error() -> None:
-    """Test that remove_avatar raises HTTPException on S3 ClientError."""
+def test_remove_avatar_logs_error_on_client_error() -> None:
+    """Test that remove_avatar logs an error on S3 ClientError."""
     test_user = User(
         username="testuser",
         email_hash="test@example.com",
@@ -185,15 +183,15 @@ def test_remove_avatar_client_error() -> None:
         "DeleteObject",
     )
 
-    with pytest.raises(HTTPException) as exc_info:
+    with patch("src.models.user.logger.error") as mock_logger:
         test_user.remove_avatar(mock_s3_client)
 
-    assert exc_info.value.status_code == status.HTTP_200_OK
-    assert "failed to remove avatar:" in exc_info.value.detail
+        mock_logger.assert_called_once()
+        assert "failed to remove avatar:" in mock_logger.call_args[0][0]
 
 
-def test_remove_avatar_default_client_error() -> None:
-    """Test that remove_avatar_default raises HTTPException on S3 ClientError."""
+def test_remove_avatar_default_logs_error_on_client_error() -> None:
+    """Test that remove_avatar_default logs an error on S3 ClientError."""
     test_user = User(
         username="testuser",
         email_hash="test@example.com",
@@ -208,8 +206,8 @@ def test_remove_avatar_default_client_error() -> None:
         "DeleteObject",
     )
 
-    with pytest.raises(HTTPException) as exc_info:
+    with patch("src.models.user.logger.error") as mock_logger:
         test_user.remove_avatar_default(mock_s3_client)
 
-    assert exc_info.value.status_code == status.HTTP_200_OK
-    assert "failed to remove avatar:" in exc_info.value.detail
+        mock_logger.assert_called_once()
+        assert "failed to remove avatar:" in mock_logger.call_args[0][0]
