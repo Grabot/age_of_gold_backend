@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from src.models.user import User
+    from src.models import User
 
 
 class UserToken(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]

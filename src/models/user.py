@@ -20,7 +20,7 @@ from src.util.gold_logging import logger
 ph = PasswordHasher()
 
 if TYPE_CHECKING:
-    from src.models.user_token import UserToken
+    from src.models import UserToken, Group
 
 
 def hash_email(email: str) -> str:
@@ -52,6 +52,11 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     avatar_version: int = Field(default=1)
 
     tokens: List["UserToken"] = Relationship(back_populates="user")
+    groups: List["Group"] = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "and_(User.id==Group.user_id)",
+        },
+    )
 
     def avatar_filename(self) -> str:
         """get the name of the avatar file for this user."""
