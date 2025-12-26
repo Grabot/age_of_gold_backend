@@ -87,8 +87,6 @@ class Settings(BaseSettings):
     JWT_AUD: str
     API_SOCK_NAMESPACE: str = "/api/v1.0/sock"
 
-    SHARED_DIR: str
-
     PEPPER: str
 
     POOL_SIZE: int = 20

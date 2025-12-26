@@ -93,8 +93,6 @@ spec:
               value: <jwt_pem>
             - name: PRIVATE_KEY_PASSPHRASE
               value: <private_key_passphrase>
-            - name: SHARED_DIR
-              value: <shared_dir>
             - name: ALLOWED_ORIGINS
               value: <allowed_origins>
             - name: SMTP_PASSWORD

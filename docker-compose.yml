@@ -13,7 +13,6 @@ services:
       - 5000:5000
     restart: always
     volumes:
-      - ${SHARED_DIR}:/src/static/uploads/
       - ./migrations:/migrations
     command: "/bin/sh boot.sh"
     depends_on:
@@ -60,8 +59,6 @@ services:
     networks:
       - default
     restart: always
-    volumes:
-      - ${SHARED_DIR}:/src/static/uploads/
     depends_on:
       - redis
       - age_of_db

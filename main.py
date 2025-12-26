@@ -29,11 +29,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # pragma: no co
     )
     try:
         app.state.s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
-        yield
     except Exception:
         app.state.s3.create_bucket(Bucket=settings.S3_BUCKET_NAME)
-    finally:
-        pass
+    yield
 
 
 app = FastAPI(lifespan=lifespan)

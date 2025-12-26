@@ -25,5 +25,3 @@ COPY main.py /main.py
 COPY migrations/ /migrations/
 COPY alembic.ini /alembic.ini
 COPY src/ /src/
-
-RUN mkdir -p /src/static/uploads

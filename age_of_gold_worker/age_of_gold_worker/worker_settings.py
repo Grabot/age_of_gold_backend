@@ -25,8 +25,6 @@ class WorkerSettings(BaseSettings):
     S3_BUCKET_NAME: str
     S3_SECURE: bool
 
-    S3_ENCRYPTION_KEY: str
-
     model_config = SettingsConfigDict(
         env_file="age_of_gold_worker/.env",
         env_file_encoding="utf-8",
