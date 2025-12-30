@@ -13,6 +13,7 @@ from src.database import get_db
 from src.models.chat import Chat
 from src.models.group import Group
 from src.models.user import User
+from src.models.friend import Friend
 from src.models.user_token import UserToken
 from src.util.security import checked_auth_token
 from src.sockets.sockets import sio
@@ -32,7 +33,6 @@ def create_group(
 class AddFriendRequest(BaseModel):
     user_id: int
 
-
 @api_router_v1.post("/friend/add", status_code=200)
 async def add_friend(
     add_friend_request: AddFriendRequest,
@@ -44,6 +44,7 @@ async def add_friend(
     """Handle add friend request."""
     me, _ = user_and_token
     friend_id = add_friend_request.user_id
+    print(f"Friend ID: {friend_id}")
 
     if friend_id is me.id:
         raise HTTPException(
@@ -51,9 +52,10 @@ async def add_friend(
             detail="You can't add yourself",
         )
 
-    user_statement = select(User).where(User.id == friend_id)
-    results_user = await db.execute(user_statement)
+    friend_statement = select(User).where(User.id == friend_id)
+    results_user = await db.execute(friend_statement)
     result_user = results_user.first()
+    print(f"Result User: {result_user}")
 
     if not result_user:
         raise HTTPException(
@@ -62,6 +64,7 @@ async def add_friend(
         )
 
     friend_add: User = result_user.User
+    print(f"Friend Add: {friend_add}")
 
     if me.id is None or friend_add.id is None:
         raise HTTPException(
@@ -69,4 +72,13 @@ async def add_friend(
             detail="No user found.",
         )
 
-    # TODO: Add a friend object or a group object with a friend flag?
+    friend = Friend(
+        user_id=me.id,
+        friend_id=friend_add.id
+    )
+    db.add(friend)
+    await db.commit()
+    return {
+        "success": True,
+    }
+
