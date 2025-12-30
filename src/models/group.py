@@ -19,7 +19,7 @@ class Group(SQLModel, table=True):
     group_id: int = Field(foreign_key="Chat.id")
     unread_messages: int
     mute: bool = Field(default=False)
-    mute_timestamp: Optional[datetime]
+    mute_timestamp: Optional[datetime] = Field(default=None)
     group_version: int = Field(default=1)
     message_version: int = Field(default=1)
     avatar_version: int = Field(default=1)
@@ -40,3 +40,16 @@ class Group(SQLModel, table=True):
             "primaryjoin": "User.id==Group.user_id",
         },
     )
+
+    @property
+    def serialize_no_chat(self):
+        # Used for creating a new broup, we might not have the chat yet.
+        data = {
+            "group_id": self.group_id,
+            "unread_messages": self.unread_messages,
+            "mute": self.mute,
+            "message_version": self.message_version,
+            "group_version": self.group_version,
+            "avatar_version": self.avatar_version
+        }
+        return data

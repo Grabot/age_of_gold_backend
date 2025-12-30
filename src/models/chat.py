@@ -28,3 +28,14 @@ class Chat(SQLModel, table=True):
             "primaryjoin": "Chat.id==Group.group_id",
         },
     )
+
+    @property
+    def serialize(self):
+        return {
+            "user_ids": self.user_ids,
+            "admin_ids": self.user_admin_ids,
+            "group_name": self.group_name,
+            "private": self.private,
+            "group_description": self.group_description,
+            "group_colour": self.group_colour,
+        }
