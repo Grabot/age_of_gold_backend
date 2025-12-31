@@ -83,4 +83,4 @@ async def register_user(
         user.id,
     )
 
-    return get_successful_login_response(user_token, user)
+    return await get_successful_login_response(user_token, user, db)

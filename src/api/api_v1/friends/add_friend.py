@@ -18,10 +18,8 @@ from src.models.user_token import UserToken
 from src.util.security import checked_auth_token
 from src.sockets.sockets import sio
 
-def create_group(
-    user_id: int, group_id: int
-) -> Group:
 
+def create_group(user_id: int, group_id: int) -> Group:
     group = Group(
         user_id=user_id,
         group_id=group_id,
@@ -30,8 +28,10 @@ def create_group(
     )
     return group
 
+
 class AddFriendRequest(BaseModel):
     user_id: int
+
 
 @api_router_v1.post("/friend/add", status_code=200)
 async def add_friend(
@@ -72,13 +72,23 @@ async def add_friend(
             detail="No user found.",
         )
 
-    friend = Friend(
-        user_id=me.id,
-        friend_id=friend_add.id
+    existing_friend_statement = select(Friend).where(
+        Friend.user_id == me.id, Friend.friend_id == friend_add.id
     )
-    db.add(friend)
+    existing_friend_result = await db.execute(existing_friend_statement)
+    existing_friend = existing_friend_result.first()
+
+    if existing_friend:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already friends",
+        )
+
+    friend_me = Friend(user_id=me.id, friend_id=friend_add.id)
+    friend_other = Friend(user_id=friend_add.id, friend_id=me.id)
+    db.add(friend_me)
+    db.add(friend_other)
     await db.commit()
     return {
         "success": True,
     }
-

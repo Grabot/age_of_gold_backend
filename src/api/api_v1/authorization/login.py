@@ -99,4 +99,4 @@ async def login_user(
     await db.commit()
     logger.info("User logged in: %s", user.username)
 
-    return get_successful_login_response(user_token, user)
+    return await get_successful_login_response(user_token, user, db)

@@ -65,7 +65,7 @@ async def login_google_token(
     db.add(user_token)
     await db.commit()
 
-    return get_successful_login_response(user_token, user)
+    return await get_successful_login_response(user_token, user, db)
 
 
 @api_router_v1.get("/auth/google")

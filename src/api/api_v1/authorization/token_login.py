@@ -35,4 +35,4 @@ async def login_token_user(
     db.add(old_token)
     await db.commit()
 
-    return get_successful_login_response(old_token, user)
+    return await get_successful_login_response(old_token, user, db)

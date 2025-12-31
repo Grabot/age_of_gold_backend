@@ -19,6 +19,7 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     user_id: int = Field(foreign_key="User.id")
     friend_id: int = Field(foreign_key="User.id")
     accepted: bool = Field(default=False)
+    updated: bool = Field(default=False)
 
     friend: "User" = Relationship(
         back_populates="friends",

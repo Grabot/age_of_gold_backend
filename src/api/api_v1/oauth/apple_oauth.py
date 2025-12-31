@@ -54,7 +54,7 @@ async def login_apple_token(
     user_token = get_user_tokens(user)
     db.add(user_token)
     await db.commit()
-    return get_successful_login_response(user_token, user)
+    return await get_successful_login_response(user_token, user, db)
 
 
 @api_router_v1.get("/auth/apple")
