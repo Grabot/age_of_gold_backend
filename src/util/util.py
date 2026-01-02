@@ -35,11 +35,8 @@ async def get_successful_login_response(
     for friend in user.friends:
         friends_data.append(
             {
-                "id": friend.id,
-                "user_id": friend.user_id,
                 "friend_id": friend.friend_id,
-                "accepted": friend.accepted,
-                "requested": not friend.accepted,
+                "friend_version": friend.friend_version,
             }
         )
 

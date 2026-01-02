@@ -19,7 +19,7 @@ class Chat(SQLModel, table=True):
     group_colour: str
     default_avatar: bool = Field(default=True)
     current_message_id: int
-    last_message_read_id_chat: int = Field(default=0)
+    last_message_read_id_chat: int = Field(default=1)
 
     groups: List["Group"] = Relationship(
         back_populates="chat",

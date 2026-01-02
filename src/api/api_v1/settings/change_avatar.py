@@ -7,11 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
+from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
+from sqlmodel import select
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
@@ -38,6 +40,15 @@ async def change_avatar(
         user.avatar_version += 1
         db.add(user)
         user.remove_avatar(s3_client)
+
+        friends_statement = select(Friend).where(Friend.user_id == user.id)
+        friends_result = await db.execute(friends_statement)
+        friends = friends_result.scalars().all()
+
+        for friend in friends:
+            friend.friend_version += 1
+            db.add(friend)
+
         await db.commit()
         return {"success": True}
 
@@ -56,6 +67,15 @@ async def change_avatar(
     if user.default_avatar:
         user.default_avatar = False
     db.add(user)
+
+    friends_statement = select(Friend).where(Friend.user_id == user.id)
+    friends_result = await db.execute(friends_statement)
+    friends = friends_result.scalars().all()
+
+    for friend in friends:
+        friend.friend_version += 1
+        db.add(friend)
+
     await db.commit()
 
     logger.info("User %s changed their avatar", user.username)
