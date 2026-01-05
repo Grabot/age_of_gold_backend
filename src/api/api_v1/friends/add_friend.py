@@ -15,8 +15,9 @@ from src.models.group import Group
 from src.models.user import User
 from src.models.friend import Friend
 from src.models.user_token import UserToken
-from src.util.security import checked_auth_token
 from src.sockets.sockets import sio
+from src.util.security import checked_auth_token
+from src.util.util import get_user_room
 
 
 def create_group(user_id: int, group_id: int) -> Group:
@@ -84,11 +85,28 @@ async def add_friend(
             detail="You are already friends",
         )
 
-    friend_me = Friend(user_id=me.id, friend_id=friend_add.id)
-    friend_other = Friend(user_id=friend_add.id, friend_id=me.id)
+    friend_me = Friend(
+        user_id=me.id, friend_id=friend_add.id, accepted=None
+    )
+    friend_other = Friend(
+        user_id=friend_add.id, friend_id=me.id, accepted=False
+    )
     db.add(friend_me)
     db.add(friend_other)
     await db.commit()
+
+    recipient_room = get_user_room(friend_add.id)
+    await sio.emit(
+        "friend_request_received",
+        {
+            "friend_id": me.id,
+            "username": me.username,
+            "avatar_version": me.avatar_version,
+            "profile_version": me.profile_version,
+        },
+        room=recipient_room,
+    )
+
     return {
         "success": True,
     }

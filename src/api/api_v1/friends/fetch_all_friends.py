@@ -1,8 +1,9 @@
 """Endpoint for fetching all friends."""
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from fastapi import Depends, Security
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -14,8 +15,15 @@ from src.models.user_token import UserToken
 from src.util.security import checked_auth_token
 
 
-@api_router_v1.get("/friend/all", status_code=200)
+class FetchFriendsRequest(BaseModel):
+    """Request model for fetching friends with optional user ID filter."""
+
+    user_ids: Optional[List[int]] = None
+
+
+@api_router_v1.post("/friend/all", status_code=200)
 async def fetch_all_friends(
+    fetch_friends_request: FetchFriendsRequest,
     user_and_token: Tuple[User, UserToken] = Security(
         checked_auth_token, scopes=["user"]
     ),
@@ -26,6 +34,16 @@ async def fetch_all_friends(
 
     # Get all friends for the user (without JOIN, just Friend objects)
     friends_statement = select(Friend).where(Friend.user_id == user.id)
+
+    # If user_ids filter is provided, add it to the query
+    if fetch_friends_request.user_ids is not None:
+        from sqlalchemy import or_
+
+        conditions = [
+            Friend.friend_id == user_id for user_id in fetch_friends_request.user_ids
+        ]
+        friends_statement = friends_statement.where(or_(*conditions))
+
     friends_result = await db.execute(friends_statement)
     friends = friends_result.all()
 
@@ -36,10 +54,9 @@ async def fetch_all_friends(
         friends_data.append(
             {
                 "id": friend.id,
-                "user_id": friend.user_id,
                 "friend_id": friend.friend_id,
                 "accepted": friend.accepted,
-                "requested": not friend.accepted,  # If not accepted, it's requested
+                "friend_version": friend.friend_version
             }
         )
 

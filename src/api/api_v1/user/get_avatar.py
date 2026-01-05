@@ -1,12 +1,14 @@
 """Endpoint for getting user avatar."""
 
-from typing import Tuple, Any, Optional
+from typing import Dict, Tuple, Any, Optional
 from io import BytesIO
 from pydantic import BaseModel
 
 from fastapi import Depends, HTTPException, Security, Request, Body
 from fastapi.responses import StreamingResponse
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 from botocore.exceptions import ClientError
 
 from src.api.api_v1.router import api_router_v1
@@ -73,3 +75,36 @@ async def get_avatar(
         if e.response["Error"]["Code"] == "NoSuchKey":
             raise HTTPException(status_code=404, detail="Avatar not found") from e
         raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
+
+
+
+class AvatarVersionRequest(BaseModel):
+    user_id: int
+
+
+@api_router_v1.post("/user/avatar/version", status_code=200, response_model=dict)
+@handle_db_errors("Get user avatar version failed")
+async def get_avatar_version(
+    avatar_version_request: AvatarVersionRequest,
+    user_and_token: Tuple[User, UserToken] = Security(
+        checked_auth_token, scopes=["user"]
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, bool | int]:
+    """Handle get user detail request."""
+    user, _ = user_and_token
+    user_statement = select(User).where(
+        User.id == avatar_version_request.user_id
+    )
+    results_user = await db.execute(user_statement)
+    result_user = results_user.first()
+    if result_user is None:
+        return {"success": False}
+
+    got_user: User = result_user.User
+    logger.info(
+        "User %s got user %s",
+        user.username,
+        got_user.username,
+    )
+    return {"success": True, "data": got_user.avatar_version}

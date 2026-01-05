@@ -1,8 +1,8 @@
 """added friend object
 
-Revision ID: cd80d9cbd8a7
+Revision ID: 19a10c18c5b2
 Revises: 7f8941450783
-Create Date: 2026-01-02 10:22:52.536553
+Create Date: 2026-01-05 16:49:07.486175
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cd80d9cbd8a7'
+revision: str = '19a10c18c5b2'
 down_revision: Union[str, Sequence[str], None] = '7f8941450783'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('friend_id', sa.Integer(), nullable=False),
-    sa.Column('accepted', sa.Boolean(), nullable=False),
+    sa.Column('accepted', sa.Boolean(), nullable=True),
     sa.Column('friend_version', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['friend_id'], ['User.id'], name=op.f('fk_Friend_friend_id_User')),
     sa.ForeignKeyConstraint(['user_id'], ['User.id'], name=op.f('fk_Friend_user_id_User')),
