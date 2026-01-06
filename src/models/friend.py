@@ -18,9 +18,7 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
     friend_id: int = Field(foreign_key="User.id")
-    accepted: Optional[bool] = Field(
-        default=None
-    )
+    accepted: Optional[bool] = Field(default=None)
     friend_version: int = Field(default=1)
 
     friend: "User" = Relationship(

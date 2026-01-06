@@ -36,20 +36,21 @@ async def remove_friend(
     me, _ = user_and_token
     friend_id = remove_request.friend_id
 
-    statement = (
-        select(Friend)
-        .where(
-            or_(
-                (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
-                (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
-            )
+    statement = select(Friend).where(
+        or_(
+            (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
+            (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
         )
     )
     result = await db.execute(statement)
     friends = result.scalars().all()
 
-    friend_request: Friend | None = next((f for f in friends if f.user_id == me.id), None)
-    reciprocal_friend: Friend | None = next((f for f in friends if f.user_id == friend_id), None)
+    friend_request: Friend | None = next(
+        (f for f in friends if f.user_id == me.id), None
+    )
+    reciprocal_friend: Friend | None = next(
+        (f for f in friends if f.user_id == friend_id), None
+    )
 
     if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
         raise HTTPException(

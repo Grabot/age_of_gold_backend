@@ -3,7 +3,6 @@
 from typing import Tuple
 
 import pytest
-from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 

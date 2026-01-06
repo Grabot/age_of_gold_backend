@@ -4,9 +4,8 @@ from typing import Dict, Tuple, Any, Optional
 from io import BytesIO
 from pydantic import BaseModel
 
-from fastapi import Depends, HTTPException, Security, Request, Body
+from fastapi import Depends, HTTPException, Security, Request
 from fastapi.responses import StreamingResponse
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from botocore.exceptions import ClientError
@@ -49,7 +48,7 @@ async def get_avatar(
         target_user = await db.get(User, target_user_id)
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
-    
+
     if avatar_request.get_default:
         encrypted = not (target_user.default_avatar or avatar_request.get_default)
     else:
@@ -79,7 +78,6 @@ async def get_avatar(
         raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
 
 
-
 class AvatarVersionRequest(BaseModel):
     user_id: int
 
@@ -95,9 +93,7 @@ async def get_avatar_version(
 ) -> Dict[str, bool | int]:
     """Handle get user detail request."""
     user, _ = user_and_token
-    user_statement = select(User).where(
-        User.id == avatar_version_request.user_id
-    )
+    user_statement = select(User).where(User.id == avatar_version_request.user_id)
     results_user = await db.execute(user_statement)
     result_user = results_user.first()
     if result_user is None:

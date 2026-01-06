@@ -65,7 +65,6 @@ async def test_friend_user_connection(
     assert friend_2.friend is user
 
 
-
 def test_friend_serialize() -> None:
     """Test that the serialize property returns a dictionary with the correct friend data"""
     friend = Friend(
@@ -81,4 +80,3 @@ def test_friend_serialize() -> None:
     assert friend_user["data"]["user_id"] == 101
     assert friend_user["data"]["friend_id"] == 121
     assert friend_user["data"]["accepted"]
-

@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.friends import respond_friend_request, add_friend
 from src.models.user import User
-from src.models.friend import Friend
 from src.models.user_token import UserToken
 from tests.conftest import add_token, add_user
 
@@ -174,4 +173,3 @@ async def test_respond_friend_request_you_sent_direct(
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "You cannot respond to a request you sent"
-

@@ -56,7 +56,7 @@ async def fetch_all_friends(
                 "id": friend.id,
                 "friend_id": friend.friend_id,
                 "accepted": friend.accepted,
-                "friend_version": friend.friend_version
+                "friend_version": friend.friend_version,
             }
         )
 

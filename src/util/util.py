@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from src.models import User, UserToken, Friend
+from src.models import User, UserToken
 
 ph = PasswordHasher()
 

@@ -215,7 +215,6 @@ async def test_get_user_by_username_none_direct(
     assert user is None
 
 
-
 @pytest.mark.asyncio
 async def test_successful_login_with_friends(
     mock_tokens: tuple[str, str, MagicMock, MagicMock],

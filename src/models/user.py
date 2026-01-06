@@ -149,5 +149,5 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "id": self.id,
             "username": self.username,
             "profile_version": self.profile_version,
-            "avatar_version": self.avatar_version
+            "avatar_version": self.avatar_version,
         }

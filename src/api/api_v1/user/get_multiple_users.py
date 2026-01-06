@@ -6,7 +6,6 @@ from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from sqlalchemy import text
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
@@ -61,7 +60,6 @@ async def get_multiple_users(
         user.username,
         len(users_data),
     )
-
 
     print(f"user: {users_data}")
     return {"success": True, "data": users_data}

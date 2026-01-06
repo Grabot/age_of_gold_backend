@@ -30,10 +30,7 @@ async def test_successful_get_avatar_default_direct(
     request.app.state.s3.return_value = ""
     request.app.state.cipher.return_value = ""
 
-    avatar_request = get_avatar.AvatarRequest(
-        user_id=test_user.id,
-        get_default=True
-    )
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
 
     response_file: StreamingResponse = await get_avatar.get_avatar(
         request, avatar_request, auth, test_db
@@ -68,11 +65,8 @@ async def test_successful_get_avatar_regular_direct(
 
     fake_decrypted_data = b"fake_decrypted_data"
     request.app.state.cipher.decrypt.return_value = fake_decrypted_data
-    
-    avatar_request = get_avatar.AvatarRequest(
-        user_id=user.id,
-        get_default=False
-    )
+
+    avatar_request = get_avatar.AvatarRequest(user_id=user.id, get_default=False)
 
     response_file: StreamingResponse = await get_avatar.get_avatar(
         request, avatar_request, auth, test_db
@@ -112,10 +106,7 @@ async def test_get_avatar_file_not_found_direct(
         error_response, "GetObject"
     )
 
-    avatar_request = get_avatar.AvatarRequest(
-        user_id=test_user.id,
-        get_default=True
-    )
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
 
     with pytest.raises(HTTPException) as exc_info:
         await get_avatar.get_avatar(request, avatar_request, auth, test_db)
@@ -147,16 +138,14 @@ async def test_get_avatar_internal_error_direct(
         error_response, "GetObject"
     )
 
-    avatar_request = get_avatar.AvatarRequest(
-        user_id=test_user.id,
-        get_default=True
-    )
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
 
     with pytest.raises(HTTPException) as exc_info:
         await get_avatar.get_avatar(request, avatar_request, auth, test_db)
 
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert exc_info.value.detail == "Failed to fetch avatar"
+
 
 @pytest.mark.asyncio
 async def test_get_avatar_target_user_none_direct(
@@ -223,4 +212,3 @@ async def test_get_avatar_target_user_not_found_direct(
 
     assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
     assert exc_info.value.detail == "User not found"
-

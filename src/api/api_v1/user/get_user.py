@@ -4,7 +4,6 @@ from typing import Any, Dict, Optional, Tuple
 
 from fastapi import Depends, Security, Body
 from pydantic import BaseModel
-from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
