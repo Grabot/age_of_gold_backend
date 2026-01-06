@@ -8,14 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
-from sqlmodel import select
-from sqlalchemy import or_
+from src.util.rest_util import get_friend_request_pair
 
 
 class CancelFriendRequest(BaseModel):
@@ -36,27 +34,9 @@ async def cancel_friend_request(
     me, _ = user_and_token
     friend_id = cancel_request.friend_id
 
-    statement = select(Friend).where(
-        or_(
-            (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
-            (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
-        )
+    friend_request, reciprocal_friend = await get_friend_request_pair(
+        db, me.id, friend_id
     )
-    result = await db.execute(statement)
-    friends = result.scalars().all()
-
-    friend_request: Friend | None = next(
-        (f for f in friends if f.user_id == me.id), None
-    )
-    reciprocal_friend: Friend | None = next(
-        (f for f in friends if f.user_id == friend_id), None
-    )
-
-    if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Friend request not found",
-        )
 
     # Only the sender (who has accepted = null) can cancel the request
     if friend_request.accepted is not None:

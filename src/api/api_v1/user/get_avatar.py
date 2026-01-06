@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from fastapi import Depends, HTTPException, Security, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 from botocore.exceptions import ClientError
 
 from src.api.api_v1.router import api_router_v1
@@ -18,10 +17,13 @@ from src.models.user_token import UserToken
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
+from src.util.rest_util import get_user_from_db
 from src.util.storage_util import download_image
 
 
 class AvatarRequest(BaseModel):
+    """Request model for getting user avatar."""
+
     user_id: Optional[int] = None
     get_default: Optional[bool] = None
 
@@ -45,7 +47,7 @@ async def get_avatar(
     if target_user_id is None:
         target_user = user
     else:
-        target_user = await db.get(User, target_user_id)
+        target_user = await get_user_from_db(db, target_user_id)
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -79,6 +81,8 @@ async def get_avatar(
 
 
 class AvatarVersionRequest(BaseModel):
+    """Request model for getting avatar version."""
+
     user_id: int
 
 
@@ -92,17 +96,9 @@ async def get_avatar_version(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, bool | int]:
     """Handle get user detail request."""
-    user, _ = user_and_token
-    user_statement = select(User).where(User.id == avatar_version_request.user_id)
-    results_user = await db.execute(user_statement)
-    result_user = results_user.first()
-    if result_user is None:
+    _, _ = user_and_token
+    got_user = await get_user_from_db(db, avatar_version_request.user_id)
+    if got_user is None:
         return {"success": False}
 
-    got_user: User = result_user.User
-    logger.info(
-        "User %s got user %s",
-        user.username,
-        got_user.username,
-    )
     return {"success": True, "data": got_user.avatar_version}

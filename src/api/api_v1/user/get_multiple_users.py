@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple
 
 from fastapi import Depends, Security
 from pydantic import BaseModel
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -40,15 +41,10 @@ async def get_multiple_users(
     if len(get_users_request.user_ids) > 100:  # Limit to prevent abuse
         return {"success": False, "message": "Too many user IDs requested (max 100)"}
 
-    # Query users by IDs
-    from sqlalchemy import or_
-
-    print("finding users")
     conditions = [User.id == user_id for user_id in get_users_request.user_ids]
     user_statement = select(User).where(or_(*conditions))
     results_users = await db.execute(user_statement)
     found_users = results_users.scalars().all()
-    print("found_users ", found_users)
     if not found_users:
         return {"success": False, "message": "No users found"}
 
@@ -61,5 +57,4 @@ async def get_multiple_users(
         len(users_data),
     )
 
-    print(f"user: {users_data}")
     return {"success": True, "data": users_data}

@@ -1,9 +1,10 @@
 """Endpoint for fetching all friends."""
 
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import Depends, Security
 from pydantic import BaseModel
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
@@ -37,8 +38,6 @@ async def fetch_all_friends(
 
     # If user_ids filter is provided, add it to the query
     if fetch_friends_request.user_ids is not None:
-        from sqlalchemy import or_
-
         conditions = [
             Friend.friend_id == user_id for user_id in fetch_friends_request.user_ids
         ]

@@ -1,5 +1,6 @@
 import time
 from typing import Any, List, Optional, TypedDict
+
 from argon2 import PasswordHasher
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select

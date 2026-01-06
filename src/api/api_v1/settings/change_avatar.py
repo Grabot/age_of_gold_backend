@@ -7,15 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
-from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
-from src.util.util import get_user_room
-from sqlmodel import select
+from src.util.rest_util import update_friend_versions_and_notify
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
@@ -43,20 +40,10 @@ async def change_avatar(
         db.add(user)
         user.remove_avatar(s3_client)
 
-        friends_statement = select(Friend).where(Friend.friend_id == user.id)
-        friends_result = await db.execute(friends_statement)
-        friends = friends_result.scalars().all()
-
-        for friend in friends:
-            friend.friend_version += 1
-            db.add(friend)
-            # Notify friend about avatar change
-            friend_room = get_user_room(friend.user_id)
-            await sio.emit(
-                "avatar_updated",
-                {"user_id": user.id},
-                room=friend_room,
-            )
+        # Update friend versions and notify about avatar change
+        await update_friend_versions_and_notify(
+            db, user.id, "avatar_updated", {"user_id": user.id}
+        )
 
         await db.commit()
         return {"success": True}
@@ -77,20 +64,9 @@ async def change_avatar(
         user.default_avatar = False
     db.add(user)
 
-    friends_statement = select(Friend).where(Friend.friend_id == user.id)
-    friends_result = await db.execute(friends_statement)
-    friends = friends_result.scalars().all()
-
-    for friend in friends:
-        friend.friend_version += 1
-        db.add(friend)
-        # Notify friend about avatar change
-        friend_room = get_user_room(friend.user_id)
-        await sio.emit(
-            "avatar_updated",
-            {"user_id": user.id},
-            room=friend_room,
-        )
+    await update_friend_versions_and_notify(
+        db, user.id, "avatar_updated", {"user_id": user.id}
+    )
 
     await db.commit()
 

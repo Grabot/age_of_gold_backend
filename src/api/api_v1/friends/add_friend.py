@@ -18,6 +18,8 @@ from src.util.util import get_user_room
 
 
 class AddFriendRequest(BaseModel):
+    """Request model for adding a friend."""
+
     user_id: int
 
 

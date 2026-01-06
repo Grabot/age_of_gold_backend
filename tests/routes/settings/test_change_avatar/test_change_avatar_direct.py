@@ -187,9 +187,7 @@ async def test_change_avatar_updates_friend_versions(
     await test_db.commit()
 
     # Mock the socket emit
-    with patch(
-        "src.api.api_v1.settings.change_username.sio.emit", new_callable=AsyncMock
-    ) as mock_emit:
+    with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
         # Call the function
         auth = (test_user, test_user_token)
         test_path = Path(__file__).parent.parent.parent.parent.parent / "test_data"
@@ -274,7 +272,7 @@ async def test_successful_change_avatar_default_friend_versions(
 
     # Mock the socket emit
     with patch(
-        "src.api.api_v1.settings.change_username.sio.emit", new_callable=AsyncMock
+        "src.util.rest_util.sio.emit", new_callable=AsyncMock
     ) as mock_emit_default:
         response_json: dict[str, Any] = await change_avatar.change_avatar(
             request, None, auth, test_db
