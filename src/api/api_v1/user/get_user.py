@@ -26,7 +26,7 @@ class GetUserRequest(BaseModel):
 @api_router_v1.post("/user/get", status_code=200, response_model=dict)
 @handle_db_errors("Getting a user failed")
 async def get_user(
-    get_user_request: GetUserRequest = Body(default=None),
+    get_user_request: Optional[GetUserRequest] = Body(default=None),
     user_and_token: Tuple[User, UserToken] = Security(
         checked_auth_token, scopes=["user"]
     ),
@@ -37,9 +37,7 @@ async def get_user(
     if not get_user_request:
         logger.info("User %s got their user detail", user.username)
         return {"success": True, "data": {"user": user.serialize}}
-    user_statement = select(User).where(
-        User.id == get_user_request.user_id
-    )
+    user_statement = select(User).where(User.id == get_user_request.user_id)
     results_user = await db.execute(user_statement)
     result_user = results_user.first()
     if result_user is None:

@@ -21,9 +21,11 @@ from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
 from src.util.storage_util import download_image
 
+
 class AvatarRequest(BaseModel):
     user_id: Optional[int] = None
     get_default: Optional[bool] = None
+
 
 @api_router_v1.post("/user/avatar", status_code=200)
 @handle_db_errors("Get avatar failed")

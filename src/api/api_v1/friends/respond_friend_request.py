@@ -15,6 +15,7 @@ from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 from sqlmodel import select
+from sqlalchemy import or_
 
 
 class RespondFriendRequest(BaseModel):
@@ -37,27 +38,35 @@ async def respond_friend_request(
     friend_id = respond_request.friend_id
     accept = respond_request.accept
 
-    # Find the friend request from the recipient's perspective
-    friend_request_statement = select(Friend).where(
-        Friend.user_id == me.id, Friend.friend_id == friend_id
+    statement = (
+        select(Friend)
+        .where(
+            or_(
+                (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
+                (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
+            )
+        )
     )
-    friend_request_result = await db.execute(friend_request_statement)
-    friend_request = friend_request_result.first()
+    result = await db.execute(statement)
+    friends = result.scalars().all()
 
-    if not friend_request:
+    friend_request: Friend | None = next((f for f in friends if f.user_id == me.id), None)
+    reciprocal_friend: Friend | None = next((f for f in friends if f.user_id == friend_id), None)
+
+    if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
         raise HTTPException(
             status_code=404,
             detail="Friend request not found",
         )
 
-    if friend_request.Friend.accepted is True:
+    if friend_request.accepted is True:
         raise HTTPException(
             status_code=400,
             detail="Friend request already accepted",
         )
 
     # Only the recipient (who has accepted=False) can respond to the request
-    if friend_request.Friend.accepted is None:
+    if friend_request.accepted is None:
         raise HTTPException(
             status_code=400,
             detail="You cannot respond to a request you sent",
@@ -65,21 +74,13 @@ async def respond_friend_request(
 
     if accept:
         # Accept the friend request
-        friend_request.Friend.accepted = True
-        friend_request.Friend.friend_version += 1
-        db.add(friend_request.Friend)
+        friend_request.accepted = True
+        friend_request.friend_version += 1
+        db.add(friend_request)
 
-        # Also update the reciprocal friend entry
-        reciprocal_friend_statement = select(Friend).where(
-            Friend.user_id == friend_id, Friend.friend_id == me.id
-        )
-        reciprocal_friend_result = await db.execute(reciprocal_friend_statement)
-        reciprocal_friend = reciprocal_friend_result.first()
-
-        if reciprocal_friend:
-            reciprocal_friend.Friend.accepted = True
-            reciprocal_friend.Friend.friend_version += 1
-            db.add(reciprocal_friend.Friend)
+        reciprocal_friend.accepted = True
+        reciprocal_friend.friend_version += 1
+        db.add(reciprocal_friend)
 
         # Notify the sender that their request was accepted
         sender_room = get_user_room(friend_id)
@@ -91,23 +92,14 @@ async def respond_friend_request(
                 "avatar_version": me.avatar_version,
                 "profile_version": me.profile_version,
                 "accepted": True,
-                "friend_version": friend_request.Friend.friend_version,
+                "friend_version": friend_request.friend_version,
             },
             room=sender_room,
         )
     else:
         # Reject the friend request - remove both entries
-        await db.delete(friend_request.Friend)
-
-        # Also remove the reciprocal friend entry
-        reciprocal_friend_statement = select(Friend).where(
-            Friend.user_id == friend_id, Friend.friend_id == me.id
-        )
-        reciprocal_friend_result = await db.execute(reciprocal_friend_statement)
-        reciprocal_friend = reciprocal_friend_result.first()
-
-        if reciprocal_friend:
-            await db.delete(reciprocal_friend.Friend)
+        await db.delete(friend_request)
+        await db.delete(reciprocal_friend)
 
         # Notify the sender that their request was rejected
         sender_room = get_user_room(friend_id)

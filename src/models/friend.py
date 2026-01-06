@@ -1,6 +1,6 @@
 """Friend model"""
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 

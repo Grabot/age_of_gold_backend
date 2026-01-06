@@ -1,8 +1,8 @@
 """added friend object
 
-Revision ID: 19a10c18c5b2
-Revises: 7f8941450783
-Create Date: 2026-01-05 16:49:07.486175
+Revision ID: 97bc978ba8ff
+Revises: 5822e6a8fa59
+Create Date: 2026-01-06 09:09:21.227858
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '19a10c18c5b2'
-down_revision: Union[str, Sequence[str], None] = '7f8941450783'
+revision: str = '97bc978ba8ff'
+down_revision: Union[str, Sequence[str], None] = '5822e6a8fa59'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

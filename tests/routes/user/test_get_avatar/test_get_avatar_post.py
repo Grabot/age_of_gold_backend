@@ -25,9 +25,12 @@ async def test_successful_get_avatar_default(
     user, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    response = test_setup.get(
+    response = test_setup.post(
         f"{settings.API_V1_STR}/user/avatar",
         headers=headers,
+        json={
+            "user_id": user.id,
+        },
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -60,14 +63,12 @@ async def test_successful_get_avatar_regular(
         "src.util.storage_util.decrypt_image", return_value=b"mocked_decrypted_data"
     )
 
-    response = test_setup.get(
+    response = test_setup.post(
         f"{settings.API_V1_STR}/user/avatar",
         headers=headers,
-    )
-
-    response = test_setup.get(
-        f"{settings.API_V1_STR}/user/avatar",
-        headers=headers,
+        json={
+            "user_id": user.id,
+        },
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -81,7 +82,7 @@ async def test_get_avatar_file_not_found(
     mocker: MockerFixture,
 ) -> None:
     """Test get avatar with non-existent file."""
-    _, user_token = await add_token(1000, 1000, test_db)
+    user, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     mock_s3 = MagicMock()
@@ -97,9 +98,12 @@ async def test_get_avatar_file_not_found(
 
     cast(FastAPI, test_setup.app).state.s3 = mock_s3
 
-    response = test_setup.get(
+    response = test_setup.post(
         f"{settings.API_V1_STR}/user/avatar",
         headers=headers,
+        json={
+            "user_id": user.id,
+        },
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

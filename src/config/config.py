@@ -118,7 +118,9 @@ class Settings(BaseSettings):
     S3_ENCRYPTION_KEY: str
     PROJECT_NAME: str
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
 
 settings = Settings()  # type: ignore[call-arg]

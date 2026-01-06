@@ -15,6 +15,7 @@ from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 from sqlmodel import select
+from sqlalchemy import or_
 
 
 class RemoveFriendRequest(BaseModel):
@@ -35,38 +36,37 @@ async def remove_friend(
     me, _ = user_and_token
     friend_id = remove_request.friend_id
 
-    # Find the friend relationship from the current user's perspective
-    friend_statement = select(Friend).where(
-        Friend.user_id == me.id, Friend.friend_id == friend_id
+    statement = (
+        select(Friend)
+        .where(
+            or_(
+                (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
+                (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
+            )
+        )
     )
-    friend_result = await db.execute(friend_statement)
-    friend = friend_result.first()
+    result = await db.execute(statement)
+    friends = result.scalars().all()
 
-    if not friend:
+    friend_request: Friend | None = next((f for f in friends if f.user_id == me.id), None)
+    reciprocal_friend: Friend | None = next((f for f in friends if f.user_id == friend_id), None)
+
+    if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
         raise HTTPException(
             status_code=404,
-            detail="Friend relationship not found",
+            detail="Friend request not found",
         )
 
     # Only allow removal if the friendship is accepted
-    if friend.Friend.accepted is not True:
+    if friend_request.accepted is not True:
         raise HTTPException(
             status_code=400,
             detail="Can only remove accepted friends",
         )
 
     # Remove both friend entries
-    await db.delete(friend.Friend)
-
-    # Also remove the reciprocal friend entry
-    reciprocal_friend_statement = select(Friend).where(
-        Friend.user_id == friend_id, Friend.friend_id == me.id
-    )
-    reciprocal_friend_result = await db.execute(reciprocal_friend_statement)
-    reciprocal_friend = reciprocal_friend_result.first()
-
-    if reciprocal_friend:
-        await db.delete(reciprocal_friend.Friend)
+    await db.delete(friend_request)
+    await db.delete(reciprocal_friend)
 
     # Notify the other user that they were removed as a friend
     other_user_room = get_user_room(friend_id)

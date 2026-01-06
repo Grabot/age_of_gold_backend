@@ -54,7 +54,7 @@ async def change_avatar(
             friend_room = get_user_room(friend.user_id)
             await sio.emit(
                 "avatar_updated",
-                {"user_id": user.id, "avatar_version": user.avatar_version},
+                {"user_id": user.id},
                 room=friend_room,
             )
 

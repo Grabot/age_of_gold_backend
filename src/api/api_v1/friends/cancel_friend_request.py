@@ -15,6 +15,7 @@ from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 from sqlmodel import select
+from sqlalchemy import or_
 
 
 class CancelFriendRequest(BaseModel):
@@ -35,38 +36,37 @@ async def cancel_friend_request(
     me, _ = user_and_token
     friend_id = cancel_request.friend_id
 
-    # Find the friend request from the sender's perspective (should have accepted = null)
-    friend_request_statement = select(Friend).where(
-        Friend.user_id == me.id, Friend.friend_id == friend_id
+    statement = (
+        select(Friend)
+        .where(
+            or_(
+                (Friend.user_id == me.id) & (Friend.friend_id == friend_id),
+                (Friend.user_id == friend_id) & (Friend.friend_id == me.id),
+            )
+        )
     )
-    friend_request_result = await db.execute(friend_request_statement)
-    friend_request = friend_request_result.first()
+    result = await db.execute(statement)
+    friends = result.scalars().all()
 
-    if not friend_request:
+    friend_request: Friend | None = next((f for f in friends if f.user_id == me.id), None)
+    reciprocal_friend: Friend | None = next((f for f in friends if f.user_id == friend_id), None)
+
+    if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
         raise HTTPException(
             status_code=404,
             detail="Friend request not found",
         )
 
     # Only the sender (who has accepted = null) can cancel the request
-    if friend_request.Friend.accepted is not None:
+    if friend_request.accepted is not None:
         raise HTTPException(
             status_code=400,
             detail="You can only cancel requests you have sent",
         )
 
     # Remove both friend entries
-    await db.delete(friend_request.Friend)
-
-    # Also remove the reciprocal friend entry
-    reciprocal_friend_statement = select(Friend).where(
-        Friend.user_id == friend_id, Friend.friend_id == me.id
-    )
-    reciprocal_friend_result = await db.execute(reciprocal_friend_statement)
-    reciprocal_friend = reciprocal_friend_result.first()
-
-    if reciprocal_friend:
-        await db.delete(reciprocal_friend.Friend)
+    await db.delete(friend_request)
+    await db.delete(reciprocal_friend)
 
     # Notify the recipient that the request was canceled
     recipient_room = get_user_room(friend_id)

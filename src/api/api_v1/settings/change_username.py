@@ -44,7 +44,6 @@ async def change_username(
     friends_result = await db.execute(friends_statement)
     friends = friends_result.scalars().all()
 
-    print("changing username")
     for friend in friends:
         friend.friend_version += 1
         db.add(friend)

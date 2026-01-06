@@ -6,28 +6,15 @@ from fastapi import Depends, HTTPException, status, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-import random
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.chat import Chat
-from src.models.group import Group
 from src.models.user import User
 from src.models.friend import Friend
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
-
-
-def create_group(user_id: int, group_id: int) -> Group:
-    group = Group(
-        user_id=user_id,
-        group_id=group_id,
-        unread_messages=0,
-        mute=False,
-    )
-    return group
 
 
 class AddFriendRequest(BaseModel):
@@ -58,20 +45,13 @@ async def add_friend(
     result_user = results_user.first()
     print(f"Result User: {result_user}")
 
-    if not result_user:
+    if me.id is None or not result_user or result_user.User.id is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No user found.",
         )
 
     friend_add: User = result_user.User
-    print(f"Friend Add: {friend_add}")
-
-    if me.id is None or friend_add.id is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No user found.",
-        )
 
     existing_friend_statement = select(Friend).where(
         Friend.user_id == me.id, Friend.friend_id == friend_add.id
