@@ -6,6 +6,7 @@ from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -34,7 +35,7 @@ async def fetch_all_friends(
     user, _ = user_and_token
 
     # Get all friends for the user (without JOIN, just Friend objects)
-    friends_statement = select(Friend).where(Friend.user_id == user.id)
+    friends_statement: Select = select(Friend).where(Friend.user_id == user.id)
 
     # If user_ids filter is provided, add it to the query
     if fetch_friends_request.user_ids is not None:

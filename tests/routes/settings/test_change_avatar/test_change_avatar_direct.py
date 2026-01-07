@@ -6,7 +6,7 @@ from typing import Any, Tuple
 from unittest.mock import MagicMock, Mock, AsyncMock, patch
 
 import pytest
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, status
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -109,7 +109,7 @@ async def test_change_avatar_invalid_file_direct(
     with pytest.raises(HTTPException) as exc_info:
         await change_avatar.change_avatar(request, avatar, auth, test_db)
 
-    assert exc_info.value.status_code == 400
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "Invalid avatar file"
 
 
@@ -296,3 +296,36 @@ async def test_successful_change_avatar_default_friend_versions(
             },
             room=get_user_room(friend.user_id),
         )
+
+
+@pytest.mark.asyncio
+async def test_user_id_is_not_filled(
+    test_setup: TestClient, test_db: AsyncSession
+) -> None:
+    """Test successful change username via direct function call."""
+    test_user = User(
+        id=None,
+        username="test_user",
+        email_hash="email_hash",
+        password_hash="password_hash",
+        salt="salt",
+        origin=0,
+    )
+    test_token = UserToken(
+        id=None,
+        user_id=1,
+        access_token="access_token",
+        token_expiration=0,
+        refresh_token="refresh_token",
+        refresh_token_expiration=0,
+    )
+    auth: Tuple[User, UserToken] = (test_user, test_token)
+
+    avatar = UploadFile(filename="", file=BytesIO(b"fake content"))
+    request = MagicMock()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await change_avatar.change_avatar(request, avatar, auth, test_db)
+
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Can't find user"

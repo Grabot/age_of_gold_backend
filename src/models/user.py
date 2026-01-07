@@ -42,7 +42,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
 
     __tablename__ = "User"  # pyright: ignore[reportAssignmentType]
     id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(default=None, index=True, unique=True)
+    username: str = Field(index=True, unique=True)
     email_hash: str
     password_hash: str
     salt: str

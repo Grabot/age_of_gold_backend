@@ -33,6 +33,10 @@ async def respond_friend_request(
 ) -> Dict[str, bool]:
     """Handle friend request response (accept/reject)."""
     me, _ = user_and_token
+
+    if me.id is None:
+        raise HTTPException(status_code=400, detail="Can't find user")
+
     friend_id = respond_request.friend_id
     accept = respond_request.accept
 

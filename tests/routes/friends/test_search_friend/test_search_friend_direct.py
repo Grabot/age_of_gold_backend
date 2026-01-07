@@ -1,6 +1,6 @@
 """Test for search friend endpoint via direct function call."""
 
-from typing import Tuple
+from typing import Any, Tuple
 
 import pytest
 from fastapi.testclient import TestClient
@@ -25,7 +25,9 @@ async def test_successful_search_friend_direct(
         username=other_user.username
     )
 
-    response = await search_friend.search_friend(search_friend_request, auth, test_db)
+    response: dict[str, Any] = await search_friend.search_friend(
+        search_friend_request, auth, test_db
+    )
 
     assert response["success"] is True
     assert response["data"]["username"] == other_user.username
@@ -44,7 +46,9 @@ async def test_search_friend_not_found_direct(
         username="nonexistentuser"
     )
 
-    response = await search_friend.search_friend(search_friend_request, auth, test_db)
+    response: dict[str, Any] = await search_friend.search_friend(
+        search_friend_request, auth, test_db
+    )
 
     assert response["success"] is False
 
@@ -62,7 +66,9 @@ async def test_search_friend_case_insensitive_direct(
         username=other_user.username.upper()
     )
 
-    response = await search_friend.search_friend(search_friend_request, auth, test_db)
+    response: dict[str, Any] = await search_friend.search_friend(
+        search_friend_request, auth, test_db
+    )
 
     assert response["success"] is True
     assert response["data"]["username"] == other_user.username

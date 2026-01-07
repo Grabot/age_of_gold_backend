@@ -6,6 +6,7 @@ from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -42,7 +43,7 @@ async def get_multiple_users(
         return {"success": False, "message": "Too many user IDs requested (max 100)"}
 
     conditions = [User.id == user_id for user_id in get_users_request.user_ids]
-    user_statement = select(User).where(or_(*conditions))
+    user_statement: Select = select(User).where(or_(*conditions))
     results_users = await db.execute(user_statement)
     found_users = results_users.scalars().all()
     if not found_users:

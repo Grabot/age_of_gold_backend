@@ -11,22 +11,22 @@ from src.models import User, UserToken
 ph = PasswordHasher()
 
 
-class UserTokenData(TypedDict):
+class LoginData(TypedDict):
     access_token: str
     refresh_token: str
     profile_version: int
     avatar_version: int
-    friends: List[dict]
+    friends: List[dict[str, Any]]
 
 
 class SuccessfulLoginResponse(TypedDict):
     success: bool
-    data: UserTokenData
+    data: LoginData
 
 
 async def get_successful_login_response(
     user_token: UserToken, user: User, db: AsyncSession
-) -> Any:
+) -> SuccessfulLoginResponse:
     # Load friends using the existing User.friends relationship
     # First refresh the user object to get the latest data
     await db.refresh(user, ["friends"])

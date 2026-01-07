@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.api_v1.oauth import google_oauth
 from src.config.config import settings
 from src.models.user import User
-from src.util.util import SuccessfulLoginResponse, UserTokenData
+from src.util.util import SuccessfulLoginResponse, LoginData
 from tests.conftest import add_token, add_user
 from tests.helpers import AsyncFakeRedis
 
@@ -306,11 +306,12 @@ async def test_login_google_token_direct(
 
     mock_response = SuccessfulLoginResponse(
         success=True,
-        data=UserTokenData(
+        data=LoginData(
             access_token=test_token.access_token,
             refresh_token=test_token.refresh_token,
             profile_version=1,
             avatar_version=1,
+            friends=[],
         ),
     )
 

@@ -1,6 +1,7 @@
-from typing import Optional, Tuple
+from typing import Any, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import or_, select
 
 from src.models import Friend, User
@@ -18,7 +19,7 @@ async def get_friend_request_pair(
     """
     from fastapi import HTTPException
 
-    statement = select(Friend).where(
+    statement: Select = select(Friend).where(
         or_(
             (Friend.user_id == me_id) & (Friend.friend_id == friend_id),
             (Friend.user_id == friend_id) & (Friend.friend_id == me_id),
@@ -43,36 +44,21 @@ async def get_friend_request_pair(
     return friend_request, reciprocal_friend
 
 
-async def get_user_from_db(db: AsyncSession, user_id: int) -> Optional[User]:
-    """Get a user from the database using a select statement.
-
-    Returns the User object if found, None otherwise.
-    """
-    user_statement = select(User).where(User.id == user_id)
-    results_user = await db.execute(user_statement)
-    result_user = results_user.first()
-    if result_user is None:
-        return None
-
-    return result_user.User
+async def get_user_from_db(db: AsyncSession, user_id: int) -> User | None:
+    """Get a user from the database by ID."""
+    return await db.get(User, user_id)
 
 
 async def update_friend_versions_and_notify(
-    db: AsyncSession, user_id: int, event_name: str, event_data: dict
+    db: AsyncSession, user_id: int, event_name: str, event_data: dict[str, Any]
 ) -> None:
     """Update friend versions and notify friends about changes.
 
     This function finds all friends of a user, increments their friend_version,
     and sends a socket notification to each friend.
-
-    Args:
-        db: Database session
-        user_id: ID of the user whose friends need updating
-        event_name: Name of the socket event to emit
-        event_data: Data to send with the socket event
     """
 
-    friends_statement = select(Friend).where(Friend.friend_id == user_id)
+    friends_statement: Select = select(Friend).where(Friend.friend_id == user_id)
     friends_result = await db.execute(friends_statement)
     friends = friends_result.scalars().all()
 

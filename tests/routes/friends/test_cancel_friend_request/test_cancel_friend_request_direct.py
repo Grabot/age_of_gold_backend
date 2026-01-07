@@ -24,6 +24,7 @@ async def test_successful_cancel_friend_request_direct(
     """Test successful cancel friend request via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     other_user = await add_user("testuser2", 1002, test_db)
+    assert other_user.id is not None
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     # Add friend request
@@ -71,7 +72,9 @@ async def test_cancel_friend_request_not_sent_by_you_direct(
 ) -> None:
     """Test cancel friend request with request not sent by you via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
+    assert test_user.id is not None
     other_user = await add_user("testuser3", 1003, test_db)
+    assert other_user.id is not None
     _, other_user_token = await add_token(1000, 1000, test_db, other_user.id)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
     other_auth: Tuple[User, UserToken] = (other_user, other_user_token)
@@ -103,7 +106,9 @@ async def test_cancel_friend_request_already_accepted_direct(
 ) -> None:
     """Test cancel friend request with already accepted request via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
+    assert test_user.id is not None
     other_user = await add_user("testuser42", 1004, test_db)
+    assert other_user.id is not None
     _, other_user_token = await add_token(1000, 1000, test_db, other_user.id)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
     other_auth: Tuple[User, UserToken] = (other_user, other_user_token)
@@ -136,3 +141,38 @@ async def test_cancel_friend_request_already_accepted_direct(
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "You can only cancel requests you have sent"
+
+
+@pytest.mark.asyncio
+async def test_user_id_is_not_filled(
+    test_setup: TestClient, test_db: AsyncSession
+) -> None:
+    """Test successful change username via direct function call."""
+    test_user = User(
+        id=None,
+        username="test_user",
+        email_hash="email_hash",
+        password_hash="password_hash",
+        salt="salt",
+        origin=0,
+    )
+    test_token = UserToken(
+        id=None,
+        user_id=1,
+        access_token="access_token",
+        token_expiration=0,
+        refresh_token="refresh_token",
+        refresh_token_expiration=0,
+    )
+    auth: Tuple[User, UserToken] = (test_user, test_token)
+
+    cancel_friend_request_request = cancel_friend_request.CancelFriendRequest(
+        friend_id=1
+    )
+    with pytest.raises(HTTPException) as exc_info:
+        await cancel_friend_request.cancel_friend_request(
+            cancel_friend_request_request, auth, test_db
+        )
+
+    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc_info.value.detail == "Can't find user"

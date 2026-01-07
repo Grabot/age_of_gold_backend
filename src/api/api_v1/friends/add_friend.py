@@ -2,15 +2,16 @@
 
 from typing import Tuple
 
-from fastapi import Depends, HTTPException, status, Security
+from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.user import User
 from src.models.friend import Friend
+from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
@@ -30,24 +31,25 @@ async def add_friend(
         checked_auth_token, scopes=["user"]
     ),
     db: AsyncSession = Depends(get_db),
-) -> dict:
+) -> dict[str, bool]:
     """Handle add friend request."""
     me, _ = user_and_token
-    friend_id = add_friend_request.user_id
-    print(f"Friend ID: {friend_id}")
 
+    if me.id is None:
+        raise HTTPException(status_code=400, detail="Can't find user")
+
+    friend_id = add_friend_request.user_id
     if friend_id is me.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You can't add yourself",
         )
 
-    friend_statement = select(User).where(User.id == friend_id)
+    friend_statement: Select = select(User).where(User.id == friend_id)
     results_user = await db.execute(friend_statement)
     result_user = results_user.first()
-    print(f"Result User: {result_user}")
 
-    if me.id is None or not result_user or result_user.User.id is None:
+    if not result_user:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="No user found.",
@@ -55,7 +57,7 @@ async def add_friend(
 
     friend_add: User = result_user.User
 
-    existing_friend_statement = select(Friend).where(
+    existing_friend_statement: Select = select(Friend).where(
         Friend.user_id == me.id, Friend.friend_id == friend_add.id
     )
     existing_friend_result = await db.execute(existing_friend_statement)
@@ -73,7 +75,7 @@ async def add_friend(
     db.add(friend_other)
     await db.commit()
 
-    recipient_room = get_user_room(friend_add.id)
+    recipient_room: str = get_user_room(friend_add.id)  # type: ignore[arg-type]
     await sio.emit(
         "friend_request_received",
         {

@@ -18,8 +18,11 @@ async def test_successful_fetch_all_friends_direct(
 ) -> None:
     """Test successful fetch all friends via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
+    assert test_user.id is not None
     other_user1 = await add_user("testuser2", 1002, test_db)
+    assert other_user1.id is not None
     other_user2 = await add_user("testuser3", 1003, test_db)
+    assert other_user2.id is not None
     _, other_user1_token = await add_token(1000, 1000, test_db, other_user1.id)
     _, other_user2_token = await add_token(1000, 1000, test_db, other_user2.id)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
@@ -72,8 +75,11 @@ async def test_fetch_all_friends_with_filter_direct(
 ) -> None:
     """Test fetch all friends with user ID filter via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
+    assert test_user.id is not None
     other_user1 = await add_user("testuser46", 1004, test_db)
+    assert other_user1.id is not None
     other_user2 = await add_user("testuser57", 1005, test_db)
+    assert other_user2.id is not None
     _, other_user1_token = await add_token(1000, 1000, test_db, other_user1.id)
     _, other_user2_token = await add_token(1000, 1000, test_db, other_user2.id)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
@@ -139,4 +145,3 @@ async def test_fetch_all_friends_empty_direct(
     )
 
     assert response["success"] is True
-    # Note: The test user might have friends from previous tests, so we just check the response is successful

@@ -19,7 +19,9 @@ async def test_successful_get_multiple_users_direct(
     """Test successful get multiple users via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     other_user1 = await add_user("testuser1", 1001, test_db)
+    assert other_user1.id is not None
     other_user2 = await add_user("testuser2", 1002, test_db)
+    assert other_user2.id is not None
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     get_users_request = get_multiple_users.GetUsersRequest(

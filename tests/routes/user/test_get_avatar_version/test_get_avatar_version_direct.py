@@ -19,6 +19,7 @@ async def test_successful_get_avatar_version_direct(
     """Test successful get avatar version via direct function call."""
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     other_user, _ = await add_token(1001, 1001, test_db)
+    assert other_user.id is not None
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     avatar_version_request = get_avatar.AvatarVersionRequest(user_id=other_user.id)

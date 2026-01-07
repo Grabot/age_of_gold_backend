@@ -1,6 +1,6 @@
 """Test for get user endpoint via direct function call."""
 
-from typing import Tuple
+from typing import Any, Tuple
 
 import pytest
 from fastapi.testclient import TestClient
@@ -20,11 +20,14 @@ async def test_successful_get_user_self_direct(
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
-    response = await get_user.get_user(
+    response: dict[str, Any] = await get_user.get_user(
         get_user_request=None, user_and_token=auth, db=test_db
     )
 
     assert response["success"] is True
+    assert "data" in response
+    assert "user" in response["data"]
+    assert "id" in response["data"]["user"]
     assert response["data"]["user"]["id"] == test_user.id
     assert response["data"]["user"]["username"] == test_user.username
 
@@ -40,7 +43,7 @@ async def test_successful_get_user_other_direct(
 
     get_user_request = get_user.GetUserRequest(user_id=other_user.id)
 
-    response = await get_user.get_user(get_user_request, auth, test_db)
+    response: dict[str, Any] = await get_user.get_user(get_user_request, auth, test_db)
 
     assert response["success"] is True
     assert response["data"]["id"] == other_user.id
@@ -58,6 +61,6 @@ async def test_get_user_not_found_direct(
 
     get_user_request = get_user.GetUserRequest(user_id=999999)
 
-    response = await get_user.get_user(get_user_request, auth, test_db)
+    response: dict[str, Any] = await get_user.get_user(get_user_request, auth, test_db)
 
     assert response["success"] is False

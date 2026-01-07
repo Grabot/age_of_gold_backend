@@ -44,6 +44,7 @@ async def get_avatar(
     cipher: Any = request.app.state.cipher
 
     target_user_id = avatar_request.user_id
+    target_user: User | None = None
     if target_user_id is None:
         target_user = user
     else:

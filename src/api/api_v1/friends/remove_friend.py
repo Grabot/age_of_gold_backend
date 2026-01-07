@@ -32,6 +32,10 @@ async def remove_friend(
 ) -> Dict[str, bool]:
     """Handle friend removal."""
     me, _ = user_and_token
+
+    if me.id is None:
+        raise HTTPException(status_code=400, detail="Can't find user")
+
     friend_id = remove_request.friend_id
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
