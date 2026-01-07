@@ -24,7 +24,7 @@ class GetUsersRequest(BaseModel):
     user_ids: List[int]
 
 
-@api_router_v1.post("/user/get-multiple", status_code=200)
+@api_router_v1.post("/users", status_code=200)
 @handle_db_errors("Getting multiple users failed")
 async def get_multiple_users(
     get_users_request: GetUsersRequest,

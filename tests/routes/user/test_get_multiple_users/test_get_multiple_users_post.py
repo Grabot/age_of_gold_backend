@@ -21,7 +21,7 @@ async def test_successful_get_multiple_users(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get-multiple",
+        f"{settings.API_V1_STR}/users",
         headers=headers,
         json={
             "user_ids": [other_user1.id, other_user2.id],
@@ -46,7 +46,7 @@ async def test_get_multiple_users_empty_list(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get-multiple",
+        f"{settings.API_V1_STR}/users",
         headers=headers,
         json={
             "user_ids": [],
@@ -71,7 +71,7 @@ async def test_get_multiple_users_too_many(
     user_ids = list(range(1, 102))
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get-multiple",
+        f"{settings.API_V1_STR}/users",
         headers=headers,
         json={
             "user_ids": user_ids,
@@ -93,7 +93,7 @@ async def test_get_multiple_users_not_found(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get-multiple",
+        f"{settings.API_V1_STR}/users",
         headers=headers,
         json={
             "user_ids": [999998, 999999],

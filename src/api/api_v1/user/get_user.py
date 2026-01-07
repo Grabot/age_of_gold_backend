@@ -21,7 +21,7 @@ class GetUserRequest(BaseModel):
     user_id: Optional[int]
 
 
-@api_router_v1.post("/user/get", status_code=200, response_model=dict)
+@api_router_v1.post("/user", status_code=200, response_model=dict)
 @handle_db_errors("Getting a user failed")
 async def get_user(
     get_user_request: Optional[GetUserRequest] = Body(default=None),

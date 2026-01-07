@@ -1,20 +1,20 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-added-large-files
-    -   id: check-merge-conflict
-    -   id: check-ast
-    -   id: debug-statements
-    -   id: check-toml
-    -   id: check-json
-    -   id: check-xml
--   repo: local
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-ast
+      - id: debug-statements
+      - id: check-toml
+      - id: check-json
+      - id: check-xml
+  - repo: local
     hooks:
-    - id: tox
-      name: Run tox linters
-      entry: uv run tox -e linters
-      language: system
-      pass_filenames: false
+      - id: tox
+        name: Run tox linters
+        entry: uv run tox -e linters
+        language: system
+        pass_filenames: false

@@ -19,7 +19,7 @@ async def test_successful_get_user_self(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get",
+        f"{settings.API_V1_STR}/user",
         headers=headers,
     )
 
@@ -40,7 +40,7 @@ async def test_successful_get_user_other(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get",
+        f"{settings.API_V1_STR}/user",
         headers=headers,
         json={
             "user_id": other_user.id,
@@ -63,7 +63,7 @@ async def test_get_user_not_found(
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
     response = test_setup.post(
-        f"{settings.API_V1_STR}/user/get",
+        f"{settings.API_V1_STR}/user",
         headers=headers,
         json={
             "user_id": 999999,
