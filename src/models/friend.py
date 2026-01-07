@@ -1,6 +1,6 @@
 """Friend model"""
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -18,8 +18,8 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
     friend_id: int = Field(foreign_key="User.id")
-    accepted: bool = Field(default=False)
-    updated: bool = Field(default=False)
+    accepted: Optional[bool] = Field(default=None)
+    friend_version: int = Field(default=1)
 
     friend: "User" = Relationship(
         back_populates="friends",
@@ -37,6 +37,6 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "data": {
                 "user_id": self.user_id,
                 "friend_id": self.friend_id,
-                "accepted": self.accepted
-            }
+                "accepted": self.accepted,
+            },
         }

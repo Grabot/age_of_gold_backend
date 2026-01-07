@@ -12,7 +12,7 @@ from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
 from botocore.exceptions import ClientError
 
-from src.api.api_v1.settings import get_avatar
+from src.api.api_v1.user import get_avatar
 from src.models.user import User
 from src.models.user_token import UserToken
 from tests.conftest import add_token
@@ -30,8 +30,10 @@ async def test_successful_get_avatar_default_direct(
     request.app.state.s3.return_value = ""
     request.app.state.cipher.return_value = ""
 
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
+
     response_file: StreamingResponse = await get_avatar.get_avatar(
-        request, True, auth, test_db
+        request, avatar_request, auth, test_db
     )
 
     assert response_file.status_code == status.HTTP_200_OK
@@ -64,8 +66,10 @@ async def test_successful_get_avatar_regular_direct(
     fake_decrypted_data = b"fake_decrypted_data"
     request.app.state.cipher.decrypt.return_value = fake_decrypted_data
 
+    avatar_request = get_avatar.AvatarRequest(user_id=user.id, get_default=False)
+
     response_file: StreamingResponse = await get_avatar.get_avatar(
-        request, False, auth, test_db
+        request, avatar_request, auth, test_db
     )
 
     assert response_file.status_code == status.HTTP_200_OK
@@ -102,8 +106,10 @@ async def test_get_avatar_file_not_found_direct(
         error_response, "GetObject"
     )
 
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
+
     with pytest.raises(HTTPException) as exc_info:
-        await get_avatar.get_avatar(request, True, auth, test_db)
+        await get_avatar.get_avatar(request, avatar_request, auth, test_db)
 
     assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
     assert exc_info.value.detail == "Avatar not found"
@@ -132,8 +138,77 @@ async def test_get_avatar_internal_error_direct(
         error_response, "GetObject"
     )
 
+    avatar_request = get_avatar.AvatarRequest(user_id=test_user.id, get_default=True)
+
     with pytest.raises(HTTPException) as exc_info:
-        await get_avatar.get_avatar(request, True, auth, test_db)
+        await get_avatar.get_avatar(request, avatar_request, auth, test_db)
 
     assert exc_info.value.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
     assert exc_info.value.detail == "Failed to fetch avatar"
+
+
+@pytest.mark.asyncio
+async def test_get_avatar_target_user_none_direct(
+    test_setup: TestClient, test_db: AsyncSession, mocker: MockerFixture
+) -> None:
+    """Test get avatar when target_user_id is None (should use current user)."""
+    test_user, test_user_token = await add_token(1000, 1000, test_db)
+    auth: Tuple[User, UserToken] = (test_user, test_user_token)
+
+    request = MagicMock()
+    request.app.state.s3 = MagicMock()
+    request.app.state.cipher = MagicMock()
+
+    fake_encrypted_data = b"fake_encrypted_data"
+
+    def mock_download_fileobj(bucket: str, key: str, buffer: BytesIO) -> None:
+        buffer.write(fake_encrypted_data)
+        buffer.seek(0)
+
+    request.app.state.s3.download_fileobj = mock_download_fileobj
+
+    fake_decrypted_data = b"fake_decrypted_data"
+    request.app.state.cipher.decrypt.return_value = fake_decrypted_data
+
+    # Test with target_user_id = None (should use current user)
+    avatar_request = get_avatar.AvatarRequest(user_id=None, get_default=True)
+
+    response_file: StreamingResponse = await get_avatar.get_avatar(
+        request, avatar_request, auth, test_db
+    )
+
+    assert response_file.status_code == status.HTTP_200_OK
+    assert response_file.headers["content-type"] == "image/png"
+
+    body = b"".join(
+        [
+            chunk
+            async for chunk in response_file.body_iterator
+            if isinstance(chunk, bytes)
+        ]
+    )
+    # When get_default is True and default_avatar is True, encrypted should be False
+    # So the data should be the encrypted data (not decrypted)
+    assert body == fake_encrypted_data
+
+
+@pytest.mark.asyncio
+async def test_get_avatar_target_user_not_found_direct(
+    test_setup: TestClient, test_db: AsyncSession
+) -> None:
+    """Test get avatar when target user is not found."""
+    test_user, test_user_token = await add_token(1000, 1000, test_db)
+    auth: Tuple[User, UserToken] = (test_user, test_user_token)
+
+    request = MagicMock()
+    request.app.state.s3 = MagicMock()
+    request.app.state.cipher = MagicMock()
+
+    # Test with non-existent user_id
+    avatar_request = get_avatar.AvatarRequest(user_id=999999, get_default=True)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_avatar.get_avatar(request, avatar_request, auth, test_db)
+
+    assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
+    assert exc_info.value.detail == "User not found"

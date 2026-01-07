@@ -1,31 +1,32 @@
 import time
 from typing import Any, List, Optional, TypedDict
+
 from argon2 import PasswordHasher
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from src.models import User, UserToken, Friend
+from src.models import User, UserToken
 
 ph = PasswordHasher()
 
 
-class UserTokenData(TypedDict):
+class LoginData(TypedDict):
     access_token: str
     refresh_token: str
     profile_version: int
     avatar_version: int
-    friends: List[dict]
+    friends: List[dict[str, Any]]
 
 
 class SuccessfulLoginResponse(TypedDict):
     success: bool
-    data: UserTokenData
+    data: LoginData
 
 
 async def get_successful_login_response(
     user_token: UserToken, user: User, db: AsyncSession
-) -> Any:
+) -> SuccessfulLoginResponse:
     # Load friends using the existing User.friends relationship
     # First refresh the user object to get the latest data
     await db.refresh(user, ["friends"])
@@ -35,11 +36,8 @@ async def get_successful_login_response(
     for friend in user.friends:
         friends_data.append(
             {
-                "id": friend.id,
-                "user_id": friend.user_id,
                 "friend_id": friend.friend_id,
-                "accepted": friend.accepted,
-                "requested": not friend.accepted,
+                "friend_version": friend.friend_version,
             }
         )
 

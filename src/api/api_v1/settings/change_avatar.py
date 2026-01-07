@@ -12,6 +12,7 @@ from src.models.user_token import UserToken
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
+from src.util.rest_util import update_friend_versions_and_notify
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
@@ -28,16 +29,26 @@ async def change_avatar(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, bool]:
     """Handle change avatar request."""
-    user, _ = user_and_token
+    me, _ = user_and_token
+
+    if me.id is None:
+        raise HTTPException(status_code=400, detail="Can't find user")
+
     s3_client = request.app.state.s3
     cipher = request.app.state.cipher
 
     if not avatar:
-        user.remove_avatar(s3_client)
-        user.default_avatar = True
-        user.avatar_version += 1
-        db.add(user)
-        user.remove_avatar(s3_client)
+        me.remove_avatar(s3_client)
+        me.default_avatar = True
+        me.avatar_version += 1
+        db.add(me)
+        me.remove_avatar(s3_client)
+
+        # Update friend versions and notify about avatar change
+        await update_friend_versions_and_notify(
+            db, me.id, "avatar_updated", {"user_id": me.id}
+        )
+
         await db.commit()
         return {"success": True}
 
@@ -50,15 +61,20 @@ async def change_avatar(
 
     avatar_bytes = await avatar.read()
     logger.info("Avatar creation in bucket?")
-    user.create_avatar(s3_client, cipher, avatar_bytes)
-    user.avatar_version += 1
+    me.create_avatar(s3_client, cipher, avatar_bytes)
+    me.avatar_version += 1
 
-    if user.default_avatar:
-        user.default_avatar = False
-    db.add(user)
+    if me.default_avatar:
+        me.default_avatar = False
+    db.add(me)
+
+    await update_friend_versions_and_notify(
+        db, me.id, "avatar_updated", {"user_id": me.id}
+    )
+
     await db.commit()
 
-    logger.info("User %s changed their avatar", user.username)
+    logger.info("User %s changed their avatar", me.username)
     return {
         "success": True,
     }

@@ -6,6 +6,7 @@ from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -34,7 +35,7 @@ async def search_friend(
 ) -> Dict[str, bool | Dict[str, Any]]:
     """Handle search friend request."""
     user, _ = user_and_token
-    user_statement = select(User).where(
+    user_statement: Select = select(User).where(
         func.lower(User.username) == search_friend_request.username.lower()
     )
     results_user = await db.execute(user_statement)

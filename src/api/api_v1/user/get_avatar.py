@@ -1,10 +1,10 @@
 """Endpoint for getting user avatar."""
 
-from typing import Tuple, Any, Optional
+from typing import Dict, Tuple, Any, Optional
 from io import BytesIO
 from pydantic import BaseModel
 
-from fastapi import Depends, HTTPException, Security, Request, Body
+from fastapi import Depends, HTTPException, Security, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from botocore.exceptions import ClientError
@@ -17,11 +17,16 @@ from src.models.user_token import UserToken
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
+from src.util.rest_util import get_user_from_db
 from src.util.storage_util import download_image
 
+
 class AvatarRequest(BaseModel):
+    """Request model for getting user avatar."""
+
     user_id: Optional[int] = None
     get_default: Optional[bool] = None
+
 
 @api_router_v1.post("/user/avatar", status_code=200)
 @handle_db_errors("Get avatar failed")
@@ -39,13 +44,14 @@ async def get_avatar(
     cipher: Any = request.app.state.cipher
 
     target_user_id = avatar_request.user_id
+    target_user: User | None = None
     if target_user_id is None:
         target_user = user
     else:
-        target_user = await db.get(User, target_user_id)
+        target_user = await get_user_from_db(db, target_user_id)
         if not target_user:
             raise HTTPException(status_code=404, detail="User not found")
-    
+
     if avatar_request.get_default:
         encrypted = not (target_user.default_avatar or avatar_request.get_default)
     else:
@@ -73,3 +79,27 @@ async def get_avatar(
         if e.response["Error"]["Code"] == "NoSuchKey":
             raise HTTPException(status_code=404, detail="Avatar not found") from e
         raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
+
+
+class AvatarVersionRequest(BaseModel):
+    """Request model for getting avatar version."""
+
+    user_id: int
+
+
+@api_router_v1.post("/user/avatar/version", status_code=200, response_model=dict)
+@handle_db_errors("Get user avatar version failed")
+async def get_avatar_version(
+    avatar_version_request: AvatarVersionRequest,
+    user_and_token: Tuple[User, UserToken] = Security(
+        checked_auth_token, scopes=["user"]
+    ),
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, bool | int]:
+    """Handle get user detail request."""
+    _, _ = user_and_token
+    got_user = await get_user_from_db(db, avatar_version_request.user_id)
+    if got_user is None:
+        return {"success": False}
+
+    return {"success": True, "data": got_user.avatar_version}

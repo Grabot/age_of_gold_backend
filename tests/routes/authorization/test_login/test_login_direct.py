@@ -12,6 +12,8 @@ from sqlmodel import select
 
 from src.api.api_v1.authorization import login
 from src.models.user_token import UserToken
+from src.models.user import User
+from src.models.friend import Friend
 from src.util.util import SuccessfulLoginResponse
 from tests.helpers import (
     assert_exception_error_response,
@@ -211,3 +213,45 @@ async def test_get_user_by_username_none_direct(
     username = "nonexistentuser"
     user = await login.get_user_by_username(test_db, username)
     assert user is None
+
+
+@pytest.mark.asyncio
+async def test_successful_login_with_friends(
+    mock_tokens: tuple[str, str, MagicMock, MagicMock],
+    test_setup: TestClient,
+    test_db: AsyncSession,
+) -> None:
+    """Test successful login with friends."""
+    expected_access_token, expected_refresh_token, _, _ = mock_tokens
+    friend_user = User(
+        id=1001,
+        username="friend_user",
+        email_hash="test@example.com",
+        password_hash="hashedpassword",
+        salt="salt",
+        origin=0,
+    )
+    test_db.add(friend_user)
+    await test_db.commit()
+    await test_db.refresh(friend_user)
+
+    # Add a friend relationship
+    friend = Friend(user_id=1, friend_id=friend_user.id, friend_version=0)
+    test_db.add(friend)
+    await test_db.commit()
+    login_request = login.LoginRequest(username="testuser", password="testpassword")
+
+    response: SuccessfulLoginResponse = await login.login_user(login_request, test_db)
+
+    user_tokens = await test_db.execute(select(UserToken).where(UserToken.user_id == 1))
+    assert user_tokens.scalar() is not None
+
+    assert_successful_login_dict(
+        response, expected_access_token, expected_refresh_token
+    )
+    assert "data" in response
+    assert "friends" in response["data"]
+    friends_data = response["data"]["friends"]
+    assert len(friends_data) == 1
+    assert friends_data[0]["friend_id"] == friend_user.id
+    assert friends_data[0]["friend_version"] == 0
