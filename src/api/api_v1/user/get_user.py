@@ -33,7 +33,7 @@ async def get_user(
     """Handle get user request."""
     user, _ = user_and_token
     if not get_user_request or not get_user_request.user_id:
-        return {"success": True, "data": {"user": user.serialize}}
+        return {"success": True, "data": user.serialize}
 
     got_user = await get_user_from_db(db, get_user_request.user_id)
     if got_user is None:
