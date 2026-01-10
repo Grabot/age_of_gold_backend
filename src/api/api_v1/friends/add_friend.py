@@ -69,8 +69,8 @@ async def add_friend(
             detail="You are already friends",
         )
 
-    friend_me = Friend(user_id=me.id, friend_id=friend_add.id, accepted=None)
-    friend_other = Friend(user_id=friend_add.id, friend_id=me.id, accepted=False)
+    friend_me = Friend(user_id=me.id, friend_id=friend_add.id, accepted=None)  # type: ignore[arg-type]
+    friend_other = Friend(user_id=friend_add.id, friend_id=me.id, accepted=False)  # type: ignore[arg-type]
     db.add(friend_me)
     db.add(friend_other)
     await db.commit()

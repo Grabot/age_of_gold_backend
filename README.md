@@ -318,7 +318,7 @@ server {
     # The frontend is the index.html which will be shown when going to the root path.
     location /api/ {
         include proxy_params;
-        proxy_pass <minikube_exposed_url>;
+        proxy_pass <fastapi-service_cluster-ip>:<fastapi-service_port>;
     }
 
     location /socket.io {
@@ -328,16 +328,16 @@ server {
         proxy_set_header Connection "Upgrade";
         proxy_set_header Host $host;
         proxy_hide_header 'Access-Control-Allow-Origin';
-        proxy_pass <minikube_exposed_url>/socket.io;
+        proxy_pass <fastapi-service_cluster-ip>:<fastapi-service_port>/socket.io;
     }
 }
 ```
 
 Next create a symbolic link to the sites-enabled folder
 
-    sudo ln -s /etc/nginx/sites-available/<minikube_exposed_url> /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/<url_dns_configuration> /etc/nginx/sites-enabled/
 
-Ensure the NGINX configuration is error-free.
+Ensure the NGINX configura  tion is error-free.
 
     sudo nginx -t
 
@@ -430,3 +430,5 @@ reload nginx again and now you should see the container frontend.
 
 If all the endpoints in fronend and backend are correctly set to the secure url set in the dns configuration it should now work.
 The most important variables are `BASE_URL`, `FRONTEND_URL` and `ALLOWED_ORIGINS`. If they are set the basic functionality should be working. -->
+
+10.105.203.174

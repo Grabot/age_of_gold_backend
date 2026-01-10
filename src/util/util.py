@@ -17,6 +17,7 @@ class LoginData(TypedDict):
     profile_version: int
     avatar_version: int
     friends: List[dict[str, Any]]
+    groups: List[dict[str, Any]]
 
 
 class SuccessfulLoginResponse(TypedDict):
@@ -29,7 +30,7 @@ async def get_successful_login_response(
 ) -> SuccessfulLoginResponse:
     # Load friends using the existing User.friends relationship
     # First refresh the user object to get the latest data
-    await db.refresh(user, ["friends"])
+    await db.refresh(user, ["friends", "groups"])
 
     # Serialize friends data from the loaded relationship
     friends_data = []
@@ -41,6 +42,16 @@ async def get_successful_login_response(
             }
         )
 
+    # Serialize groups data from the loaded relationship
+    groups_data = []
+    for group in user.groups:
+        groups_data.append(
+            {
+                "group_id": group.group_id,
+                "group_version": group.group_version,
+            }
+        )
+
     return {
         "success": True,
         "data": {
@@ -49,6 +60,7 @@ async def get_successful_login_response(
             "profile_version": user.profile_version,
             "avatar_version": user.avatar_version,
             "friends": friends_data,
+            "groups": groups_data,
         },
     }
 

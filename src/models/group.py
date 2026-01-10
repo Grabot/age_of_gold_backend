@@ -4,6 +4,7 @@ from typing import Optional
 from sqlmodel import Field, SQLModel, Relationship
 
 if TYPE_CHECKING:
+    from src.models import Chat
     from src.models import User
 
 
@@ -23,6 +24,14 @@ class Group(SQLModel, table=True):
     message_version: int = Field(default=1)
     avatar_version: int = Field(default=1)
     last_message_read_id: int = Field(default=0)
+
+    chat: "Chat" = Relationship(
+        back_populates="groups",
+        sa_relationship_kwargs={
+            "uselist": False,
+            "primaryjoin": "Chat.id==Group.group_id",
+        },
+    )
 
     group_member: "User" = Relationship(
         back_populates="groups",
