@@ -141,4 +141,3 @@ async def create_group(
         "success": True,
         "data": new_chat.id
     }
-

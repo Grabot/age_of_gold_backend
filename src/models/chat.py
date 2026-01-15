@@ -103,5 +103,3 @@ class Chat(SQLModel, table=True):
             s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
         except ClientError as e:
             logger.error("failed to remove group avatar: %s", str(e))
-
-
