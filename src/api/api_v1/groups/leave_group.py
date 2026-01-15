@@ -93,7 +93,6 @@ async def leave_group(
                 {
                     "group_id": group_id,
                     "user_id": me.id,
-                    "username": me.username,
                 },
                 room=recipient_room,
             )

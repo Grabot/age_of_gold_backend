@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
+from age_of_gold_worker.age_of_gold_worker.tasks import task_generate_avatar
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
 from src.models.chat import Chat
@@ -80,8 +81,8 @@ async def create_group(
     # Create the chat object
     new_chat = Chat(
         user_ids=friend_ids,
-        user_admin_ids=[user_id],  # Creator is admin
-        private=False,  # Groups are not private
+        user_admin_ids=[user_id],
+        private=False,
         group_name=create_group_request.group_name,
         group_description=create_group_request.group_description,
         group_colour=create_group_request.group_colour,
@@ -108,10 +109,14 @@ async def create_group(
             last_message_read_id=0,
         )
         db.add(group_entry)
-        print(f"Group Entry: {group_entry}")
 
+    s3_key = new_chat.group_avatar_s3_key(new_chat.group_avatar_filename_default())
     await db.commit()
-
+    _ = task_generate_avatar.delay(
+        new_chat.group_avatar_filename(),
+        s3_key,
+        new_chat.id,
+    )
     # Notify all group members about the new group
     for friend_id in friend_ids:
         if friend_id != user_id:  # Don't notify self
@@ -121,11 +126,13 @@ async def create_group(
                 "group_created",
                 {
                     "group_id": new_chat.id,
-                    "group_name": new_chat.group_name,
-                    "group_description": new_chat.group_description,
-                    "group_colour": new_chat.group_colour,
-                    "creator_id": user_id,
-                    "creator_username": me.username,
+                    "user_ids": friend_ids,
+                    "admin_ids": [user_id],
+                    "group_name": create_group_request.group_name,
+                    "private": False,
+                    "group_description": create_group_request.group_description,
+                    "group_colour": create_group_request.group_colour,
+                    "current_message_id": 1
                 },
                 room=recipient_room,
             )

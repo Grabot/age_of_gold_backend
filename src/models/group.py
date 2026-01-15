@@ -1,3 +1,5 @@
+"""Group model."""
+
 from datetime import datetime
 from typing import TYPE_CHECKING
 from typing import Optional
@@ -42,14 +44,23 @@ class Group(SQLModel, table=True):
     )
 
     @property
-    def serialize_no_chat(self):
+    def serialize(self):
         # Used for creating a new broup, we might not have the chat yet.
         data = {
             "group_id": self.group_id,
             "unread_messages": self.unread_messages,
             "mute": self.mute,
-            "message_version": self.message_version,
+            "mute_timestamp": self.mute_timestamp,
             "group_version": self.group_version,
-            "avatar_version": self.avatar_version
+            "message_version": self.message_version,
+            "avatar_version": self.avatar_version,
+            "last_message_read_id": self.last_message_read_id,
+            "user_ids": self.chat.user_ids,
+            "admin_ids": self.chat.user_admin_ids,
+            "group_name": self.chat.group_name,
+            "private": self.chat.private,
+            "group_description": self.chat.group_description,
+            "group_colour": self.chat.group_colour,
+            "current_message_id": self.chat.current_message_id
         }
         return data

@@ -28,9 +28,14 @@ REDIS_PORT=6379
 
 #### Mail
 
-For sending the mails, like when you forgot your password, we are using Brevo. You need to create an account and get an API key (not SMTP key). and fill that API-key in the `MAIL_API_KEY` variable.
-Make sure you have authorized the domain you are using.
-
+create a proton account with (at least) mail plus
+https://account.proton.me/u/2/mail/imap-smtp
+Add a domain and follow the instructions.
+Go to settings -> IMAP/SMTP
+Generate a new token with a address of your choosing.
+For the given SMTP username you will get a token and the SMTP server details
+Fill all these details in the following variables: `SMTP_PASSWORD`, `SMTP_ACCOUNT`, `SMTP_HOST`, `SMTP_PORT` Fill in your own value for `SMTP_USER`.
+You will now send emails via the proton mail account you have entered.
 
 #### Oauth2
 

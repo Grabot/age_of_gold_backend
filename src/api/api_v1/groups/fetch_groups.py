@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
 from sqlmodel import select
+from sqlalchemy.orm import selectinload
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
@@ -41,7 +42,9 @@ async def fetch_all_groups(
         conditions = [
             Group.group_id == group_id for group_id in fetch_groups_request.group_ids
         ]
-        groups_statement = groups_statement.where(or_(*conditions))
+        groups_statement = groups_statement.where(or_(*conditions)).options(selectinload(Group.chat))
+    else:
+        groups_statement = groups_statement.options(selectinload(Group.chat))
 
     groups_result = await db.execute(groups_statement)
     groups = groups_result.all()
@@ -51,17 +54,7 @@ async def fetch_all_groups(
     for group_row in groups:
         group: Group = group_row.Group
         groups_data.append(
-            {
-                "id": group.id,
-                "group_id": group.group_id,
-                "unread_messages": group.unread_messages,
-                "mute": group.mute,
-                "mute_timestamp": group.mute_timestamp,
-                "group_version": group.group_version,
-                "message_version": group.message_version,
-                "avatar_version": group.avatar_version,
-                "last_message_read_id": group.last_message_read_id,
-            }
+            group.serialize
         )
 
     return {"success": True, "data": groups_data}

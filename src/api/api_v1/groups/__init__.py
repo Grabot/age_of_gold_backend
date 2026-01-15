@@ -1,10 +1,15 @@
 """Groups API endpoints."""
 
-from . import create_group, fetch_groups, leave_group, get_group_details
+from . import add_group_member, create_group, fetch_groups, get_group_avatar, leave_group, mute_group, promote_admin, remove_group_member, update_group
 
 __all__ = [
+    "add_group_member",
     "create_group",
     "fetch_groups",
+    "get_group_avatar",
     "leave_group",
-    "get_group_details",
+    "mute_group",
+    "promote_admin",
+    "remove_group_member",
+    "update_group"
 ]
