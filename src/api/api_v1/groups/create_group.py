@@ -49,6 +49,7 @@ async def create_group(
     print(f"Friend IDs: {friend_ids}")
 
     # Check if all friend_ids are valid friends
+    # TODO: Do in a single query? Is it even necessary?
     for friend_id in create_group_request.friend_ids:
         if friend_id == user_id:
             continue  # Skip self
@@ -59,15 +60,6 @@ async def create_group(
             Friend.friend_id == friend_id,
             Friend.accepted,
         )
-        friend_result = await db.execute(friend_statement)
-        friend_exists = friend_result.first()
-        print(f"Friend Exists: {friend_exists}")
-
-        if not friend_exists:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"User {friend_id} is not your friend",
-            )
         friend_result = await db.execute(friend_statement)
         friend_exists = friend_result.first()
         print(f"Friend Exists: {friend_exists}")
