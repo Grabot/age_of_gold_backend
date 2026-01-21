@@ -22,10 +22,8 @@ class Group(SQLModel, table=True):
     unread_messages: int
     mute: bool = Field(default=False)
     mute_timestamp: Optional[datetime] = Field(default=None)
-    group_version: int = Field(default=1)
-    message_version: int = Field(default=1)
-    avatar_version: int = Field(default=1)
     last_message_read_id: int = Field(default=0)
+    group_version: int = Field(default=1)
 
     chat: "Chat" = Relationship(
         back_populates="groups",
@@ -45,16 +43,15 @@ class Group(SQLModel, table=True):
 
     @property
     def serialize(self):
-        # Used for creating a new broup, we might not have the chat yet.
         data = {
             "group_id": self.group_id,
             "unread_messages": self.unread_messages,
             "mute": self.mute,
             "mute_timestamp": self.mute_timestamp,
-            "group_version": self.group_version,
-            "message_version": self.message_version,
-            "avatar_version": self.avatar_version,
             "last_message_read_id": self.last_message_read_id,
+            "group_version": self.group_version,
+            "message_version": self.chat.message_version,
+            "avatar_version": self.chat.avatar_version,
             "user_ids": self.chat.user_ids,
             "admin_ids": self.chat.user_admin_ids,
             "group_name": self.chat.group_name,

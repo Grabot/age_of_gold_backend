@@ -34,30 +34,26 @@ async def fetch_all_friends(
     """Handle fetch all friends request."""
     user, _ = user_and_token
 
-    # Get all friends for the user (without JOIN, just Friend objects)
     friends_statement: Select = select(Friend).where(Friend.user_id == user.id)
 
     # If user_ids filter is provided, add it to the query
     if fetch_friends_request.user_ids is not None:
-        conditions = [
-            Friend.friend_id == user_id for user_id in fetch_friends_request.user_ids
-        ]
-        friends_statement = friends_statement.where(or_(*conditions))
+        friends_statement = friends_statement.where(
+            Friend.friend_id.in_(fetch_friends_request.user_ids)
+        )
 
     friends_result = await db.execute(friends_statement)
-    friends = friends_result.all()
+    friends = friends_result.scalars().all()
 
     # Serialize friends data without user details (frontend will handle caching)
-    friends_data = []
-    for friend_row in friends:
-        friend: Friend = friend_row.Friend
-        friends_data.append(
-            {
-                "id": friend.id,
-                "friend_id": friend.friend_id,
-                "accepted": friend.accepted,
-                "friend_version": friend.friend_version,
-            }
-        )
+    friends_data = [
+        {
+            "id": friend.id,
+            "friend_id": friend.friend_id,
+            "accepted": friend.accepted,
+            "friend_version": friend.friend_version,
+        }
+        for friend in friends
+    ]
 
     return {"success": True, "data": friends_data}

@@ -122,3 +122,6 @@ def hash_password(password: str) -> str:
 
 def get_user_room(user_id: int) -> str:
     return f"room_{user_id}"
+
+def get_group_room(group_id: int) -> str:
+    return f"group_{group_id}"

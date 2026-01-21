@@ -37,6 +37,8 @@ class Chat(SQLModel, table=True):
     default_avatar: bool = Field(default=True)
     current_message_id: int
     last_message_read_id_chat: int = Field(default=1)
+    message_version: int = Field(default=1) # TODO: Move to group?
+    avatar_version: int = Field(default=1)
 
     groups: List["Group"] = Relationship(
         back_populates="chat",

@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 from src.config.config import settings
 from src.database import async_session
 from src.models.user import User
-from src.util.util import get_user_room
+from src.util.util import get_group_room, get_user_room
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
 sio = socketio.AsyncServer(
@@ -56,14 +56,40 @@ async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
             pass
 
 
+@sio.on("join_group")
+async def handle_join_group(sid, *args, **kwargs):
+    data: Dict[str, Union[int, str]] = args[0]
+    group_id: int = cast(int, data["group_id"])
+    group_room: str = get_group_room(group_id)
+    await sio.enter_room(sid, group_room)
+    await sio.emit(
+        "message_event",
+        f"User has entered group room {group_room}",
+        room=group_room,
+    )
+
+
 @sio.on("leave")
 async def handle_leave(sid: str, *args: Any, **kwargs: Any) -> None:
     data: Dict[str, Union[int, str]] = args[0]
     user_id: int = cast(int, data["user_id"])
-    room: str = f"room_{user_id}"
+    room: str = get_user_room(user_id)
     await sio.leave_room(sid, room)
     await sio.emit(
         "message_event",
         f"User has left room {room}",
+        room=sid,
+    )
+
+
+@sio.on("leave_group")
+async def handle_leave_group(sid: str, *args: Any, **kwargs: Any) -> None:
+    data: Dict[str, Union[int, str]] = args[0]
+    group_id: int = cast(int, data["group_id"])
+    group_room: str = get_group_room(group_id)
+    await sio.leave_room(sid, group_room)
+    await sio.emit(
+        "message_event",
+        f"User has left group room {group_room}",
         room=sid,
     )

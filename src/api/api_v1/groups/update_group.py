@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -14,7 +15,7 @@ from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
-from src.util.util import get_user_room
+from src.util.util import get_group_room, get_user_room
 
 
 class UpdateGroupRequest(BaseModel):
@@ -42,18 +43,10 @@ async def update_group(
 
     group_id = update_group_request.group_id
 
-    # Check if the current user is an admin of the group
-    chat_statement = select(Chat).where(Chat.id == group_id)
-    chat_result = await db.execute(chat_statement)
-    chat_entry = chat_result.first()
-
-    if not chat_entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Group not found",
-        )
-
-    chat: Chat = chat_entry.Chat
+    chat_statement = select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    # TODO: Change scalar().first() to scalar_one where we expect there to always be a result
+    # TODO: Maybe add `NoResultFound` in the `handle_db_error` wrapper
+    chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     # Check if current user is admin
     if me.id not in chat.user_admin_ids:
@@ -69,23 +62,26 @@ async def update_group(
         chat.group_description = update_group_request.group_description
     if update_group_request.group_colour is not None:
         chat.group_colour = update_group_request.group_colour
+    db.add(chat)
+
+    for group in chat.groups:
+        group.group_version += 1
+        db.add(group)
 
     await db.commit()
 
-    # Notify all group members about the group update
-    for user_id in chat.user_ids:
-        if user_id != me.id:
-            recipient_room: str = get_user_room(user_id)
-            await sio.emit(
-                "group_updated",
-                {
-                    "group_id": group_id,
-                    "group_name": chat.group_name,
-                    "group_description": chat.group_description,
-                    "group_colour": chat.group_colour,
-                },
-                room=recipient_room,
-            )
+    # TODO: Only send what is changed?
+    group_room: str = get_group_room(group_id)
+    await sio.emit(
+        "group_updated",
+        {
+            "group_id": group_id,
+            "group_name": chat.group_name,
+            "group_description": chat.group_description,
+            "group_colour": chat.group_colour,
+        },
+        room=group_room,
+    )
 
     return {
         "success": True,

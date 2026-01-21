@@ -1,8 +1,8 @@
-"""group object
+"""group functionality
 
-Revision ID: 1d172045142f
+Revision ID: 19c37ff8148b
 Revises: 97bc978ba8ff
-Create Date: 2026-01-10 08:30:28.346842
+Create Date: 2026-01-15 22:01:30.855752
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "1d172045142f"
+revision: str = "19c37ff8148b"
 down_revision: Union[str, Sequence[str], None] = "97bc978ba8ff"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,6 +38,8 @@ def upgrade() -> None:
         sa.Column("default_avatar", sa.Boolean(), nullable=False),
         sa.Column("current_message_id", sa.Integer(), nullable=False),
         sa.Column("last_message_read_id_chat", sa.Integer(), nullable=False),
+        sa.Column("message_version", sa.Integer(), nullable=False),
+        sa.Column("avatar_version", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_Chat")),
     )
     op.create_table(
@@ -48,10 +50,8 @@ def upgrade() -> None:
         sa.Column("unread_messages", sa.Integer(), nullable=False),
         sa.Column("mute", sa.Boolean(), nullable=False),
         sa.Column("mute_timestamp", sa.DateTime(), nullable=True),
-        sa.Column("group_version", sa.Integer(), nullable=False),
-        sa.Column("message_version", sa.Integer(), nullable=False),
-        sa.Column("avatar_version", sa.Integer(), nullable=False),
         sa.Column("last_message_read_id", sa.Integer(), nullable=False),
+        sa.Column("group_version", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["group_id"], ["Chat.id"], name=op.f("fk_Group_group_id_Chat")
         ),

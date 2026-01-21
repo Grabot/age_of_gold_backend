@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -21,37 +21,22 @@ from src.util.util import (
     get_user_tokens,
 )
 
-
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Retrieve a user by their email address."""
     email_hash = hash_email(email)
-    results_user = await db.execute(
+    return (await db.execute(
         select(User)
         .where(User.origin == 0, User.email_hash == email_hash)
-        .options(joinedload(User.tokens))  # type: ignore
-    )
-    result_user = results_user.first()
-    if result_user is None:
-        return None
-
-    user: User = result_user.User
-    return user
-
+        .options(selectinload(User.tokens))  # type: ignore
+    )).scalar_one_or_none()
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
     """Retrieve a user by their username."""
-    results_user = await db.execute(
+    return (await db.execute(
         select(User)
         .where(User.origin == 0, func.lower(User.username) == username.lower())
-        .options(joinedload(User.tokens))  # type: ignore
-    )
-    result_user = results_user.first()
-    if result_user is None:
-        return None
-
-    user: User = result_user.User
-    return user
-
+        .options(selectinload(User.tokens))  # type: ignore
+    )).scalar_one_or_none()
 
 class LoginRequest(BaseModel):
     """Request model for user login."""
@@ -59,7 +44,6 @@ class LoginRequest(BaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
     password: str
-
 
 @api_router_v1.post("/login", status_code=200)
 @handle_db_errors("Login failed")
@@ -100,3 +84,4 @@ async def login_user(
     logger.info("User logged in: %s", user.username)
 
     return await get_successful_login_response(user_token, user, db)
+

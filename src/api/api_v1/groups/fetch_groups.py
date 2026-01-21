@@ -39,22 +39,16 @@ async def fetch_all_groups(
 
     # If group_ids filter is provided, add it to the query
     if fetch_groups_request.group_ids is not None:
-        conditions = [
-            Group.group_id == group_id for group_id in fetch_groups_request.group_ids
-        ]
-        groups_statement = groups_statement.where(or_(*conditions)).options(selectinload(Group.chat))
+        groups_statement = groups_statement.where(
+            Group.group_id.in_(fetch_groups_request.group_ids)
+        ).options(selectinload(Group.chat))
     else:
         groups_statement = groups_statement.options(selectinload(Group.chat))
 
     groups_result = await db.execute(groups_statement)
-    groups = groups_result.all()
+    groups = groups_result.scalars().all()  # Directly get a list of Group objects
 
-    # Serialize groups data without chat details (frontend will handle caching)
-    groups_data = []
-    for group_row in groups:
-        group: Group = group_row.Group
-        groups_data.append(
-            group.serialize
-        )
+    # Serialize groups data without chat details
+    groups_data = [group.serialize for group in groups]
 
     return {"success": True, "data": groups_data}

@@ -42,9 +42,9 @@ async def change_avatar(
         me.default_avatar = True
         me.avatar_version += 1
         db.add(me)
-        me.remove_avatar(s3_client)
 
         # Update friend versions and notify about avatar change
+        # TODO: Not update friend_version right? Do socket call different
         await update_friend_versions_and_notify(
             db, me.id, "avatar_updated", {"user_id": me.id}
         )
@@ -60,7 +60,7 @@ async def change_avatar(
         raise HTTPException(status_code=400, detail="Only PNG/JPG allowed")
 
     avatar_bytes = await avatar.read()
-    logger.info("Avatar creation in bucket?")
+    logger.info("Avatar creation in bucket")
     me.create_avatar(s3_client, cipher, avatar_bytes)
     me.avatar_version += 1
 
@@ -68,6 +68,7 @@ async def change_avatar(
         me.default_avatar = False
     db.add(me)
 
+    # TODO: Not update friend_version right? Do socket call different
     await update_friend_versions_and_notify(
         db, me.id, "avatar_updated", {"user_id": me.id}
     )

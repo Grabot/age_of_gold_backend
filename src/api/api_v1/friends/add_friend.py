@@ -46,16 +46,7 @@ async def add_friend(
         )
 
     friend_statement: Select = select(User).where(User.id == friend_id)
-    results_user = await db.execute(friend_statement)
-    result_user = results_user.first()
-
-    if not result_user:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No user found.",
-        )
-
-    friend_add: User = result_user.User
+    friend_add: User = (await db.execute(friend_statement)).scalar_one()
 
     existing_friend_statement: Select = select(Friend).where(
         Friend.user_id == me.id, Friend.friend_id == friend_add.id

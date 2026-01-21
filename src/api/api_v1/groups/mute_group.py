@@ -42,20 +42,11 @@ async def mute_group(
     mute = mute_group_request.mute
     mute_duration_hours = mute_group_request.mute_duration_hours
 
-    # Get the group entry for this user
+    # TODO: use scalar_one
     group_statement = select(Group).where(
         Group.user_id == me.id, Group.group_id == group_id
     )
-    group_result = await db.execute(group_statement)
-    group_entry = group_result.first()
-
-    if not group_entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Group not found",
-        )
-
-    group: Group = group_entry.Group
+    group: Group = (await db.execute(group_statement)).scalar_one()
 
     # Update mute status
     group.mute = mute
@@ -66,6 +57,7 @@ async def mute_group(
     else:
         # Clear mute timestamp if unmuting or muting indefinitely
         group.mute_timestamp = None
+    db.add(group)
 
     await db.commit()
 

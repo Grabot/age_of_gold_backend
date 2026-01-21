@@ -39,11 +39,9 @@ async def get_multiple_users(
     if not get_users_request.user_ids:
         return {"success": False, "message": "No user IDs provided"}
 
-    if len(get_users_request.user_ids) > 100:  # Limit to prevent abuse
-        return {"success": False, "message": "Too many user IDs requested (max 100)"}
-
-    conditions = [User.id == user_id for user_id in get_users_request.user_ids]
-    user_statement: Select = select(User).where(or_(*conditions))
+    user_statement: Select = select(User).where(
+        User.id.in_(get_users_request.user_ids)
+    )
     results_users = await db.execute(user_statement)
     found_users = results_users.scalars().all()
     if not found_users:
