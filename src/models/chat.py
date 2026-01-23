@@ -31,7 +31,7 @@ class Chat(SQLModel, table=True):
     user_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     user_admin_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     private: bool = Field(default=True)
-    group_name: str
+    group_name: str # TODO: Maybe no need for `group`. Just `name` and `colour` and `description`
     group_description: str
     group_colour: str
     default_avatar: bool = Field(default=True)
