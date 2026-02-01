@@ -226,8 +226,8 @@ async def test_successful_login_with_friends(
     friend_user = User(
         id=1001,
         username="friend_user",
-        email_hash="test@example.com",
-        password_hash="hashedpassword",
+        email_hash="friend_user@example.com",
+        password_hash="hashedpassword_friend_user",
         salt="salt",
         origin=0,
         colour=get_random_colour(),

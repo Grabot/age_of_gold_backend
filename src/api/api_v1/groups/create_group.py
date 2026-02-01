@@ -16,9 +16,10 @@ from src.models.friend import Friend
 from src.models.group import Group
 from src.models.user import User
 from src.models.user_token import UserToken
-from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
+from src.util.rest_util import emit_group_response
 
 
 class CreateGroupRequest(BaseModel):
@@ -31,6 +32,7 @@ class CreateGroupRequest(BaseModel):
 
 
 @api_router_v1.post("/group/create", status_code=200)
+@handle_db_errors("Creating group failed")
 async def create_group(
     create_group_request: CreateGroupRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -111,19 +113,16 @@ async def create_group(
         if friend_id != user_id:  # Don't notify self
             recipient_room: str = get_user_room(friend_id)
             print(f"Recipient Room: {recipient_room}")
-            await sio.emit(
+            await emit_group_response(
                 "group_created",
+                new_chat,
+                recipient_room,
                 {
-                    "group_id": new_chat.id,
-                    "user_ids": friend_ids,
-                    "admin_ids": [user_id],
-                    "group_name": create_group_request.group_name,
-                    "private": False,
-                    "group_description": create_group_request.group_description,
-                    "group_colour": create_group_request.group_colour,
-                    "current_message_id": 1,
+                    "user_ids": new_chat.user_ids,
+                    "admin_ids": new_chat.user_admin_ids,
+                    "private": new_chat.private,
+                    "current_message_id": new_chat.current_message_id,
                 },
-                room=recipient_room,
             )
     print(f"sending data: {new_chat.id}")
     return {"success": True, "data": new_chat.id}

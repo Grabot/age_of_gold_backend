@@ -1,6 +1,7 @@
 """Test for login endpoint via direct post call."""
 
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,10 +26,10 @@ async def test_successful_token_login_post(
 async def test_invalid_request_empty_bearer_post(
     test_setup: TestClient,
 ) -> None:
-    """Test login with missing or invalid token."""
+    """Test login with missing token."""
     headers = {"Authorization": "Bearer"}
     response = test_setup.post(f"{settings.API_V1_STR}/login/token", headers=headers)
-    assert response.status_code == 403
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     response_json = response.json()
     assert response_json["detail"] == "Not authenticated"
 
@@ -40,6 +41,6 @@ async def test_invalid_token_post(
     """Test login with invalid token."""
     headers = {"Authorization": "Bearer invalid_access_token"}
     response = test_setup.post(f"{settings.API_V1_STR}/login/token", headers=headers)
-    assert response.status_code == 401
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
     response_json = response.json()
     assert response_json["detail"] == "Authorization token is invalid or expired"

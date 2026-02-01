@@ -12,7 +12,9 @@ from src.sockets.sockets import (
     handle_connect,
     handle_disconnect,
     handle_join,
+    handle_join_group,
     handle_leave,
+    handle_leave_group,
     handle_message_event,
 )
 from tests.conftest import ASYNC_TESTING_SESSION_LOCAL
@@ -127,3 +129,39 @@ async def test_handle_join_with_db(test_setup: TestClient) -> None:
             assert retrieved_user is not None
             assert retrieved_user.id == user.id
             assert retrieved_user.username == user.username
+
+
+@pytest.mark.asyncio
+async def test_handle_join_group() -> None:
+    """Test the handle_join_group function."""
+    with patch("src.sockets.sockets.sio") as mock_sio:
+        mock_sio.enter_room = AsyncMock()
+        mock_sio.emit = AsyncMock()
+
+        data: Dict[str, Union[int, str]] = {"group_id": 1}
+        await handle_join_group("test_sid", data)
+
+        mock_sio.enter_room.assert_called_once_with("test_sid", "group_1")
+        mock_sio.emit.assert_called_once_with(
+            "message_event",
+            "User has entered group room group_1",
+            room="group_1",
+        )
+
+
+@pytest.mark.asyncio
+async def test_handle_leave_group() -> None:
+    """Test the handle_leave_group function."""
+    with patch("src.sockets.sockets.sio") as mock_sio:
+        mock_sio.leave_room = AsyncMock()
+        mock_sio.emit = AsyncMock()
+
+        data: Dict[str, Union[int, str]] = {"group_id": 1}
+        await handle_leave_group("test_sid", data)
+
+        mock_sio.leave_room.assert_called_once_with("test_sid", "group_1")
+        mock_sio.emit.assert_called_once_with(
+            "message_event",
+            "User has left group room group_1",
+            room="test_sid",
+        )

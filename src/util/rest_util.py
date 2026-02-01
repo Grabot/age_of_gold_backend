@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import or_, select
 
-from src.models import Friend, User
+from src.models import Friend, User, Chat
 from src.sockets.sockets import sio
 from src.util.util import get_user_room
 
@@ -67,3 +67,115 @@ async def update_friend_versions_and_notify(
         db.add(friend)
         friend_room = get_user_room(friend.user_id)
         await sio.emit(event_name, event_data, room=friend_room)
+
+
+async def update_group_versions_and_notify(
+    chat: Chat,
+    db: AsyncSession,
+    me: User,
+    event_name: str,
+    event_data: dict,
+    exclude_sender: bool = True,
+) -> None:
+    """Update group versions and notify members about changes.
+
+    Args:
+        chat: The chat object containing groups
+        db: Database session
+        me: Current user who triggered the change
+        event_name: Socket.io event name
+        event_data: Data to send with the event
+        exclude_sender: Whether to exclude the sender from notifications
+    """
+    # Update group versions
+    for group in chat.groups:
+        group.group_version += 1
+        db.add(group)
+    await db.commit()
+
+    # Notify group members
+    for group in chat.groups:
+        recipient_room: str = f"user_{group.user_id}_room"
+        if exclude_sender and group.user_id == me.id:
+            continue
+        await sio.emit(event_name, event_data, room=recipient_room)
+
+
+async def emit_friend_response(
+    event_name: str,
+    user: User,
+    recipient_room: str,
+    additional_data: dict | None = None,
+) -> None:
+    """.
+
+    Args:
+        event_name: Name of the event to emit
+        user: User object to create response data for
+        recipient_room: Room ID of the recipient
+        additional_data: Additional data to include in the response dictionary
+    """
+    response_data = {
+        "friend_id": user.id,
+        "username": user.username,
+        "avatar_version": user.avatar_version,
+        "profile_version": user.profile_version,
+        "colour": user.colour,
+    }
+
+    if additional_data:
+        response_data.update(additional_data)
+
+    await sio.emit(
+        event_name,
+        response_data,
+        room=recipient_room,
+    )
+
+
+async def emit_group_response(
+    event_name: str,
+    chat: Chat,
+    recipient_room: str,
+    additional_data: dict | None = None,
+) -> None:
+    response_data = {
+        "group_id": chat.id,
+        "group_name": chat.group_name,
+        "group_description": chat.group_description,
+        "group_colour": chat.group_colour,
+    }
+
+    if additional_data:
+        response_data.update(additional_data)
+
+    await sio.emit(
+        event_name,
+        response_data,
+        room=recipient_room,
+    )
+
+
+async def update_user_field(
+    db: AsyncSession,
+    me: User,
+    field_name: str,
+    new_value: str,
+    event_type: str,
+) -> None:
+    """Helper function to update a user field and notify friends."""
+    me.profile_version += 1
+    db.add(me)
+
+    await update_friend_versions_and_notify(
+        db,
+        me.id,
+        event_type,
+        {
+            "user_id": me.id,
+            field_name: new_value,
+            "profile_version": me.profile_version,
+        },
+    )
+
+    await db.commit()

@@ -13,6 +13,7 @@ from src.database import get_db
 from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 
 
@@ -23,6 +24,7 @@ class FetchFriendsRequest(BaseModel):
 
 
 @api_router_v1.post("/friend/all", status_code=200)
+@handle_db_errors("Fetching friends failed")
 async def fetch_all_friends(
     fetch_friends_request: FetchFriendsRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -38,7 +40,7 @@ async def fetch_all_friends(
     # If user_ids filter is provided, add it to the query
     if fetch_friends_request.user_ids is not None:
         friends_statement = friends_statement.where(
-            Friend.friend_id.in_(fetch_friends_request.user_ids)
+            Friend.friend_id.in_(fetch_friends_request.user_ids)  # pylint: disable=no-member
         )
 
     friends_result = await db.execute(friends_statement)

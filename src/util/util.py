@@ -1,13 +1,22 @@
 import time
 from typing import Any, List, Optional, TypedDict
+from io import BytesIO
 
 from argon2 import PasswordHasher
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
+from fastapi.responses import StreamingResponse
+from botocore.exceptions import ClientError
+from fastapi import HTTPException
 import random
 
-from src.models import User, UserToken
+from src.models import User, UserToken, Chat
+from src.config.config import settings
+from src.util.storage_util import download_image
+from src.util.gold_logging import logger
+from sqlalchemy.orm import selectinload
+from fastapi import status
 
 ph = PasswordHasher()
 
@@ -131,13 +140,6 @@ def get_group_room(group_id: int) -> str:
 
 def get_random_colour() -> str:
     colors = [
-        "#FF6B6B",
-        "#FF8E53",
-        "#FFC154",
-        "#48CF85",
-        "#4299E1",
-        "#5677FC",
-        "#9013FE",
         "#ED64A6",
         "#F6AD55",
         "#FC8181",
@@ -151,3 +153,77 @@ def get_random_colour() -> str:
         "#F9D71C",
     ]
     return random.choice(colors)
+
+
+def create_avatar_streaming_response(
+    s3_client: Any, cipher: Any, s3_key: str, file_name: str, encrypted: bool
+) -> StreamingResponse:
+    """Create a streaming response for avatar images.
+
+    Args:
+        s3_client: S3 client for downloading the image
+        cipher: Cipher for decryption if needed
+        s3_key: S3 key for the image
+        file_name: File name for the response
+        encrypted: Whether the image is encrypted
+
+    Returns:
+        StreamingResponse: FastAPI streaming response with the image
+
+    Raises:
+        HTTPException: If avatar is not found or download fails
+    """
+    try:
+        decrypted_data: bytes = download_image(
+            s3_client, cipher, settings.S3_BUCKET_NAME, s3_key, encrypted
+        )
+        decrypted_buffer: BytesIO = BytesIO(decrypted_data)
+        decrypted_buffer.seek(0)
+        return StreamingResponse(
+            decrypted_buffer,
+            media_type="image/png",
+            headers={"Content-Disposition": f"inline; filename={file_name}"},
+        )
+    except ClientError as e:
+        logger.error("Failed to fetch avatar: %s", str(e))
+        if e.response["Error"]["Code"] == "NoSuchKey":
+            raise HTTPException(status_code=404, detail="Avatar not found") from e
+        raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
+
+
+# TODO: always scalar_one.
+async def get_chat_and_verify_admin(
+    db: AsyncSession,
+    group_id: int,
+    user_id: int,
+    require_admin: bool = True,
+    permission_error_detail: str = "Only group admins can perform this action",
+) -> Chat:
+    """Get a chat and verify if the user is an admin.
+
+    Args:
+        db: Database session
+        group_id: Group ID to check
+        user_id: User ID to verify
+        require_admin: Whether admin rights are required
+        permission_error_detail: Custom error message for permission denial
+
+    Returns:
+        Chat: The chat object
+
+    Raises:
+        HTTPException: If group not found or user doesn't have required permissions
+    """
+    chat_statement = (
+        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    )
+    chat: Chat = (await db.execute(chat_statement)).scalar_one()
+
+    # Check if current user has required permissions
+    if require_admin and user_id not in chat.user_admin_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=permission_error_detail,
+        )
+
+    return chat

@@ -11,6 +11,7 @@ from src.database import get_db
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 from src.util.rest_util import get_friend_request_pair
@@ -23,6 +24,7 @@ class RemoveFriendRequest(BaseModel):
 
 
 @api_router_v1.post("/friend/remove", status_code=200, response_model=Dict)
+@handle_db_errors("Removing friend failed")
 async def remove_friend(
     remove_request: RemoveFriendRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -32,9 +34,6 @@ async def remove_friend(
 ) -> Dict[str, bool]:
     """Handle friend removal."""
     me, _ = user_and_token
-
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
 
     friend_id = remove_request.friend_id
 

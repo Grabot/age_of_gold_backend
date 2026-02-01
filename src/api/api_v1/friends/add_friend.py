@@ -14,10 +14,10 @@ from src.database import get_db
 from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
-from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
+from src.util.rest_util import emit_friend_response
 
 
 class AddFriendRequest(BaseModel):
@@ -37,9 +37,6 @@ async def add_friend(
 ) -> dict[str, bool]:
     """Handle add friend request."""
     me, _ = user_and_token
-
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
 
     friend_id = add_friend_request.user_id
     if friend_id is me.id:
@@ -71,17 +68,7 @@ async def add_friend(
     await db.commit()
 
     recipient_room: str = get_user_room(friend_add.id)  # type: ignore[arg-type]
-    await sio.emit(
-        "friend_request_received",
-        {
-            "friend_id": me.id,
-            "username": me.username,
-            "avatar_version": me.avatar_version,
-            "profile_version": me.profile_version,
-            "colour": me.colour,
-        },
-        room=recipient_room,
-    )
+    await emit_friend_response("friend_request_received", me, recipient_room)
 
     return {
         "success": True,

@@ -31,9 +31,6 @@ async def change_avatar(
     """Handle change avatar request."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     s3_client = request.app.state.s3
     cipher = request.app.state.cipher
 

@@ -14,6 +14,7 @@ from src.models.group import Group
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 
@@ -25,6 +26,7 @@ class LeaveGroupRequest(BaseModel):
 
 
 @api_router_v1.post("/group/leave", status_code=200)
+@handle_db_errors("Leaving group failed")
 async def leave_group(
     leave_group_request: LeaveGroupRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -34,9 +36,6 @@ async def leave_group(
 ) -> Dict[str, bool]:
     """Handle leave group request."""
     me, _ = user_and_token
-
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
 
     group_id = leave_group_request.group_id
 
@@ -53,18 +52,8 @@ async def leave_group(
             detail="Group not found",
         )
 
-    # Get the chat object to check if user is admin and handle admin removal
     chat_statement = select(Chat).where(Chat.id == group_id)
-    chat_result = await db.execute(chat_statement)
-    chat_entry = chat_result.first()
-
-    if not chat_entry:
-        raise HTTPException(
-            status_code=404,
-            detail="Chat not found",
-        )
-
-    chat: Chat = chat_entry.Chat
+    chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     # Remove user from admin list if they are an admin
     if me.id in chat.user_admin_ids:

@@ -45,12 +45,14 @@ class Chat(SQLModel, table=True):
     # TODO: Add Friend connections? Change Friend to "private group"?
 
     def add_user(self, user_id: int) -> None:
+        """Add a user to the chat."""
         current_users = self.user_ids or []
         new_users = current_users + [user_id]
         new_users.sort()
         self.user_ids = new_users
 
     def remove_user(self, user_id: int) -> None:
+        """Remove a user from the chat."""
         current_users = self.user_ids or []
         self.user_ids = [
             current_user_id
@@ -59,12 +61,14 @@ class Chat(SQLModel, table=True):
         ]
 
     def add_admin(self, user_id: int) -> None:
+        """Add an admin to the chat."""
         current_admins = self.user_admin_ids or []
         new_admins = current_admins + [user_id]
         new_admins.sort()
         self.user_admin_ids = new_admins
 
     def remove_admin(self, user_id: int) -> None:
+        """Remove an admin from the chat."""
         current_admins = self.user_admin_ids or []
         self.user_admin_ids = [
             admin_id for admin_id in current_admins if admin_id != user_id

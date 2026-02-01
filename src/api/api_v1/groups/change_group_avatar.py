@@ -4,16 +4,14 @@ from typing import Dict, Optional, Tuple
 
 from fastapi import Depends, Form, HTTPException, Request, Security, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
-from sqlalchemy.orm import selectinload
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models import Chat, User, UserToken
+from src.models import User, UserToken
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
-from src.util.util import get_group_room
+from src.util.util import get_group_room, get_chat_and_verify_admin
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
@@ -33,17 +31,16 @@ async def change_group_avatar(
     """Handle change avatar request."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     s3_client = request.app.state.s3
     cipher = request.app.state.cipher
 
-    # TODO: Change other queries to use scalar_one where we expect one to exist?
-    chat_statement = (
-        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    # Get chat and verify admin permissions
+    chat = await get_chat_and_verify_admin(
+        db,
+        group_id,
+        me.id,
+        permission_error_detail="Only group admins can change group avatar",
     )
-    chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     if not avatar:
         chat.remove_group_avatar(s3_client)
