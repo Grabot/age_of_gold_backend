@@ -14,6 +14,7 @@ from src.models.user import create_salt, hash_email
 from src.util.decorators import handle_db_errors
 from src.util.util import (
     SuccessfulLoginResponse,
+    get_random_colour,
     get_successful_login_response,
     get_user_tokens,
     hash_password,
@@ -68,6 +69,7 @@ async def register_user(
         origin=0,
         salt=salt,
         password_hash=hash_password(register_request.password + salt),
+        colour=get_random_colour()
     )
     db.add(user)
     await db.commit()

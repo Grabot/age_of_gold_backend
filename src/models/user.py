@@ -43,6 +43,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     __tablename__ = "User"  # pyright: ignore[reportAssignmentType]
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
+    colour: str
     email_hash: str
     password_hash: str
     salt: str
@@ -155,4 +156,5 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "username": self.username,
             "profile_version": self.profile_version,
             "avatar_version": self.avatar_version,
+            "colour": self.colour
         }

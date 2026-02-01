@@ -6,6 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 if TYPE_CHECKING:
+    from src.models import Chat
     from src.models import User
 
 

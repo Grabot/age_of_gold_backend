@@ -76,6 +76,7 @@ async def respond_friend_request(
                 "username": me.username,
                 "avatar_version": me.avatar_version,
                 "profile_version": me.profile_version,
+                "colour": me.colour,
                 "accepted": True,
                 "friend_version": friend_request.friend_version,
             },

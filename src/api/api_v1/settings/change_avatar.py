@@ -15,7 +15,7 @@ from src.util.security import checked_auth_token
 from src.util.rest_util import update_friend_versions_and_notify
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_AVATAR_SIZE = 4 * 1024 * 1024  # 4MB
 
 
 @api_router_v1.patch("/user/avatar", status_code=200, response_model=dict)
@@ -44,7 +44,6 @@ async def change_avatar(
         db.add(me)
 
         # Update friend versions and notify about avatar change
-        # TODO: Not update friend_version right? Do socket call different
         await update_friend_versions_and_notify(
             db, me.id, "avatar_updated", {"user_id": me.id}
         )
@@ -55,7 +54,7 @@ async def change_avatar(
     if not avatar.size or not avatar.filename:
         raise HTTPException(status_code=400, detail="Invalid avatar file")
     if avatar.size > MAX_AVATAR_SIZE:
-        raise HTTPException(status_code=400, detail="Avatar too large (max 2MB)")
+        raise HTTPException(status_code=400, detail="Avatar too large (max 4MB)")
     if avatar.filename.split(".")[-1].lower() not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only PNG/JPG allowed")
 

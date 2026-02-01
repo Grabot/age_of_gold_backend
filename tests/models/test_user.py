@@ -10,7 +10,7 @@ from src.config.config import settings
 from src.config.jwt_key import jwt_public_key
 from src.models import User
 from src.models.user import create_salt, hash_email
-from src.util.util import hash_password
+from src.util.util import get_random_colour, hash_password
 
 
 def test_hash_email() -> None:
@@ -41,6 +41,7 @@ def test_user_verify_password() -> None:
         email_hash="not_important",
         password_hash=password_hash,
         salt=salt,
+        colour=get_random_colour()
     )
     assert user.verify_password(password_hash, password_with_salt) is True
     assert user.verify_password(password_hash, "wrongpassword") is False
@@ -55,6 +56,7 @@ def test_user_generate_auth_token() -> None:
         email_hash="not_important",
         password_hash="not_important",
         salt="not_important",
+        colour=get_random_colour()
     )
     token = user.generate_auth_token(expires_in=180, scopes=["user"])
     assert isinstance(token, str)
@@ -78,6 +80,7 @@ def test_user_generate_refresh_token() -> None:
         email_hash="not_important",
         password_hash="not_important",
         salt="not_important",
+        colour=get_random_colour()
     )
     token = user.generate_refresh_token()
     assert isinstance(token, str)
@@ -101,6 +104,7 @@ def test_user_serialize() -> None:
         email_hash="not_important",
         password_hash="not_important",
         salt="not_important",
+        colour=get_random_colour()
     )
     serialized_user = user.serialize
     assert isinstance(serialized_user, dict)
@@ -116,6 +120,7 @@ def test_user_create_avatar() -> None:
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
 
     mock_cipher = MagicMock()
@@ -159,6 +164,7 @@ def test_delete_default_avatar() -> None:
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
 
     mock_s3_client = MagicMock()
@@ -175,6 +181,7 @@ def test_remove_avatar_logs_error_on_client_error() -> None:
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
 
     mock_s3_client = MagicMock()
@@ -198,6 +205,7 @@ def test_remove_avatar_default_logs_error_on_client_error() -> None:
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
 
     mock_s3_client = MagicMock()

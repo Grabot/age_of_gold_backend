@@ -13,6 +13,7 @@ from age_of_gold_worker.age_of_gold_worker.tasks import task_generate_avatar
 from src.config.config import settings
 from src.models.user import User, hash_email
 from src.sockets.sockets import redis
+from src.util.util import get_random_colour
 
 
 async def validate_oauth_state(
@@ -72,6 +73,7 @@ async def _create_user(
         password_hash="",
         salt="",
         origin=origin,
+        colour=get_random_colour()
     )
     db.add(user)
     await db.commit()

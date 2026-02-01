@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models import Friend, User
+from src.util.util import get_random_colour
 
 
 @pytest.mark.asyncio
@@ -22,6 +23,7 @@ async def test_friend_user_connection(
         default_avatar=True,
         profile_version=0,
         avatar_version=0,
+        colour=get_random_colour()
     )
     user_friend = User(
         id=11,
@@ -33,6 +35,7 @@ async def test_friend_user_connection(
         default_avatar=True,
         profile_version=0,
         avatar_version=0,
+        colour=get_random_colour()
     )
     test_db.add(user)
     test_db.add(user_friend)

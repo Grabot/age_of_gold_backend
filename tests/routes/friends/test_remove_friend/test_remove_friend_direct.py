@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.api_v1.friends import remove_friend, add_friend, respond_friend_request
 from src.models.user import User
 from src.models.user_token import UserToken
+from src.util.util import get_random_colour
 from tests.conftest import add_token, add_user
 
 
@@ -105,6 +106,7 @@ async def test_user_id_is_not_filled(
         password_hash="password_hash",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
     test_token = UserToken(
         id=None,

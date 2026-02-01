@@ -47,6 +47,7 @@ class Chat(SQLModel, table=True):
             "primaryjoin": "Chat.id==Group.group_id",
         },
     )
+    # TODO: Add Friend connections? Change Friend to "private group"?
 
     def add_user(self, user_id: int) -> None:
         new_users = self.user_ids + [user_id]

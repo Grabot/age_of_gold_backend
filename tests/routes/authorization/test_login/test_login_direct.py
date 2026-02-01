@@ -14,7 +14,7 @@ from src.api.api_v1.authorization import login
 from src.models.user_token import UserToken
 from src.models.user import User
 from src.models.friend import Friend
-from src.util.util import SuccessfulLoginResponse
+from src.util.util import SuccessfulLoginResponse, get_random_colour
 from tests.helpers import (
     assert_exception_error_response,
     assert_integrity_error_response,
@@ -230,6 +230,7 @@ async def test_successful_login_with_friends(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
     test_db.add(friend_user)
     await test_db.commit()

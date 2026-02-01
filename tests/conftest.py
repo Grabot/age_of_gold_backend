@@ -19,7 +19,7 @@ from src.database import get_db
 from src.models import User
 from src.models.user import hash_email
 from src.models.user_token import UserToken
-from src.util.util import hash_password
+from src.util.util import get_random_colour, hash_password
 
 ASYNC_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(
@@ -53,6 +53,7 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
             password_hash=password_hash,
             salt=salt,
             origin=0,
+            colour=get_random_colour()
         )
         session.add(user)
         await session.commit()
@@ -108,6 +109,7 @@ async def add_user(
         password_hash=password_hash,
         salt=salt,
         origin=origin,
+        colour=get_random_colour()
     )
     test_db_for_user.add(user)
     await test_db_for_user.commit()

@@ -12,7 +12,7 @@ from src.api.api_v1.settings import change_username
 from src.models.user import User
 from src.models.friend import Friend
 from src.models.user_token import UserToken
-from src.util.util import get_user_room
+from src.util.util import get_random_colour, get_user_room
 from tests.conftest import add_token
 
 
@@ -55,6 +55,7 @@ async def test_change_username_updates_friend_versions(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
     test_db.add(friend_user)
     await test_db.commit()
@@ -109,6 +110,7 @@ async def test_user_id_is_not_filled(
         password_hash="password_hash",
         salt="salt",
         origin=0,
+        colour=get_random_colour()
     )
     test_token = UserToken(
         id=None,

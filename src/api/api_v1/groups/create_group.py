@@ -46,7 +46,7 @@ async def create_group(
     # Validate that all friend_ids are actual friends
     user_id = me.id
     friend_ids = [user_id] + create_group_request.friend_ids
-    print(f"Friend IDs: {friend_ids}")
+    friend_ids.sort()
 
     # Check if all friend_ids are valid friends
     # TODO: Do in a single query? Is it even necessary?
@@ -62,7 +62,6 @@ async def create_group(
         )
         friend_result = await db.execute(friend_statement)
         friend_exists = friend_result.first()
-        print(f"Friend Exists: {friend_exists}")
 
         if not friend_exists:
             raise HTTPException(
@@ -82,7 +81,6 @@ async def create_group(
         current_message_id=1,
         last_message_read_id_chat=1,
     )
-    print(f"New Chat: {new_chat}")
 
     db.add(new_chat)
     await db.commit()

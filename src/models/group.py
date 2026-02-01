@@ -18,7 +18,7 @@ class Group(SQLModel, table=True):
     __tablename__ = "Group"  # pyright: ignore[reportAssignmentType]
     id: int = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
-    group_id: int = Field(foreign_key="Chat.id")
+    group_id: int = Field(foreign_key="Chat.id") # TODO: rename to chat_id?
     unread_messages: int
     mute: bool = Field(default=False)
     mute_timestamp: Optional[datetime] = Field(default=None)
