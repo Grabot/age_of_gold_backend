@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Tuple
 
 from fastapi import Depends, Security
 from pydantic import BaseModel
-from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
@@ -39,9 +38,7 @@ async def get_multiple_users(
     if not get_users_request.user_ids:
         return {"success": False, "message": "No user IDs provided"}
 
-    user_statement: Select = select(User).where(
-        User.id.in_(get_users_request.user_ids)
-    )
+    user_statement: Select = select(User).where(User.id.in_(get_users_request.user_ids))
     results_users = await db.execute(user_statement)
     found_users = results_users.scalars().all()
     if not found_users:

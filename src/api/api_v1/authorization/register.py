@@ -69,7 +69,7 @@ async def register_user(
         origin=0,
         salt=salt,
         password_hash=hash_password(register_request.password + salt),
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     db.add(user)
     await db.commit()

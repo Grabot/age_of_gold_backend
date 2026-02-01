@@ -122,7 +122,7 @@ async def add_group_member(
             "private": chat.private,
             "group_description": chat.group_description,
             "group_colour": chat.group_colour,
-            "current_message_id": chat.current_message_id
+            "current_message_id": chat.current_message_id,
         },
         room=new_member_room,
     )

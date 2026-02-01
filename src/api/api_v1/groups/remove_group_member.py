@@ -15,7 +15,7 @@ from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
-from src.util.util import get_group_room, get_user_room
+from src.util.util import get_group_room
 
 
 class RemoveGroupMemberRequest(BaseModel):
@@ -97,15 +97,14 @@ async def remove_group_member(
 
     await db.commit()
 
-
     group_room = get_group_room(group_id)
     await sio.emit(
-        "group_member_removed", 
+        "group_member_removed",
         {
             "group_id": group_id,
             "user_id": user_to_remove_id,
         },
-        room=group_room
+        room=group_room,
     )
 
     return {

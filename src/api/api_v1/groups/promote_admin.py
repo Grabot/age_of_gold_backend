@@ -6,12 +6,11 @@ from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from sqlalchemy.sql.selectable import Select
 from sqlalchemy.orm import selectinload
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models import Group, Chat, User
+from src.models import Chat, User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
@@ -45,7 +44,9 @@ async def promote_admin(
     is_admin = promote_admin_request.is_admin
 
     # Check if the current user is an admin of the group
-    chat_statement = select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    chat_statement = (
+        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    )
     chat_result = await db.execute(chat_statement)
     chat_entry = chat_result.first()
 

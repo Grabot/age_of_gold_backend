@@ -21,22 +21,29 @@ from src.util.util import (
     get_user_tokens,
 )
 
+
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Retrieve a user by their email address."""
     email_hash = hash_email(email)
-    return (await db.execute(
-        select(User)
-        .where(User.origin == 0, User.email_hash == email_hash)
-        .options(selectinload(User.tokens))  # type: ignore
-    )).scalar_one_or_none()
+    return (
+        await db.execute(
+            select(User)
+            .where(User.origin == 0, User.email_hash == email_hash)
+            .options(selectinload(User.tokens))  # type: ignore
+        )
+    ).scalar_one_or_none()
+
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
     """Retrieve a user by their username."""
-    return (await db.execute(
-        select(User)
-        .where(User.origin == 0, func.lower(User.username) == username.lower())
-        .options(selectinload(User.tokens))  # type: ignore
-    )).scalar_one_or_none()
+    return (
+        await db.execute(
+            select(User)
+            .where(User.origin == 0, func.lower(User.username) == username.lower())
+            .options(selectinload(User.tokens))  # type: ignore
+        )
+    ).scalar_one_or_none()
+
 
 class LoginRequest(BaseModel):
     """Request model for user login."""
@@ -44,6 +51,7 @@ class LoginRequest(BaseModel):
     email: Optional[str] = None
     username: Optional[str] = None
     password: str
+
 
 @api_router_v1.post("/login", status_code=200)
 @handle_db_errors("Login failed")
@@ -84,4 +92,3 @@ async def login_user(
     logger.info("User logged in: %s", user.username)
 
     return await get_successful_login_response(user_token, user, db)
-

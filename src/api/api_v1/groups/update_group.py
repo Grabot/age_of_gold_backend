@@ -15,7 +15,7 @@ from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
-from src.util.util import get_group_room, get_user_room
+from src.util.util import get_group_room
 
 
 class UpdateGroupRequest(BaseModel):
@@ -43,7 +43,9 @@ async def update_group(
 
     group_id = update_group_request.group_id
 
-    chat_statement = select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    chat_statement = (
+        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    )
     # TODO: Change scalar().first() to scalar_one where we expect there to always be a result
     # TODO: Maybe add `NoResultFound` in the `handle_db_error` wrapper
     chat: Chat = (await db.execute(chat_statement)).scalar_one()

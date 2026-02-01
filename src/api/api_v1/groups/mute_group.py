@@ -3,7 +3,7 @@
 from typing import Dict, Tuple
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, HTTPException, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select

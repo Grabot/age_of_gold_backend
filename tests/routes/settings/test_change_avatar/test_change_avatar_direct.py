@@ -176,7 +176,7 @@ async def test_change_avatar_updates_friend_versions(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db.add(friend_user)
     await test_db.commit()
@@ -248,7 +248,7 @@ async def test_successful_change_avatar_default_friend_versions(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db.add(friend_user)
     await test_db.commit()
@@ -312,7 +312,7 @@ async def test_user_id_is_not_filled(
         password_hash="password_hash",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_token = UserToken(
         id=None,

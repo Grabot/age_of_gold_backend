@@ -156,5 +156,5 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "username": self.username,
             "profile_version": self.profile_version,
             "avatar_version": self.avatar_version,
-            "colour": self.colour
+            "colour": self.colour,
         }

@@ -3,7 +3,6 @@
 from typing import Dict, Optional, Tuple
 
 from fastapi import Depends, Form, HTTPException, Request, Security, UploadFile
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
@@ -13,7 +12,6 @@ from src.database import get_db
 from src.models import Chat, User, UserToken
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
-from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
 from src.util.util import get_group_room
 
@@ -56,9 +54,13 @@ async def change_group_avatar(
             db.add(group)
         db.add(chat)
         await db.commit()
-        
+
         group_room = get_group_room(group_id)
-        await sio.emit("group_avatar_updated", {"group_id": group_id, "avatar_version": chat.avatar_version}, room=group_room)
+        await sio.emit(
+            "group_avatar_updated",
+            {"group_id": group_id, "avatar_version": chat.avatar_version},
+            room=group_room,
+        )
 
         return {"success": True}
 
@@ -82,9 +84,13 @@ async def change_group_avatar(
     db.add(chat)
 
     await db.commit()
-    
+
     group_room = get_group_room(group_id)
-    await sio.emit("group_avatar_updated", {"group_id": group_id, "avatar_version": chat.avatar_version}, room=group_room)
+    await sio.emit(
+        "group_avatar_updated",
+        {"group_id": group_id, "avatar_version": chat.avatar_version},
+        room=group_room,
+    )
 
     return {
         "success": True,

@@ -53,7 +53,7 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
             password_hash=password_hash,
             salt=salt,
             origin=0,
-            colour=get_random_colour()
+            colour=get_random_colour(),
         )
         session.add(user)
         await session.commit()
@@ -109,7 +109,7 @@ async def add_user(
         password_hash=password_hash,
         salt=salt,
         origin=origin,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db_for_user.add(user)
     await test_db_for_user.commit()

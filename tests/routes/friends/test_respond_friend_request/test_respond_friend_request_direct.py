@@ -196,7 +196,7 @@ async def test_user_id_is_not_filled(
         password_hash="password_hash",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_token = UserToken(
         id=None,

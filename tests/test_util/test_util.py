@@ -36,7 +36,7 @@ def test_get_user_tokens_with_none_user_id() -> None:
         email_hash="not_important",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     with pytest.raises(ValueError, match="User ID should not be None"):
         get_user_tokens(user)

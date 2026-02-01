@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import or_
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 

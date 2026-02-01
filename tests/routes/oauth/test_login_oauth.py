@@ -76,7 +76,7 @@ async def test_find_available_username_taken(
         password_hash="",
         salt="",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db.add(login_user)
     await test_db.commit()
@@ -97,7 +97,7 @@ async def test_find_available_username_all_taken(
             password_hash="",
             salt="",
             origin=0,
-            colour=get_random_colour()
+            colour=get_random_colour(),
         )
     )
     for i in range(2, 101):
@@ -108,7 +108,7 @@ async def test_find_available_username_all_taken(
                 password_hash="",
                 salt="",
                 origin=0,
-                colour=get_random_colour()
+                colour=get_random_colour(),
             )
         )
     await test_db.commit()
@@ -149,7 +149,7 @@ async def test_login_user_oauth_existing_user(
         password_hash="",
         salt="",
         origin=test_origin,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db.add(login_user)
     await test_db.commit()
@@ -174,7 +174,7 @@ async def test_login_user_oauth_new_user(
         password_hash="",
         salt="",
         origin=test_origin,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     with (
         patch(

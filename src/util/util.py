@@ -124,28 +124,30 @@ def hash_password(password: str) -> str:
 def get_user_room(user_id: int) -> str:
     return f"room_{user_id}"
 
+
 def get_group_room(group_id: int) -> str:
     return f"group_{group_id}"
 
+
 def get_random_colour() -> str:
     colors = [
-        '#FF6B6B',
-        '#FF8E53',
-        '#FFC154',
-        '#48CF85',
-        '#4299E1',
-        '#5677FC',
-        '#9013FE',
-        '#ED64A6',
-        '#F6AD55',
-        '#FC8181',
-        '#667EEA',
-        '#764BA2',
-        '#F093FB',
-        '#4FACFE',
-        '#00C9A7',
-        '#8BD3DD',
-        '#A5DD9B',
-        '#F9D71C'
+        "#FF6B6B",
+        "#FF8E53",
+        "#FFC154",
+        "#48CF85",
+        "#4299E1",
+        "#5677FC",
+        "#9013FE",
+        "#ED64A6",
+        "#F6AD55",
+        "#FC8181",
+        "#667EEA",
+        "#764BA2",
+        "#F093FB",
+        "#4FACFE",
+        "#00C9A7",
+        "#8BD3DD",
+        "#A5DD9B",
+        "#F9D71C",
     ]
     return random.choice(colors)

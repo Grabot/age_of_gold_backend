@@ -20,6 +20,7 @@ from src.sockets.sockets import sio
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 
+
 class CreateGroupRequest(BaseModel):
     """Request model for creating a group."""
 
@@ -27,6 +28,7 @@ class CreateGroupRequest(BaseModel):
     group_description: str
     group_colour: str
     friend_ids: List[int]
+
 
 @api_router_v1.post("/group/create", status_code=200)
 async def create_group(
@@ -119,12 +121,9 @@ async def create_group(
                     "private": False,
                     "group_description": create_group_request.group_description,
                     "group_colour": create_group_request.group_colour,
-                    "current_message_id": 1
+                    "current_message_id": 1,
                 },
                 room=recipient_room,
             )
     print(f"sending data: {new_chat.id}")
-    return {
-        "success": True,
-        "data": new_chat.id
-    }
+    return {"success": True, "data": new_chat.id}

@@ -73,7 +73,7 @@ async def _create_user(
         password_hash="",
         salt="",
         origin=origin,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     db.add(user)
     await db.commit()

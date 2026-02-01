@@ -11,7 +11,6 @@ from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.chat import Chat
 from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken

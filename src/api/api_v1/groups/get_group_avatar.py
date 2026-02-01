@@ -44,7 +44,11 @@ async def get_group_avatar(
     cipher: Any = request.app.state.cipher
 
     target_group_id = group_avatar_request.group_id
-    groups_statement = select(Group).where(Group.user_id == user.id, Group.group_id == target_group_id).options(selectinload(Group.chat))
+    groups_statement = (
+        select(Group)
+        .where(Group.user_id == user.id, Group.group_id == target_group_id)
+        .options(selectinload(Group.chat))
+    )
     group_result = await db.execute(groups_statement)
     group_entry = group_result.first()
 
@@ -56,7 +60,9 @@ async def get_group_avatar(
     target_group: Group = group_entry.Group
 
     if group_avatar_request.get_default:
-        encrypted = not (target_group.chat.default_avatar or group_avatar_request.get_default)
+        encrypted = not (
+            target_group.chat.default_avatar or group_avatar_request.get_default
+        )
     else:
         encrypted = not target_group.chat.default_avatar
 

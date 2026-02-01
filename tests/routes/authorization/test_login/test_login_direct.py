@@ -230,7 +230,7 @@ async def test_successful_login_with_friends(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
-        colour=get_random_colour()
+        colour=get_random_colour(),
     )
     test_db.add(friend_user)
     await test_db.commit()
