@@ -1,19 +1,14 @@
 """Chat model."""
 
-import secrets
-import time
-import uuid
-from hashlib import md5, sha512
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from hashlib import md5
+from typing import TYPE_CHECKING, Any, List
 
-import jwt as pyjwt
-from argon2 import PasswordHasher, exceptions
 from botocore.exceptions import ClientError
 from cryptography.fernet import Fernet
-from sqlmodel import ARRAY, Column, Field, Integer, Relationship, SQLModel
+from sqlmodel import Column, Field, Relationship, SQLModel
 
 from src.config.config import settings
-from src.config.jwt_key import jwt_private_key
+from src.models.model_util.array_type import ZwaarArray
 from src.util.gold_logging import logger
 from src.util.storage_util import upload_image
 
@@ -28,16 +23,16 @@ class Chat(SQLModel, table=True):
 
     __tablename__ = "Chat"  # pyright: ignore[reportAssignmentType]
     id: int = Field(default=None, primary_key=True)
-    user_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
-    user_admin_ids: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+    user_ids: List[int] = Field(default=[], sa_column=Column(ZwaarArray()))
+    user_admin_ids: List[int] = Field(default=[], sa_column=Column(ZwaarArray()))
     private: bool = Field(default=True)
-    group_name: str # TODO: Maybe no need for `group`. Just `name` and `colour` and `description`
+    group_name: str  # TODO: Maybe no need for `group`. Just `name` and `colour` and `description`
     group_description: str
     group_colour: str
     default_avatar: bool = Field(default=True)
     current_message_id: int
     last_message_read_id_chat: int = Field(default=1)
-    message_version: int = Field(default=1) # TODO: Move to group?
+    message_version: int = Field(default=1)  # TODO: Move to group?
     avatar_version: int = Field(default=1)
 
     groups: List["Group"] = Relationship(
@@ -50,27 +45,30 @@ class Chat(SQLModel, table=True):
     # TODO: Add Friend connections? Change Friend to "private group"?
 
     def add_user(self, user_id: int) -> None:
-        new_users = self.user_ids + [user_id]
+        current_users = self.user_ids or []
+        new_users = current_users + [user_id]
         new_users.sort()
         self.user_ids = new_users
 
     def remove_user(self, user_id: int) -> None:
+        current_users = self.user_ids or []
         self.user_ids = [
             current_user_id
-            for current_user_id in self.user_ids
+            for current_user_id in current_users
             if user_id != current_user_id
         ]
 
     def add_admin(self, user_id: int) -> None:
-        new_admins = self.user_admin_ids + [user_id]
+        current_admins = self.user_admin_ids or []
+        new_admins = current_admins + [user_id]
         new_admins.sort()
         self.user_admin_ids = new_admins
 
     def remove_admin(self, user_id: int) -> None:
+        current_admins = self.user_admin_ids or []
         self.user_admin_ids = [
-            admin_id for admin_id in self.user_admin_ids if admin_id != user_id
+            admin_id for admin_id in current_admins if admin_id != user_id
         ]
-
 
     def group_avatar_filename(self) -> str:
         """get the name of the group avatar file for this user."""

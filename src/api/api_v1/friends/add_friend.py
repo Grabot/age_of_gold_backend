@@ -5,6 +5,7 @@ from typing import Tuple
 from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -15,6 +16,7 @@ from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
 
@@ -26,6 +28,7 @@ class AddFriendRequest(BaseModel):
 
 
 @api_router_v1.post("/friend/add", status_code=200)
+@handle_db_errors(default_error_message="No user found.")
 async def add_friend(
     add_friend_request: AddFriendRequest,
     user_and_token: Tuple[User, UserToken] = Security(

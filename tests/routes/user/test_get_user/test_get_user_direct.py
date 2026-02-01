@@ -26,10 +26,9 @@ async def test_successful_get_user_self_direct(
 
     assert response["success"] is True
     assert "data" in response
-    assert "user" in response["data"]
-    assert "id" in response["data"]["user"]
-    assert response["data"]["user"]["id"] == test_user.id
-    assert response["data"]["user"]["username"] == test_user.username
+    assert "id" in response["data"]
+    assert response["data"]["id"] == test_user.id
+    assert response["data"]["username"] == test_user.username
 
 
 @pytest.mark.asyncio

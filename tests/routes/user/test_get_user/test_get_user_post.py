@@ -25,8 +25,8 @@ async def test_successful_get_user_self(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["success"] is True
-    assert response.json()["data"]["user"]["id"] == user.id
-    assert response.json()["data"]["user"]["username"] == user.username
+    assert response.json()["data"]["id"] == user.id
+    assert response.json()["data"]["username"] == user.username
 
 
 @pytest.mark.asyncio

@@ -123,9 +123,9 @@ async def test_change_avatar_too_large_direct(
     auth: Tuple[User, UserToken] = (test_user, user_token)
 
     avatar = UploadFile(
-        filename="large_file.png", file=BytesIO(b"x" * (2 * 1024 * 1024 + 1))
+        filename="large_file.png", file=BytesIO(b"x" * (4 * 1024 * 1024 + 1))
     )
-    avatar.size = 2 * 1024 * 1024 + 1
+    avatar.size = 4 * 1024 * 1024 + 1
 
     request = MagicMock()
     request.app.state.s3.return_value = ""
@@ -135,7 +135,7 @@ async def test_change_avatar_too_large_direct(
         await change_avatar.change_avatar(request, avatar, auth, test_db)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Avatar too large (max 2MB)"
+    assert exc_info.value.detail == "Avatar too large (max 4MB)"
 
 
 @pytest.mark.asyncio

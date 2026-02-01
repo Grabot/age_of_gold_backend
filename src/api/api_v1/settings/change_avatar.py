@@ -67,7 +67,6 @@ async def change_avatar(
         me.default_avatar = False
     db.add(me)
 
-    # TODO: Not update friend_version right? Do socket call different
     await update_friend_versions_and_notify(
         db, me.id, "avatar_updated", {"user_id": me.id}
     )

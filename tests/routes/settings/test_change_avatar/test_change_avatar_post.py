@@ -107,7 +107,7 @@ async def test_change_avatar_too_large_post(
     test_user, user_token = await add_token(1000, 1000, test_db)
     headers = {"Authorization": f"Bearer {user_token.access_token}"}
 
-    large_content = b"x" * (2 * 1024 * 1024 + 1)
+    large_content = b"x" * (4 * 1024 * 1024 + 1)
     file_like = BytesIO(large_content)
 
     response = test_setup.patch(
@@ -117,7 +117,7 @@ async def test_change_avatar_too_large_post(
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["detail"] == "Avatar too large (max 2MB)"
+    assert response.json()["detail"] == "Avatar too large (max 4MB)"
 
 
 @pytest.mark.asyncio
