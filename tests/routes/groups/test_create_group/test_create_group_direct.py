@@ -153,8 +153,8 @@ async def test_create_group_multiple_friends_direct(
     friend2_auth: Tuple[User, UserToken] = (friend2, friend2_token)
 
     # Add and accept friend requests
-    for friend, friend_auth in [(friend1, friend1_auth), (friend2, friend2_auth)]:
-        add_request = add_friend.AddFriendRequest(user_id=friend.id)
+    for friend_auth in [friend1_auth, friend2_auth]:
+        add_request = add_friend.AddFriendRequest(user_id=friend_auth[0].id)  # type: ignore
         with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
             await add_friend.add_friend(add_request, auth, test_db)
 

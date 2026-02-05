@@ -104,21 +104,20 @@ async def test_add_member_not_admin_direct(
     friend1_auth: Tuple[User, UserToken] = (friend1, friend1_token)
 
     # Add and accept friends
-    for user_auth in [friend1_auth]:
-        add_request = add_friend.AddFriendRequest(user_id=user_auth[0].id)
-        with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
-            await add_friend.add_friend(add_request, admin_auth, test_db)
+    add_request = add_friend.AddFriendRequest(user_id=friend1.id)
+    with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
+        await add_friend.add_friend(add_request, admin_auth, test_db)
 
-        respond_request = respond_friend_request.RespondFriendRequest(
-            friend_id=admin_user.id, accept=True
+    respond_request = respond_friend_request.RespondFriendRequest(
+        friend_id=admin_user.id, accept=True
+    )
+    with patch(
+        "src.api.api_v1.friends.respond_friend_request.sio.emit",
+        new_callable=AsyncMock,
+    ):
+        await respond_friend_request.respond_friend_request(
+            respond_request, friend1_auth, test_db
         )
-        with patch(
-            "src.api.api_v1.friends.respond_friend_request.sio.emit",
-            new_callable=AsyncMock,
-        ):
-            await respond_friend_request.respond_friend_request(
-                respond_request, user_auth, test_db
-            )
 
     # Create group
     create_request = create_group.CreateGroupRequest(

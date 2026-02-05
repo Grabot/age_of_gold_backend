@@ -44,7 +44,7 @@ async def promote_admin(
     chat = await get_chat_and_verify_admin(
         db,
         group_id,
-        me.id,
+        me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can change admin status",
     )
 
@@ -70,7 +70,6 @@ async def promote_admin(
     await update_group_versions_and_notify(
         chat,
         db,
-        me,
         "group_admin_changed",
         {
             "group_id": group_id,

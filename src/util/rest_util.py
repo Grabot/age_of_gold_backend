@@ -6,7 +6,7 @@ from sqlmodel import or_, select
 
 from src.models import Friend, User, Chat
 from src.sockets.sockets import sio
-from src.util.util import get_user_room
+from src.util.util import get_group_room, get_user_room
 
 
 async def get_friend_request_pair(
@@ -72,10 +72,8 @@ async def update_friend_versions_and_notify(
 async def update_group_versions_and_notify(
     chat: Chat,
     db: AsyncSession,
-    me: User,
     event_name: str,
-    event_data: dict,
-    exclude_sender: bool = True,
+    event_data: dict[str, Any],
 ) -> None:
     """Update group versions and notify members about changes.
 
@@ -93,19 +91,14 @@ async def update_group_versions_and_notify(
         db.add(group)
     await db.commit()
 
-    # Notify group members
-    for group in chat.groups:
-        recipient_room: str = f"user_{group.user_id}_room"
-        if exclude_sender and group.user_id == me.id:
-            continue
-        await sio.emit(event_name, event_data, room=recipient_room)
+    await sio.emit(event_name, event_data, room=get_group_room(chat.id))
 
 
 async def emit_friend_response(
     event_name: str,
     user: User,
     recipient_room: str,
-    additional_data: dict | None = None,
+    additional_data: dict[str, Any] | None = None,
 ) -> None:
     """.
 
@@ -137,9 +130,9 @@ async def emit_group_response(
     event_name: str,
     chat: Chat,
     recipient_room: str,
-    additional_data: dict | None = None,
+    additional_data: dict[str, Any] | None = None,
 ) -> None:
-    response_data = {
+    response_data: dict[str, Any] = {
         "group_id": chat.id,
         "group_name": chat.group_name,
         "group_description": chat.group_description,
@@ -169,7 +162,7 @@ async def update_user_field(
 
     await update_friend_versions_and_notify(
         db,
-        me.id,
+        me.id,  # type: ignore
         event_type,
         {
             "user_id": me.id,

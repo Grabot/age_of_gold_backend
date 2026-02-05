@@ -7,11 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.groups import create_group, leave_group
 from tests.conftest import add_token
+from fastapi.testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_leave_group_no_other_users_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test leaving group when no other users are present via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)

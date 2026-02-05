@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from sqlalchemy.sql.selectable import Select
 
 from src.api.api_v1.groups import create_group, leave_group
 from src.api.api_v1.friends import add_friend, respond_friend_request
@@ -66,20 +67,19 @@ async def test_leave_group_chat_not_found_direct(
     group_id = create_response["data"]
 
     # Manually delete the chat to simulate chat not found
-    chat_statement = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == group_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
-    if chat_entry:
-        # First delete the group entries that reference this chat
-        group_statement = select(Group).where(Group.group_id == group_id)
-        group_result = await test_db.execute(group_statement)
-        group_entries = group_result.scalars().all()
-        for group_entry in group_entries:
-            await test_db.delete(group_entry)
+    # First delete the group entries that reference this chat
+    group_statement: Select = select(Group).where(Group.group_id == group_id)
+    group_result = await test_db.execute(group_statement)
+    group_entries = group_result.scalars().all()
+    for group_entry in group_entries:
+        await test_db.delete(group_entry)
 
-        # Now delete the chat
-        await test_db.delete(chat_entry.Chat)
-        await test_db.commit()
+    # Now delete the chat
+    await test_db.delete(chat_entry.Chat)
+    await test_db.commit()
 
     # Recreate a group entry for admin_user to simulate the edge case
     # where group entry exists but chat doesn't

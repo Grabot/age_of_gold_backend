@@ -40,7 +40,9 @@ async def respond_friend_request(
     accept = respond_request.accept
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
-        db, me.id, friend_id
+        db,
+        me.id,  # type: ignore[arg-type]
+        friend_id,
     )
 
     if friend_request.accepted is True:

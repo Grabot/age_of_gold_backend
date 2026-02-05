@@ -38,7 +38,7 @@ async def change_group_avatar(
     chat = await get_chat_and_verify_admin(
         db,
         group_id,
-        me.id,
+        me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can change group avatar",
     )
 

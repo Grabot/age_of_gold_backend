@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from sqlalchemy.sql.selectable import Select
+from fastapi.testclient import TestClient
 
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import create_group, leave_group
@@ -15,7 +17,7 @@ from tests.conftest import add_token, add_user
 
 @pytest.mark.asyncio
 async def test_leave_group_empty_notification_loop_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test leaving group with empty notification loop via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)
@@ -63,7 +65,7 @@ async def test_leave_group_empty_notification_loop_direct(
     group_id = create_response["data"]
 
     # Manually remove friend1 from the group first, leaving only admin
-    chat_statement = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == group_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
     assert chat_entry is not None
@@ -73,13 +75,12 @@ async def test_leave_group_empty_notification_loop_direct(
     chat.user_ids = [admin_user.id]
 
     # Also remove friend1 from group entries to maintain consistency
-    group_statement = select(Group).where(
+    group_statement: Select = select(Group).where(
         Group.user_id == friend1.id, Group.group_id == group_id
     )
     group_result = await test_db.execute(group_statement)
     group_entry = group_result.first()
-    if group_entry:
-        await test_db.delete(group_entry.Group)
+    await test_db.delete(group_entry.Group)
 
     test_db.add(chat)
     await test_db.commit()

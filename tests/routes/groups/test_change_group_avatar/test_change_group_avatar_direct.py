@@ -8,8 +8,8 @@ from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.api_v1.groups import create_group, change_group_avatar
 from src.api.api_v1.friends import add_friend, respond_friend_request
+from src.api.api_v1.groups import change_group_avatar, create_group
 from src.models.user import User
 from src.models.user_token import UserToken
 from tests.conftest import add_token, add_user, generate_unique_username

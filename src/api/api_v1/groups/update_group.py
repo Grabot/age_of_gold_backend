@@ -43,7 +43,7 @@ async def update_group(
     chat = await get_chat_and_verify_admin(
         db,
         group_id,
-        me.id,
+        me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can update group details",
     )
 

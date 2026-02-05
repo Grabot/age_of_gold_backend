@@ -25,24 +25,26 @@ from src.util.util import (
 async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """Retrieve a user by their email address."""
     email_hash = hash_email(email)
-    return (
+    user: Optional[User] = (
         await db.execute(
             select(User)
             .where(User.origin == 0, User.email_hash == email_hash)
             .options(selectinload(User.tokens))  # type: ignore
         )
     ).scalar_one_or_none()
+    return user
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
     """Retrieve a user by their username."""
-    return (
+    user: Optional[User] = (
         await db.execute(
             select(User)
             .where(User.origin == 0, func.lower(User.username) == username.lower())
             .options(selectinload(User.tokens))  # type: ignore
         )
     ).scalar_one_or_none()
+    return user
 
 
 class LoginRequest(BaseModel):

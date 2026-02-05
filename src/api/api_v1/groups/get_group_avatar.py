@@ -43,7 +43,7 @@ async def get_group_avatar(
     groups_statement = (
         select(Group)
         .where(Group.user_id == user.id, Group.group_id == target_group_id)
-        .options(selectinload(Group.chat))
+        .options(selectinload(Group.chat))  # type: ignore
     )
     group_result = await db.execute(groups_statement)
     group_entry = group_result.first()

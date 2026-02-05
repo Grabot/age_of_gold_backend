@@ -1,7 +1,7 @@
 """Group model."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 from typing import Optional
 from sqlmodel import Field, SQLModel, Relationship
 
@@ -42,7 +42,7 @@ class Group(SQLModel, table=True):
     )
 
     @property
-    def serialize(self):
+    def serialize(self) -> Dict[str, Any]:
         """Serialize the group data."""
         data = {
             "group_id": self.group_id,
@@ -51,14 +51,14 @@ class Group(SQLModel, table=True):
             "mute": self.mute,
             "last_message_read_id": self.last_message_read_id,
             "group_version": self.group_version,
-            "message_version": self.chat.message_version,  # pylint: disable=no-member
-            "avatar_version": self.chat.avatar_version,  # pylint: disable=no-member
-            "user_ids": self.chat.user_ids,  # pylint: disable=no-member
-            "admin_ids": self.chat.user_admin_ids,  # pylint: disable=no-member
-            "group_name": self.chat.group_name,  # pylint: disable=no-member
-            "private": self.chat.private,  # pylint: disable=no-member
-            "group_description": self.chat.group_description,  # pylint: disable=no-member
-            "group_colour": self.chat.group_colour,  # pylint: disable=no-member
-            "current_message_id": self.chat.current_message_id,  # pylint: disable=no-member
+            "message_version": self.chat.message_version,
+            "avatar_version": self.chat.avatar_version,
+            "user_ids": self.chat.user_ids,
+            "admin_ids": self.chat.user_admin_ids,
+            "group_name": self.chat.group_name,
+            "private": self.chat.private,
+            "group_description": self.chat.group_description,
+            "group_colour": self.chat.group_colour,
+            "current_message_id": self.chat.current_message_id,
         }
         return data

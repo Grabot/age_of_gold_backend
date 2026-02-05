@@ -38,7 +38,9 @@ async def cancel_friend_request(
     friend_id = cancel_request.friend_id
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
-        db, me.id, friend_id
+        db,
+        me.id,  # type: ignore[arg-type]
+        friend_id,
     )
 
     # Only the sender (who has accepted = null) can cancel the request

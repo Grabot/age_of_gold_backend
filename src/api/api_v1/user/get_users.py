@@ -38,7 +38,7 @@ async def get_multiple_users(
     if not get_users_request.user_ids:
         return {"success": False, "message": "No user IDs provided"}
 
-    user_statement: Select = select(User).where(User.id.in_(get_users_request.user_ids))  # pylint: disable=no-member
+    user_statement: Select = select(User).where(User.id.in_(get_users_request.user_ids))  # type: ignore  # pylint: disable=E1101
     results_users = await db.execute(user_statement)
     found_users = results_users.scalars().all()
     if not found_users:

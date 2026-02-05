@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -42,7 +43,7 @@ async def remove_group_member(
     user_to_remove_id = remove_group_member_request.user_remove_id
 
     # Check if the current user is an admin of the group or is removing themselves
-    chat_statement = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == group_id)
     chat_result = await db.execute(chat_statement)
     chat_entry = chat_result.first()
 
@@ -81,7 +82,7 @@ async def remove_group_member(
         user_id for user_id in chat.user_ids if user_id != user_to_remove_id
     ]
 
-    group_statement = select(Group).where(
+    group_statement: Select = select(Group).where(
         Group.user_id == user_to_remove_id, Group.group_id == group_id
     )
     group_result = await db.execute(group_statement)

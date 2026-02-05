@@ -166,7 +166,7 @@ async def test_promote_admin_not_admin_direct(
 
     # Add and accept friends
     for friend_auth in [friend1_auth, friend2_auth]:
-        add_request = add_friend.AddFriendRequest(user_id=friend_auth[0].id)
+        add_request = add_friend.AddFriendRequest(user_id=friend_auth[0].id)  # type: ignore
         with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
             await add_friend.add_friend(add_request, admin_auth, test_db)
 

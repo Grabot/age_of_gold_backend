@@ -8,11 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import create_group, promote_admin
 from tests.conftest import add_token, add_user
+from fastapi.testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_promote_admin_already_admin_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test promoting a user who is already an admin via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)

@@ -23,7 +23,6 @@ async def test_successful_leave_group_direct(
     admin_user, admin_token = await add_token(1000, 1000, test_db)
     assert admin_user.id is not None
 
-    # Create friend
     friend1 = await add_user("friend1", 1001, test_db)
     assert friend1.id is not None
     _, friend1_token = await add_token(1000, 1000, test_db, friend1.id)
@@ -32,9 +31,9 @@ async def test_successful_leave_group_direct(
     friend1_auth: Tuple[User, UserToken] = (friend1, friend1_token)
 
     # Add and accept friend
-    add_request = add_friend.AddFriendRequest(user_id=friend1.id)
+    add_request_friend1 = add_friend.AddFriendRequest(user_id=friend1.id)
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
-        await add_friend.add_friend(add_request, admin_auth, test_db)
+        await add_friend.add_friend(add_request_friend1, admin_auth, test_db)
 
     respond_request = respond_friend_request.RespondFriendRequest(
         friend_id=admin_user.id, accept=True

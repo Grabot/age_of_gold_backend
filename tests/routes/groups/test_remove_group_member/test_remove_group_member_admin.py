@@ -5,16 +5,18 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from sqlalchemy.sql.selectable import Select
 
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import create_group, remove_group_member
 from src.models.chat import Chat
 from tests.conftest import add_token, add_user
+from fastapi.testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_remove_group_member_admin_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test removing an admin from a group via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)
@@ -62,13 +64,13 @@ async def test_remove_group_member_admin_direct(
     group_id = create_response["data"]
 
     # Make friend1 an admin
-    chat_statement = select(Chat).where(Chat.id == group_id)
-    chat_result = await test_db.execute(chat_statement)
-    chat_entry = chat_result.first()
-    assert chat_entry is not None
-    chat = chat_entry.Chat
-    chat.user_admin_ids.append(friend1.id)
-    test_db.add(chat)
+    chat_statement_admin: Select = select(Chat).where(Chat.id == group_id)
+    chat_result_admin = await test_db.execute(chat_statement_admin)
+    chat_entry_admin = chat_result_admin.first()
+    assert chat_entry_admin is not None
+    chat_admin: Chat = chat_entry_admin.Chat
+    chat_admin.user_admin_ids.append(friend1.id)
+    test_db.add(chat_admin)
     await test_db.commit()
 
     # Admin removes friend1 (who is also an admin)
@@ -87,9 +89,9 @@ async def test_remove_group_member_admin_direct(
     mock_emit.assert_awaited()
 
     # Verify friend1 is no longer an admin
-    chat_statement = select(Chat).where(Chat.id == group_id)
-    chat_result = await test_db.execute(chat_statement)
-    chat_entry = chat_result.first()
-    assert chat_entry is not None
-    chat = chat_entry.Chat
-    assert friend1.id not in chat.user_admin_ids
+    chat_statement_verify: Select = select(Chat).where(Chat.id == group_id)
+    chat_result_verify = await test_db.execute(chat_statement_verify)
+    chat_entry_verify = chat_result_verify.first()
+    assert chat_entry_verify is not None
+    chat_verify: Chat = chat_entry_verify.Chat
+    assert friend1.id not in chat_verify.user_admin_ids

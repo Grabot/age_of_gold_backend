@@ -1,7 +1,7 @@
 """Endpoint for muting/unmuting a group."""
 
 from typing import Dict, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, Security
 from pydantic import BaseModel
@@ -41,18 +41,20 @@ async def mute_group(
     mute = mute_group_request.mute
     mute_duration_hours = mute_group_request.mute_duration_hours
 
-    # TODO: use scalar_one
-    group_statement = select(Group).where(
-        Group.user_id == me.id, Group.group_id == group_id
-    )
-    group: Group = (await db.execute(group_statement)).scalar_one()
+    group: Group = (
+        await db.execute(
+            select(Group).where(Group.user_id == me.id, Group.group_id == group_id)
+        )
+    ).scalar_one()
 
     # Update mute status
     group.mute = mute
 
     if mute and mute_duration_hours:
         # Set mute timestamp if muting with duration
-        group.mute_timestamp = datetime.utcnow() + timedelta(hours=mute_duration_hours)
+        group.mute_timestamp = datetime.now(timezone.utc) + timedelta(
+            hours=mute_duration_hours
+        )
     else:
         # Clear mute timestamp if unmuting or muting indefinitely
         group.mute_timestamp = None

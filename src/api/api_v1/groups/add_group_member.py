@@ -44,7 +44,10 @@ async def add_group_member(
 
     # Check if the current user is an admin of the group
     chat = await get_chat_and_verify_admin(
-        db, group_id, me.id, permission_error_detail="Only group admins can add members"
+        db,
+        group_id,
+        me.id,  # type: ignore[arg-type]
+        permission_error_detail="Only group admins can add members",
     )
 
     # Check if the user to add is already in the group
@@ -77,7 +80,6 @@ async def add_group_member(
     await update_group_versions_and_notify(
         chat,
         db,
-        me,
         "group_member_added",
         {
             "group_id": group_id,

@@ -2,6 +2,7 @@
 
 import pytest
 from botocore.exceptions import ClientError
+from pytest_mock import MockerFixture
 
 from src.models.chat import Chat
 
@@ -183,7 +184,10 @@ def test_chat_group_avatar_s3_key(test_chat: Chat) -> None:  # pylint: disable=r
     assert s3_key == expected_key
 
 
-def test_chat_remove_group_avatar_error_handling(test_chat: Chat, mocker) -> None:  # pylint: disable=redefined-outer-name
+def test_chat_remove_group_avatar_error_handling(
+    test_chat: Chat,  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
+) -> None:
     """Test error handling in remove_group_avatar method."""
     # Mock s3_client and ClientError
     mock_s3_client = mocker.MagicMock()
@@ -202,7 +206,7 @@ def test_chat_remove_group_avatar_error_handling(test_chat: Chat, mocker) -> Non
 
 def test_chat_remove_group_avatar_default_error_handling(
     test_chat: Chat,  # pylint: disable=redefined-outer-name
-    mocker,
+    mocker: MockerFixture,
 ) -> None:
     """Test error handling in remove_group_avatar_default method."""
     # Mock s3_client and ClientError

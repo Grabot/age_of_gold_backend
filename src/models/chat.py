@@ -8,7 +8,7 @@ from cryptography.fernet import Fernet
 from sqlmodel import Column, Field, Relationship, SQLModel
 
 from src.config.config import settings
-from src.models.model_util.array_type import ZwaarArray
+from src.models.model_util.zwaar_array import ZwaarArray
 from src.util.gold_logging import logger
 from src.util.storage_util import upload_image
 

@@ -38,7 +38,9 @@ async def remove_friend(
     friend_id = remove_request.friend_id
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
-        db, me.id, friend_id
+        db,
+        me.id,  # type: ignore[arg-type]
+        friend_id,
     )
 
     # Only allow removal if the friendship is accepted

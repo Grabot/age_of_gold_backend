@@ -5,6 +5,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from sqlalchemy.sql.selectable import Select
+from fastapi.testclient import TestClient
 
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import change_group_avatar, create_group
@@ -14,7 +16,7 @@ from tests.conftest import add_token, add_user
 
 @pytest.mark.asyncio
 async def test_change_group_avatar_not_default_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test changing group avatar when it's not a default avatar via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)
@@ -62,7 +64,7 @@ async def test_change_group_avatar_not_default_direct(
     group_id = create_response["data"]
 
     # Manually set default_avatar to False
-    chat_statement = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == group_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
     assert chat_entry is not None
@@ -97,9 +99,9 @@ async def test_change_group_avatar_not_default_direct(
     mock_emit.assert_awaited()
 
     # Verify default_avatar is still False
-    chat_statement = select(Chat).where(Chat.id == group_id)
-    chat_result = await test_db.execute(chat_statement)
-    chat_entry = chat_result.first()
-    assert chat_entry is not None
-    chat = chat_entry.Chat
-    assert chat.default_avatar is False
+    chat_statement_verify: Select = select(Chat).where(Chat.id == group_id)
+    chat_result_verify = await test_db.execute(chat_statement_verify)
+    chat_entry_verify = chat_result_verify.first()
+    assert chat_entry_verify is not None
+    chat_verify: Chat = chat_entry_verify.Chat
+    assert chat_verify.default_avatar is False

@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.testclient import TestClient
 
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import change_group_avatar, create_group
@@ -13,7 +14,7 @@ from tests.conftest import add_token, add_user
 
 @pytest.mark.asyncio
 async def test_change_group_avatar_invalid_file_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test changing group avatar with invalid file via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)

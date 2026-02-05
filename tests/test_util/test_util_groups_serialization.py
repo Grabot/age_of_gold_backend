@@ -6,11 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.group import Group
 from src.util.util import get_successful_login_response
 from tests.conftest import add_token
+from fastapi.testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_get_successful_login_response_with_groups(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test get_successful_login_response with groups serialization."""
     user, user_token = await add_token(1000, 1000, test_db)

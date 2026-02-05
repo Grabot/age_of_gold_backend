@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 from fastapi import Depends, HTTPException, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
@@ -40,7 +41,7 @@ async def leave_group(
     group_id = leave_group_request.group_id
 
     # Get the group entry for this user
-    group_statement = select(Group).where(
+    group_statement: Select = select(Group).where(
         Group.user_id == me.id, Group.group_id == group_id
     )
     group_result = await db.execute(group_statement)
@@ -52,7 +53,7 @@ async def leave_group(
             detail="Group not found",
         )
 
-    chat_statement = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == group_id)
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     # Remove user from admin list if they are an admin
@@ -75,16 +76,15 @@ async def leave_group(
 
     # Notify other group members that someone left
     for user_id in chat.user_ids:
-        if user_id != me.id:
-            recipient_room: str = get_user_room(user_id)
-            await sio.emit(
-                "group_member_left",
-                {
-                    "group_id": group_id,
-                    "user_id": me.id,
-                },
-                room=recipient_room,
-            )
+        recipient_room: str = get_user_room(user_id)
+        await sio.emit(
+            "group_member_left",
+            {
+                "group_id": group_id,
+                "user_id": me.id,
+            },
+            room=recipient_room,
+        )
 
     return {
         "success": True,

@@ -57,13 +57,13 @@ dev = [
     "bump-pydantic>=0.8.0,<0.9",
     "types-requests>=2.32.4.20250913,<3",
     "pytest-cov>=7.0.0,<8",
-    "sqlalchemy2-stubs>=0.0.2a38,<0.0.3",
     "tox>=4.31.0,<5",
     "pylint>=4.0.2,<5",
     "bandit>=1.8.6,<2",
     "toml>=0.10.2",
     "fakeredis>=2.32.1",
     "pytest-mypy-plugins>=3.2.0",
+    "sqlalchemy2-stubs>=0.0.2a38",
 ]
 
 [tool.black]

@@ -1,22 +1,21 @@
+import random
 import time
-from typing import Any, List, Optional, TypedDict
 from io import BytesIO
+from typing import Any, List, Optional, TypedDict
 
 from argon2 import PasswordHasher
+from botocore.exceptions import ClientError
+from fastapi import HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
-from fastapi.responses import StreamingResponse
-from botocore.exceptions import ClientError
-from fastapi import HTTPException
-import random
 
-from src.models import User, UserToken, Chat
 from src.config.config import settings
-from src.util.storage_util import download_image
+from src.models import Chat, User, UserToken
 from src.util.gold_logging import logger
-from sqlalchemy.orm import selectinload
-from fastapi import status
+from src.util.storage_util import download_image
 
 ph = PasswordHasher()
 
@@ -191,7 +190,6 @@ def create_avatar_streaming_response(
         raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
 
 
-# TODO: always scalar_one.
 async def get_chat_and_verify_admin(
     db: AsyncSession,
     group_id: int,
@@ -214,8 +212,8 @@ async def get_chat_and_verify_admin(
     Raises:
         HTTPException: If group not found or user doesn't have required permissions
     """
-    chat_statement = (
-        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))
+    chat_statement: Select = (
+        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))  # type: ignore
     )
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
 

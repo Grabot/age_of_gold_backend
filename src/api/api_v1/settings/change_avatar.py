@@ -42,7 +42,10 @@ async def change_avatar(
 
         # Update friend versions and notify about avatar change
         await update_friend_versions_and_notify(
-            db, me.id, "avatar_updated", {"user_id": me.id}
+            db,
+            me.id,  # type: ignore[arg-type]
+            "avatar_updated",
+            {"user_id": me.id},
         )
 
         await db.commit()
@@ -65,7 +68,10 @@ async def change_avatar(
     db.add(me)
 
     await update_friend_versions_and_notify(
-        db, me.id, "avatar_updated", {"user_id": me.id}
+        db,
+        me.id,  # type: ignore[arg-type]
+        "avatar_updated",
+        {"user_id": me.id},
     )
 
     await db.commit()

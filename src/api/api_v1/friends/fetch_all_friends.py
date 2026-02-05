@@ -40,7 +40,7 @@ async def fetch_all_friends(
     # If user_ids filter is provided, add it to the query
     if fetch_friends_request.user_ids is not None:
         friends_statement = friends_statement.where(
-            Friend.friend_id.in_(fetch_friends_request.user_ids)  # pylint: disable=no-member
+            Friend.friend_id.in_(fetch_friends_request.user_ids)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=E1101
         )
 
     friends_result = await db.execute(friends_statement)

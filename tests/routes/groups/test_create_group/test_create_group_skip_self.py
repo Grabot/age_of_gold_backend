@@ -8,11 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.api_v1.friends import add_friend, respond_friend_request
 from src.api.api_v1.groups import create_group
 from tests.conftest import add_token, add_user
+from fastapi.testclient import TestClient
 
 
 @pytest.mark.asyncio
 async def test_create_group_skip_self_in_friend_validation_direct(
-    test_setup: any, test_db: AsyncSession
+    test_setup: TestClient, test_db: AsyncSession
 ) -> None:
     """Test that create group skips self in friend validation via direct function call."""
     admin_user, admin_token = await add_token(1000, 1000, test_db)
