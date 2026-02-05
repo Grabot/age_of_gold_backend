@@ -1,6 +1,7 @@
 """Testing fixtures."""
 
 import time
+import uuid
 from typing import AsyncGenerator, Optional, Tuple
 from unittest.mock import MagicMock, patch
 
@@ -19,7 +20,13 @@ from src.database import get_db
 from src.models import User
 from src.models.user import hash_email
 from src.models.user_token import UserToken
-from src.util.util import hash_password
+from src.util.util import get_random_colour, hash_password
+
+
+def generate_unique_username(base_name: str) -> str:
+    """Generate a unique username by appending a UUID."""
+    return f"{base_name}_{uuid.uuid4().hex[:8]}"
+
 
 ASYNC_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(
@@ -31,7 +38,7 @@ ASYNC_TESTING_SESSION_LOCAL = async_sessionmaker(
 )
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def test_setup() -> AsyncGenerator[TestClient, None]:
     """Create a SQLAlchemy engine and TestClient for tests."""
     async with engine.begin() as conn:
@@ -39,6 +46,7 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
 
     app.state.s3 = MagicMock()
     app.state.cipher = MagicMock()
+    app.state.cipher.encrypt = MagicMock(return_value=b"fake_encrypted_data")
 
     async with ASYNC_TESTING_SESSION_LOCAL() as session:
         password = "testpassword"
@@ -53,6 +61,7 @@ async def test_setup() -> AsyncGenerator[TestClient, None]:
             password_hash=password_hash,
             salt=salt,
             origin=0,
+            colour=get_random_colour(),
         )
         session.add(user)
         await session.commit()
@@ -108,6 +117,7 @@ async def add_user(
         password_hash=password_hash,
         salt=salt,
         origin=origin,
+        colour=get_random_colour(),
     )
     test_db_for_user.add(user)
     await test_db_for_user.commit()

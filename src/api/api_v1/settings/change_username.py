@@ -2,7 +2,7 @@
 
 from typing import Dict, Tuple
 
-from fastapi import Depends, Security, HTTPException
+from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +13,7 @@ from src.models.user_token import UserToken
 from src.util.decorators import handle_db_errors
 from src.util.gold_logging import logger
 from src.util.security import checked_auth_token
-from src.util.rest_util import update_friend_versions_and_notify
+from src.util.rest_util import update_user_field
 
 
 class ChangeUsernameRequest(BaseModel):
@@ -34,25 +34,11 @@ async def change_username(
     """Handle change username request."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     me.username = change_username_request.new_username
-    me.profile_version += 1
-    db.add(me)
-
-    await update_friend_versions_and_notify(
-        db,
-        me.id,
-        "username_updated",
-        {
-            "user_id": me.id,
-            "new_username": me.username,
-            "profile_version": me.profile_version,
-        },
+    await update_user_field(
+        db, me, "new_username", change_username_request.new_username, "username_updated"
     )
 
-    await db.commit()
     logger.info("User %s changed their username", me.username)
     return {
         "success": True,

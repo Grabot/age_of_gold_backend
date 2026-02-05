@@ -28,9 +28,14 @@ REDIS_PORT=6379
 
 #### Mail
 
-For sending the mails, like when you forgot your password, we are using Brevo. You need to create an account and get an API key (not SMTP key). and fill that API-key in the `MAIL_API_KEY` variable.
-Make sure you have authorized the domain you are using.
-
+create a proton account with (at least) mail plus
+https://account.proton.me/u/2/mail/imap-smtp
+Add a domain and follow the instructions.
+Go to settings -> IMAP/SMTP
+Generate a new token with a address of your choosing.
+For the given SMTP username you will get a token and the SMTP server details
+Fill all these details in the following variables: `SMTP_PASSWORD`, `SMTP_ACCOUNT`, `SMTP_HOST`, `SMTP_PORT` Fill in your own value for `SMTP_USER`.
+You will now send emails via the proton mail account you have entered.
 
 #### Oauth2
 
@@ -318,7 +323,7 @@ server {
     # The frontend is the index.html which will be shown when going to the root path.
     location /api/ {
         include proxy_params;
-        proxy_pass <minikube_exposed_url>;
+        proxy_pass <fastapi-service_cluster-ip>:<fastapi-service_port>;
     }
 
     location /socket.io {
@@ -328,16 +333,16 @@ server {
         proxy_set_header Connection "Upgrade";
         proxy_set_header Host $host;
         proxy_hide_header 'Access-Control-Allow-Origin';
-        proxy_pass <minikube_exposed_url>/socket.io;
+        proxy_pass <fastapi-service_cluster-ip>:<fastapi-service_port>/socket.io;
     }
 }
 ```
 
 Next create a symbolic link to the sites-enabled folder
 
-    sudo ln -s /etc/nginx/sites-available/<minikube_exposed_url> /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/<url_dns_configuration> /etc/nginx/sites-enabled/
 
-Ensure the NGINX configuration is error-free.
+Ensure the NGINX configura  tion is error-free.
 
     sudo nginx -t
 
@@ -430,3 +435,5 @@ reload nginx again and now you should see the container frontend.
 
 If all the endpoints in fronend and backend are correctly set to the secure url set in the dns configuration it should now work.
 The most important variables are `BASE_URL`, `FRONTEND_URL` and `ALLOWED_ORIGINS`. If they are set the basic functionality should be working. -->
+
+10.105.203.174

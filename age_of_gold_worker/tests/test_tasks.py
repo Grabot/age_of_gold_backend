@@ -22,6 +22,7 @@ def test_task_generate_avatar(
     """Test the task_generate_avatar function."""
     mock_worker_settings.BASE_URL = "http://example.com"
     mock_worker_settings.API_V1_STR = "/api/v1"
+    # TODO: Not using this setting?
     mock_worker_settings.UPLOAD_FOLDER_AVATARS = "/path/to/avatars"
     mock_worker_settings.S3_BUCKET_NAME = "test-bucket"
     test_image = Image.new("RGB", (100, 100))

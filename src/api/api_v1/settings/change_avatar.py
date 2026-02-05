@@ -15,7 +15,7 @@ from src.util.security import checked_auth_token
 from src.util.rest_util import update_friend_versions_and_notify
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_AVATAR_SIZE = 4 * 1024 * 1024  # 4MB
 
 
 @api_router_v1.patch("/user/avatar", status_code=200, response_model=dict)
@@ -31,9 +31,6 @@ async def change_avatar(
     """Handle change avatar request."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     s3_client = request.app.state.s3
     cipher = request.app.state.cipher
 
@@ -42,11 +39,13 @@ async def change_avatar(
         me.default_avatar = True
         me.avatar_version += 1
         db.add(me)
-        me.remove_avatar(s3_client)
 
         # Update friend versions and notify about avatar change
         await update_friend_versions_and_notify(
-            db, me.id, "avatar_updated", {"user_id": me.id}
+            db,
+            me.id,  # type: ignore[arg-type]
+            "avatar_updated",
+            {"user_id": me.id},
         )
 
         await db.commit()
@@ -55,12 +54,12 @@ async def change_avatar(
     if not avatar.size or not avatar.filename:
         raise HTTPException(status_code=400, detail="Invalid avatar file")
     if avatar.size > MAX_AVATAR_SIZE:
-        raise HTTPException(status_code=400, detail="Avatar too large (max 2MB)")
+        raise HTTPException(status_code=400, detail="Avatar too large (max 4MB)")
     if avatar.filename.split(".")[-1].lower() not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only PNG/JPG allowed")
 
     avatar_bytes = await avatar.read()
-    logger.info("Avatar creation in bucket?")
+    logger.info("Avatar creation in bucket")
     me.create_avatar(s3_client, cipher, avatar_bytes)
     me.avatar_version += 1
 
@@ -69,7 +68,10 @@ async def change_avatar(
     db.add(me)
 
     await update_friend_versions_and_notify(
-        db, me.id, "avatar_updated", {"user_id": me.id}
+        db,
+        me.id,  # type: ignore[arg-type]
+        "avatar_updated",
+        {"user_id": me.id},
     )
 
     await db.commit()

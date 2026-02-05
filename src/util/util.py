@@ -1,12 +1,21 @@
+import random
 import time
+from io import BytesIO
 from typing import Any, List, Optional, TypedDict
 
 from argon2 import PasswordHasher
+from botocore.exceptions import ClientError
+from fastapi import HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
-from src.models import User, UserToken
+from src.config.config import settings
+from src.models import Chat, User, UserToken
+from src.util.gold_logging import logger
+from src.util.storage_util import download_image
 
 ph = PasswordHasher()
 
@@ -17,6 +26,7 @@ class LoginData(TypedDict):
     profile_version: int
     avatar_version: int
     friends: List[dict[str, Any]]
+    groups: List[dict[str, Any]]
 
 
 class SuccessfulLoginResponse(TypedDict):
@@ -29,7 +39,7 @@ async def get_successful_login_response(
 ) -> SuccessfulLoginResponse:
     # Load friends using the existing User.friends relationship
     # First refresh the user object to get the latest data
-    await db.refresh(user, ["friends"])
+    await db.refresh(user, ["friends", "groups"])
 
     # Serialize friends data from the loaded relationship
     friends_data = []
@@ -41,6 +51,16 @@ async def get_successful_login_response(
             }
         )
 
+    # Serialize groups data from the loaded relationship
+    groups_data = []
+    for group in user.groups:
+        groups_data.append(
+            {
+                "group_id": group.group_id,
+                "group_version": group.group_version,
+            }
+        )
+
     return {
         "success": True,
         "data": {
@@ -49,6 +69,7 @@ async def get_successful_login_response(
             "profile_version": user.profile_version,
             "avatar_version": user.avatar_version,
             "friends": friends_data,
+            "groups": groups_data,
         },
     }
 
@@ -110,3 +131,97 @@ def hash_password(password: str) -> str:
 
 def get_user_room(user_id: int) -> str:
     return f"room_{user_id}"
+
+
+def get_group_room(group_id: int) -> str:
+    return f"group_{group_id}"
+
+
+def get_random_colour() -> str:
+    colors = [
+        "#ED64A6",
+        "#F6AD55",
+        "#FC8181",
+        "#667EEA",
+        "#764BA2",
+        "#F093FB",
+        "#4FACFE",
+        "#00C9A7",
+        "#8BD3DD",
+        "#A5DD9B",
+        "#F9D71C",
+    ]
+    return random.choice(colors)
+
+
+def create_avatar_streaming_response(
+    s3_client: Any, cipher: Any, s3_key: str, file_name: str, encrypted: bool
+) -> StreamingResponse:
+    """Create a streaming response for avatar images.
+
+    Args:
+        s3_client: S3 client for downloading the image
+        cipher: Cipher for decryption if needed
+        s3_key: S3 key for the image
+        file_name: File name for the response
+        encrypted: Whether the image is encrypted
+
+    Returns:
+        StreamingResponse: FastAPI streaming response with the image
+
+    Raises:
+        HTTPException: If avatar is not found or download fails
+    """
+    try:
+        decrypted_data: bytes = download_image(
+            s3_client, cipher, settings.S3_BUCKET_NAME, s3_key, encrypted
+        )
+        decrypted_buffer: BytesIO = BytesIO(decrypted_data)
+        decrypted_buffer.seek(0)
+        return StreamingResponse(
+            decrypted_buffer,
+            media_type="image/png",
+            headers={"Content-Disposition": f"inline; filename={file_name}"},
+        )
+    except ClientError as e:
+        logger.error("Failed to fetch avatar: %s", str(e))
+        if e.response["Error"]["Code"] == "NoSuchKey":
+            raise HTTPException(status_code=404, detail="Avatar not found") from e
+        raise HTTPException(status_code=500, detail="Failed to fetch avatar") from e
+
+
+async def get_chat_and_verify_admin(
+    db: AsyncSession,
+    group_id: int,
+    user_id: int,
+    require_admin: bool = True,
+    permission_error_detail: str = "Only group admins can perform this action",
+) -> Chat:
+    """Get a chat and verify if the user is an admin.
+
+    Args:
+        db: Database session
+        group_id: Group ID to check
+        user_id: User ID to verify
+        require_admin: Whether admin rights are required
+        permission_error_detail: Custom error message for permission denial
+
+    Returns:
+        Chat: The chat object
+
+    Raises:
+        HTTPException: If group not found or user doesn't have required permissions
+    """
+    chat_statement: Select = (
+        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))  # type: ignore
+    )
+    chat: Chat = (await db.execute(chat_statement)).scalar_one()
+
+    # Check if current user has required permissions
+    if require_admin and user_id not in chat.user_admin_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=permission_error_detail,
+        )
+
+    return chat

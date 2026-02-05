@@ -15,7 +15,7 @@ from src.api.api_v1.settings import change_avatar
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.models.friend import Friend
-from src.util.util import get_user_room
+from src.util.util import get_random_colour, get_user_room
 from tests.conftest import add_token
 
 
@@ -123,9 +123,9 @@ async def test_change_avatar_too_large_direct(
     auth: Tuple[User, UserToken] = (test_user, user_token)
 
     avatar = UploadFile(
-        filename="large_file.png", file=BytesIO(b"x" * (2 * 1024 * 1024 + 1))
+        filename="large_file.png", file=BytesIO(b"x" * (4 * 1024 * 1024 + 1))
     )
-    avatar.size = 2 * 1024 * 1024 + 1
+    avatar.size = 4 * 1024 * 1024 + 1
 
     request = MagicMock()
     request.app.state.s3.return_value = ""
@@ -135,7 +135,7 @@ async def test_change_avatar_too_large_direct(
         await change_avatar.change_avatar(request, avatar, auth, test_db)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Avatar too large (max 2MB)"
+    assert exc_info.value.detail == "Avatar too large (max 4MB)"
 
 
 @pytest.mark.asyncio
@@ -171,11 +171,12 @@ async def test_change_avatar_updates_friend_versions(
     test_user, test_user_token = await add_token(1000, 1000, test_db)
     friend_user = User(
         id=2000,
-        username="friend_user",
-        email_hash="test@example.com",
-        password_hash="hashedpassword",
+        username="friend_user_change_avatar",
+        email_hash="friend_user_change_avatar@example.com",
+        password_hash="hashedpassword_friend_user_change_avatar",
         salt="salt",
         origin=0,
+        colour=get_random_colour(),
     )
     test_db.add(friend_user)
     await test_db.commit()
@@ -247,6 +248,7 @@ async def test_successful_change_avatar_default_friend_versions(
         password_hash="hashedpassword",
         salt="salt",
         origin=0,
+        colour=get_random_colour(),
     )
     test_db.add(friend_user)
     await test_db.commit()
@@ -296,36 +298,3 @@ async def test_successful_change_avatar_default_friend_versions(
             },
             room=get_user_room(friend.user_id),
         )
-
-
-@pytest.mark.asyncio
-async def test_user_id_is_not_filled(
-    test_setup: TestClient, test_db: AsyncSession
-) -> None:
-    """Test successful change username via direct function call."""
-    test_user = User(
-        id=None,
-        username="test_user",
-        email_hash="email_hash",
-        password_hash="password_hash",
-        salt="salt",
-        origin=0,
-    )
-    test_token = UserToken(
-        id=None,
-        user_id=1,
-        access_token="access_token",
-        token_expiration=0,
-        refresh_token="refresh_token",
-        refresh_token_expiration=0,
-    )
-    auth: Tuple[User, UserToken] = (test_user, test_token)
-
-    avatar = UploadFile(filename="", file=BytesIO(b"fake content"))
-    request = MagicMock()
-
-    with pytest.raises(HTTPException) as exc_info:
-        await change_avatar.change_avatar(request, avatar, auth, test_db)
-
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert exc_info.value.detail == "Can't find user"

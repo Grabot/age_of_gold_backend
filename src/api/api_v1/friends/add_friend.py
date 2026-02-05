@@ -5,6 +5,7 @@ from typing import Tuple
 from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -13,9 +14,10 @@ from src.database import get_db
 from src.models.friend import Friend
 from src.models.user import User
 from src.models.user_token import UserToken
-from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
+from src.util.rest_util import emit_friend_response
 
 
 class AddFriendRequest(BaseModel):
@@ -25,6 +27,7 @@ class AddFriendRequest(BaseModel):
 
 
 @api_router_v1.post("/friend/add", status_code=200)
+@handle_db_errors(default_error_message="No user found.")
 async def add_friend(
     add_friend_request: AddFriendRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -35,9 +38,6 @@ async def add_friend(
     """Handle add friend request."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     friend_id = add_friend_request.user_id
     if friend_id is me.id:
         raise HTTPException(
@@ -46,16 +46,7 @@ async def add_friend(
         )
 
     friend_statement: Select = select(User).where(User.id == friend_id)
-    results_user = await db.execute(friend_statement)
-    result_user = results_user.first()
-
-    if not result_user:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No user found.",
-        )
-
-    friend_add: User = result_user.User
+    friend_add: User = (await db.execute(friend_statement)).scalar_one()
 
     existing_friend_statement: Select = select(Friend).where(
         Friend.user_id == me.id, Friend.friend_id == friend_add.id
@@ -69,23 +60,16 @@ async def add_friend(
             detail="You are already friends",
         )
 
-    friend_me = Friend(user_id=me.id, friend_id=friend_add.id, accepted=None)
-    friend_other = Friend(user_id=friend_add.id, friend_id=me.id, accepted=False)
+    friend_me = Friend(user_id=me.id, friend_id=friend_add.id, accepted=None)  # pyright: ignore[reportArgumentType]
+    friend_other = Friend(user_id=friend_add.id, friend_id=me.id, accepted=False)  # pyright: ignore[reportArgumentType]
+
+    # TODO: Create private groups and chats?
     db.add(friend_me)
     db.add(friend_other)
     await db.commit()
 
     recipient_room: str = get_user_room(friend_add.id)  # type: ignore[arg-type]
-    await sio.emit(
-        "friend_request_received",
-        {
-            "friend_id": me.id,
-            "username": me.username,
-            "avatar_version": me.avatar_version,
-            "profile_version": me.profile_version,
-        },
-        room=recipient_room,
-    )
+    await emit_friend_response("friend_request_received", me, recipient_room)
 
     return {
         "success": True,

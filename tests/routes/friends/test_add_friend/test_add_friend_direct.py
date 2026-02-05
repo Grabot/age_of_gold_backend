@@ -27,9 +27,7 @@ async def test_successful_add_friend_direct(
     add_friend_request = add_friend.AddFriendRequest(user_id=other_user.id)
 
     # Mock the socket emit
-    with patch(
-        "src.api.api_v1.friends.add_friend.sio.emit", new_callable=AsyncMock
-    ) as mock_emit:
+    with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
         response = await add_friend.add_friend(add_friend_request, auth, test_db)
 
     assert response["success"] is True
@@ -98,35 +96,3 @@ async def test_add_friend_already_friends_direct(
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
     assert exc_info.value.detail == "You are already friends"
-
-
-@pytest.mark.asyncio
-async def test_user_id_is_not_filled(
-    test_setup: TestClient, test_db: AsyncSession
-) -> None:
-    """Test successful change username via direct function call."""
-    test_user = User(
-        id=None,
-        username="test_user",
-        email_hash="email_hash",
-        password_hash="password_hash",
-        salt="salt",
-        origin=0,
-    )
-    test_token = UserToken(
-        id=None,
-        user_id=1,
-        access_token="access_token",
-        token_expiration=0,
-        refresh_token="refresh_token",
-        refresh_token_expiration=0,
-    )
-    auth: Tuple[User, UserToken] = (test_user, test_token)
-
-    add_friend_request = add_friend.AddFriendRequest(user_id=1)
-
-    with pytest.raises(HTTPException) as exc_info:
-        await add_friend.add_friend(add_friend_request, auth, test_db)
-
-    assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
-    assert exc_info.value.detail == "Can't find user"

@@ -25,3 +25,7 @@ COPY main.py /main.py
 COPY migrations/ /migrations/
 COPY alembic.ini /alembic.ini
 COPY src/ /src/
+
+RUN useradd -r -s /bin/false -m celery && \
+    mkdir -p /home/celery/ && \
+    chown -R celery:celery /home/celery

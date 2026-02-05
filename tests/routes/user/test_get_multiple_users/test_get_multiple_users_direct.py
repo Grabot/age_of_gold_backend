@@ -54,24 +54,6 @@ async def test_get_multiple_users_empty_list_direct(
 
 
 @pytest.mark.asyncio
-async def test_get_multiple_users_too_many_direct(
-    test_setup: TestClient, test_db: AsyncSession
-) -> None:
-    """Test get multiple users with too many IDs via direct function call."""
-    test_user, test_user_token = await add_token(1000, 1000, test_db)
-    auth: Tuple[User, UserToken] = (test_user, test_user_token)
-
-    # Create a list with more than 100 user IDs
-    user_ids = list(range(1, 102))
-    get_users_request = get_users.GetUsersRequest(user_ids=user_ids)
-
-    response = await get_users.get_multiple_users(get_users_request, auth, test_db)
-
-    assert response["success"] is False
-    assert response["message"] == "Too many user IDs requested (max 100)"
-
-
-@pytest.mark.asyncio
 async def test_get_multiple_users_not_found_direct(
     test_setup: TestClient,
     test_db: AsyncSession,

@@ -20,7 +20,7 @@ from src.util.gold_logging import logger
 ph = PasswordHasher()
 
 if TYPE_CHECKING:
-    from src.models import UserToken, Friend
+    from src.models import UserToken, Friend, Group
 
 
 def hash_email(email: str) -> str:
@@ -43,6 +43,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     __tablename__ = "User"  # pyright: ignore[reportAssignmentType]
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
+    colour: str
     email_hash: str
     password_hash: str
     salt: str
@@ -55,6 +56,11 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     friends: List["Friend"] = Relationship(
         sa_relationship_kwargs={
             "primaryjoin": "and_(User.id==Friend.user_id)",
+        },
+    )
+    groups: List["Group"] = Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": "and_(User.id==Group.user_id)",
         },
     )
 
@@ -150,4 +156,5 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
             "username": self.username,
             "profile_version": self.profile_version,
             "avatar_version": self.avatar_version,
+            "colour": self.colour,
         }

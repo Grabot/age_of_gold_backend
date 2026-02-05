@@ -224,6 +224,7 @@ async def test_login_apple_token_direct(
             profile_version=1,
             avatar_version=1,
             friends=[],
+            groups=[],
         ),
     )
 

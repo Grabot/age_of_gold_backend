@@ -11,9 +11,10 @@ from src.database import get_db
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
+from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
-from src.util.rest_util import get_friend_request_pair
+from src.util.rest_util import get_friend_request_pair, emit_friend_response
 
 
 class RespondFriendRequest(BaseModel):
@@ -24,6 +25,7 @@ class RespondFriendRequest(BaseModel):
 
 
 @api_router_v1.post("/friend/respond", status_code=200, response_model=Dict)
+@handle_db_errors("Responding to request failed")
 async def respond_friend_request(
     respond_request: RespondFriendRequest,
     user_and_token: Tuple[User, UserToken] = Security(
@@ -34,14 +36,13 @@ async def respond_friend_request(
     """Handle friend request response (accept/reject)."""
     me, _ = user_and_token
 
-    if me.id is None:
-        raise HTTPException(status_code=400, detail="Can't find user")
-
     friend_id = respond_request.friend_id
     accept = respond_request.accept
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
-        db, me.id, friend_id
+        db,
+        me.id,  # type: ignore[arg-type]
+        friend_id,
     )
 
     if friend_request.accepted is True:
@@ -69,17 +70,14 @@ async def respond_friend_request(
 
         # Notify the sender that their request was accepted
         sender_room = get_user_room(friend_id)
-        await sio.emit(
+        await emit_friend_response(
             "friend_request_accepted",
-            {
-                "friend_id": me.id,
-                "username": me.username,
-                "avatar_version": me.avatar_version,
-                "profile_version": me.profile_version,
+            me,
+            sender_room,
+            additional_data={
                 "accepted": True,
                 "friend_version": friend_request.friend_version,
             },
-            room=sender_room,
         )
     else:
         # Reject the friend request - remove both entries
