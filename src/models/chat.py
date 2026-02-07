@@ -1,7 +1,7 @@
 """Chat model."""
 
 from hashlib import md5
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any, List, Optional, Dict
 
 from botocore.exceptions import ClientError
 from cryptography.fernet import Fernet
@@ -13,7 +13,7 @@ from src.util.gold_logging import logger
 from src.util.storage_util import upload_image
 
 if TYPE_CHECKING:
-    from src.models import Group
+    from src.models import Group, Message, Friend
 
 
 class Chat(SQLModel, table=True):
@@ -26,9 +26,9 @@ class Chat(SQLModel, table=True):
     user_ids: List[int] = Field(default=[], sa_column=Column(ZwaarArray()))
     user_admin_ids: List[int] = Field(default=[], sa_column=Column(ZwaarArray()))
     private: bool = Field(default=True)
-    group_name: str  # TODO: Maybe no need for `group`. Just `name` and `colour` and `description`
-    group_description: str
-    group_colour: str
+    name: Optional[str]
+    description: Optional[str]
+    colour: Optional[str]
     default_avatar: bool = Field(default=True)
     current_message_id: int
     last_message_read_id_chat: int = Field(default=1)
@@ -42,7 +42,22 @@ class Chat(SQLModel, table=True):
             "primaryjoin": "Chat.id==Group.group_id",
         },
     )
-    # TODO: Add Friend connections? Change Friend to "private group"?
+    friends: List["Friend"] = Relationship(
+        back_populates="chat",
+        sa_relationship_kwargs={
+            "uselist": True,
+            "primaryjoin": "Chat.id==Friend.chat_id",
+        },
+    )
+
+    messages: List["Message"] = Relationship(
+        back_populates="chat",
+        sa_relationship_kwargs={
+            "uselist": True,
+            "primaryjoin": "Chat.id==Message.chat_id",
+            "order_by": "Message.created_at",
+        },
+    )
 
     def add_user(self, user_id: int) -> None:
         """Add a user to the chat."""
@@ -108,3 +123,12 @@ class Chat(SQLModel, table=True):
             s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
         except ClientError as e:
             logger.error("failed to remove group avatar: %s", str(e))
+
+    # TODO: Use this for group objects too?
+    @property
+    def serialize(self) -> Dict[str, Any]:
+        """Serialize the group data."""
+        data = {
+            "id": self.id,
+        }
+        return data

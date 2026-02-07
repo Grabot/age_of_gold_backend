@@ -51,9 +51,9 @@ async def test_successful_add_group_member_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -121,9 +121,9 @@ async def test_add_member_not_admin_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -183,9 +183,9 @@ async def test_add_member_already_in_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 

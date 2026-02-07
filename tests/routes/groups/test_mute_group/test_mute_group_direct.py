@@ -47,9 +47,9 @@ async def test_successful_mute_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -81,9 +81,9 @@ async def test_successful_unmute_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 
@@ -121,9 +121,9 @@ async def test_mute_group_indefinitely_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 

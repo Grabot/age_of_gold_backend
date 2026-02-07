@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
+from src.models.chat import Chat
 from src.models.user import User
 from src.models.user_token import UserToken
 from src.sockets.sockets import sio
@@ -60,6 +61,27 @@ async def respond_friend_request(
 
     if accept:
         # Accept the friend request
+        user_ids = [me.id, friend_id]
+        user_ids.sort()
+        new_chat = Chat(
+            user_ids=user_ids,
+            user_admin_ids=user_ids,
+            private=True,
+            name=None,
+            description=None,
+            colour=None,
+            default_avatar=True,
+            current_message_id=1,
+            last_message_read_id_chat=1,
+        )
+        db.add(new_chat)
+        await db.commit()
+        await db.refresh(new_chat)
+        print(f"friend accepted, chat created {new_chat.id}")
+        
+        friend_request.chat_id = new_chat.id
+        reciprocal_friend.chat_id = new_chat.id
+
         friend_request.accepted = True
         friend_request.friend_version += 1
         db.add(friend_request)
@@ -77,6 +99,7 @@ async def respond_friend_request(
             additional_data={
                 "accepted": True,
                 "friend_version": friend_request.friend_version,
+                "chat_id": new_chat.id
             },
         )
     else:

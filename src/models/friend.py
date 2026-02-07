@@ -6,7 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 if TYPE_CHECKING:
-    from src.models import User
+    from src.models import User, Chat
 
 
 class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
@@ -20,12 +20,21 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     friend_id: int = Field(foreign_key="User.id")
     accepted: Optional[bool] = Field(default=None)
     friend_version: int = Field(default=1)
+    chat_id: Optional[int] = Field(foreign_key="Chat.id")
 
     friend: "User" = Relationship(
         back_populates="friends",
         sa_relationship_kwargs={
             "uselist": False,
             "primaryjoin": "User.id==Friend.friend_id",
+        },
+    )
+
+    chat: "Chat" = Relationship(
+        back_populates="friends",
+        sa_relationship_kwargs={
+            "uselist": False,
+            "primaryjoin": "Chat.id==Friend.chat_id",
         },
     )
 
@@ -38,5 +47,6 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
                 "user_id": self.user_id,
                 "friend_id": self.friend_id,
                 "accepted": self.accepted,
+                "chat_id": self.chat_id
             },
         }

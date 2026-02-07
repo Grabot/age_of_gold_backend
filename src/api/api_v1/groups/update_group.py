@@ -20,9 +20,9 @@ class UpdateGroupRequest(BaseModel):
     """Request model for updating group details."""
 
     group_id: int
-    group_name: str | None = None
-    group_description: str | None = None
-    group_colour: str | None = None
+    name: str | None = None
+    description: str | None = None
+    colour: str | None = None
 
 
 @api_router_v1.post("/group/update", status_code=200)
@@ -48,12 +48,12 @@ async def update_group(
     )
 
     # Update group details if provided
-    if update_group_request.group_name is not None:
-        chat.group_name = update_group_request.group_name
-    if update_group_request.group_description is not None:
-        chat.group_description = update_group_request.group_description
-    if update_group_request.group_colour is not None:
-        chat.group_colour = update_group_request.group_colour
+    if update_group_request.name is not None:
+        chat.name = update_group_request.name
+    if update_group_request.description is not None:
+        chat.description = update_group_request.description
+    if update_group_request.colour is not None:
+        chat.colour = update_group_request.colour
     db.add(chat)
 
     for group in chat.groups:

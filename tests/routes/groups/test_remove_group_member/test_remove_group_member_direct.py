@@ -48,9 +48,9 @@ async def test_successful_remove_member_by_admin_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -113,9 +113,9 @@ async def test_successful_self_removal_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -184,9 +184,9 @@ async def test_remove_member_not_admin_not_self_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -278,9 +278,9 @@ async def test_remove_member_not_in_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -345,9 +345,9 @@ async def test_remove_admin_from_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 

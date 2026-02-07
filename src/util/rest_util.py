@@ -134,9 +134,9 @@ async def emit_group_response(
 ) -> None:
     response_data: dict[str, Any] = {
         "group_id": chat.id,
-        "group_name": chat.group_name,
-        "group_description": chat.group_description,
-        "group_colour": chat.group_colour,
+        "name": chat.name,
+        "description": chat.description,
+        "colour": chat.colour,
     }
 
     if additional_data:

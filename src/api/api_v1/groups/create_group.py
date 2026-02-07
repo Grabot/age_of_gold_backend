@@ -25,9 +25,9 @@ from src.util.rest_util import emit_group_response
 class CreateGroupRequest(BaseModel):
     """Request model for creating a group."""
 
-    group_name: str
-    group_description: str
-    group_colour: str
+    name: str
+    description: str
+    colour: str
     friend_ids: List[int]
 
 
@@ -78,9 +78,9 @@ async def create_group(
         user_ids=friend_ids,
         user_admin_ids=[user_id],
         private=False,
-        group_name=create_group_request.group_name,
-        group_description=create_group_request.group_description,
-        group_colour=create_group_request.group_colour,
+        name=create_group_request.name,
+        description=create_group_request.description,
+        colour=create_group_request.colour,
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,

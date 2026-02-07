@@ -51,9 +51,9 @@ async def test_successful_fetch_all_groups(
             f"{settings.API_V1_STR}/group/create",
             headers=headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend.id],
             },
         )
@@ -111,9 +111,9 @@ async def test_fetch_groups_with_filter(
             f"{settings.API_V1_STR}/group/create",
             headers=headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend.id],
             },
         )

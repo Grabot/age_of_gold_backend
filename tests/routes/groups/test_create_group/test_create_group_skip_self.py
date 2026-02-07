@@ -44,9 +44,9 @@ async def test_create_group_skip_self_in_friend_validation_direct(
 
     # Create group with self included in friend_ids (should be skipped)
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[admin_user.id, friend1.id],  # Include self
     )
 

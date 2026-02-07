@@ -51,9 +51,9 @@ async def test_successful_create_group_direct(
 
     # Create group
     create_group_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[other_user.id],
     )
 
@@ -88,9 +88,9 @@ async def test_create_group_not_friends_direct(
 
     # Try to create group with non-friend
     create_group_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[other_user.id],
     )
 
@@ -113,9 +113,9 @@ async def test_create_group_self_only_direct(
 
     # Create group with empty friend list (only creator)
     create_group_request = create_group.CreateGroupRequest(
-        group_name="Solo Group",
-        group_description="A solo test group",
-        group_colour="#00FF00",
+        name="Solo Group",
+        description="A solo test group",
+        colour="#00FF00",
         friend_ids=[],
     )
 
@@ -171,9 +171,9 @@ async def test_create_group_multiple_friends_direct(
 
     # Create group with multiple friends
     create_group_request = create_group.CreateGroupRequest(
-        group_name="Multi Friend Group",
-        group_description="Group with multiple friends",
-        group_colour="#0000FF",
+        name="Multi Friend Group",
+        description="Group with multiple friends",
+        colour="#0000FF",
         friend_ids=[friend1.id, friend2.id],
     )
 
@@ -203,9 +203,9 @@ async def test_create_group_user_not_found_direct(
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     create_group_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 

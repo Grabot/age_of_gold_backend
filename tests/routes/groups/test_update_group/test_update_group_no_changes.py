@@ -44,9 +44,9 @@ async def test_update_group_no_changes_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -63,9 +63,9 @@ async def test_update_group_no_changes_direct(
     # Update group with all None values (no changes)
     update_request = update_group.UpdateGroupRequest(
         group_id=group_id,
-        group_name=None,
-        group_description=None,
-        group_colour=None,
+        name=None,
+        description=None,
+        colour=None,
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
         response = await update_group.update_group(update_request, admin_auth, test_db)

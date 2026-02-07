@@ -46,9 +46,9 @@ async def test_successful_get_group_avatar_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -97,9 +97,9 @@ async def test_get_group_avatar_version_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 
@@ -190,9 +190,9 @@ async def test_get_group_avatar_default_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 

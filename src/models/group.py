@@ -55,10 +55,10 @@ class Group(SQLModel, table=True):
             "avatar_version": self.chat.avatar_version,
             "user_ids": self.chat.user_ids,
             "admin_ids": self.chat.user_admin_ids,
-            "group_name": self.chat.group_name,
+            "name": self.chat.name,
             "private": self.chat.private,
-            "group_description": self.chat.group_description,
-            "group_colour": self.chat.group_colour,
+            "description": self.chat.description,
+            "colour": self.chat.colour,
             "current_message_id": self.chat.current_message_id,
         }
         return data

@@ -22,9 +22,9 @@ async def test_leave_group_no_other_users_direct(
 
     # Create group with only admin (no friends)
     create_request = create_group.CreateGroupRequest(
-        group_name="Solo Group",
-        group_description="A solo test group",
-        group_colour="#00FF00",
+        name="Solo Group",
+        description="A solo test group",
+        colour="#00FF00",
         friend_ids=[],
     )
 

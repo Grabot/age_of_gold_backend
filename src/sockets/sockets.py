@@ -3,10 +3,14 @@ from typing import Any, Dict, Optional, Union, cast
 import socketio
 from redis import asyncio as aioredis
 from redis.asyncio import Redis
+from sqlmodel import select
 
 from src.config.config import settings
 from src.database import async_session
+from src.models.chat import Chat
+from src.models.message import Message
 from src.models.user import User
+from src.util.gold_logging import logger
 from src.util.util import get_group_room, get_user_room
 
 mgr = socketio.AsyncRedisManager(settings.REDIS_URI)
@@ -99,3 +103,4 @@ async def handle_leave_group(sid: str, *args: Any, **kwargs: Any) -> None:
         f"User has left group room {group_room}",
         room=sid,
     )
+

@@ -48,9 +48,9 @@ async def test_successful_update_group_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -67,9 +67,9 @@ async def test_successful_update_group_direct(
     # Update group
     update_request = update_group.UpdateGroupRequest(
         group_id=group_id,
-        group_name="Updated Group Name",
-        group_description="Updated description",
-        group_colour="#0000FF",
+        name="Updated Group Name",
+        description="Updated description",
+        colour="#0000FF",
     )
 
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
@@ -112,9 +112,9 @@ async def test_update_group_not_admin_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend1.id],
     )
 
@@ -131,7 +131,7 @@ async def test_update_group_not_admin_direct(
     # Try to update group as non-admin
     update_request = update_group.UpdateGroupRequest(
         group_id=group_id,
-        group_name="Updated Group Name",
+        name="Updated Group Name",
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -154,7 +154,7 @@ async def test_update_group_not_found_direct(
     # Try to update non-existent group
     update_request = update_group.UpdateGroupRequest(
         group_id=99999,
-        group_name="Updated Group Name",
+        name="Updated Group Name",
     )
 
     with pytest.raises(Exception):  # scalar_one raises NoResultFound
@@ -173,9 +173,9 @@ async def test_update_group_partial_fields_direct(
 
     # Create group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[],
     )
 
@@ -192,7 +192,7 @@ async def test_update_group_partial_fields_direct(
     # Update only group name
     update_request = update_group.UpdateGroupRequest(
         group_id=group_id,
-        group_name="Updated Group Name",
+        name="Updated Group Name",
     )
 
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:

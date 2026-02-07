@@ -51,9 +51,9 @@ async def test_successful_add_group_member(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -115,9 +115,9 @@ async def test_add_member_not_admin(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -175,9 +175,9 @@ async def test_add_member_already_in_group(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )

@@ -50,9 +50,9 @@ async def test_successful_update_group(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -66,9 +66,9 @@ async def test_successful_update_group(
             headers=admin_headers,
             json={
                 "group_id": group_id,
-                "group_name": "Updated Group Name",
-                "group_description": "Updated description",
-                "group_colour": "#0000FF",
+                "name": "Updated Group Name",
+                "description": "Updated description",
+                "colour": "#0000FF",
             },
         )
 
@@ -116,9 +116,9 @@ async def test_update_group_not_admin(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -131,7 +131,7 @@ async def test_update_group_not_admin(
         headers=friend1_headers,
         json={
             "group_id": group_id,
-            "group_name": "Updated Group Name",
+            "name": "Updated Group Name",
         },
     )
 
@@ -155,7 +155,7 @@ async def test_update_group_not_found(
         headers=headers,
         json={
             "group_id": 99999,
-            "group_name": "Updated Group Name",
+            "name": "Updated Group Name",
         },
     )
 
@@ -182,9 +182,9 @@ async def test_update_group_partial_fields(
             f"{settings.API_V1_STR}/group/create",
             headers=headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [],
             },
         )
@@ -198,7 +198,7 @@ async def test_update_group_partial_fields(
             headers=headers,
             json={
                 "group_id": group_id,
-                "group_name": "Updated Group Name",
+                "name": "Updated Group Name",
             },
         )
 

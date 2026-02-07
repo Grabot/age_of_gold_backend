@@ -50,9 +50,9 @@ async def test_successful_leave_group(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -111,9 +111,9 @@ async def test_leave_group_last_member_deletes_group(
             f"{settings.API_V1_STR}/group/create",
             headers=headers,
             json={
-                "group_name": "Solo Group",
-                "group_description": "A solo test group",
-                "group_colour": "#00FF00",
+                "name": "Solo Group",
+                "description": "A solo test group",
+                "colour": "#00FF00",
                 "friend_ids": [],
             },
         )
@@ -172,9 +172,9 @@ async def test_leave_group_admin_removes_admin_status(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )

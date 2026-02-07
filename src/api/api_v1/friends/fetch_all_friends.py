@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from fastapi import Depends, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -42,6 +43,7 @@ async def fetch_all_friends(
         friends_statement = friends_statement.where(
             Friend.friend_id.in_(fetch_friends_request.user_ids)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=E1101
         )
+    friends_statement = friends_statement.options(selectinload(Friend.chat)) # type: ignore
 
     friends_result = await db.execute(friends_statement)
     friends = friends_result.scalars().all()
@@ -53,6 +55,7 @@ async def fetch_all_friends(
             "friend_id": friend.friend_id,
             "accepted": friend.accepted,
             "friend_version": friend.friend_version,
+            "chat_id": friend.chat_id,
         }
         for friend in friends
     ]

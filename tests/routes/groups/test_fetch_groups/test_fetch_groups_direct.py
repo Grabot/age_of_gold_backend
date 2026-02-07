@@ -47,9 +47,9 @@ async def test_successful_fetch_all_groups_direct(
 
     # Create a group
     create_request = create_group.CreateGroupRequest(
-        group_name="Test Group",
-        group_description="A test group",
-        group_colour="#FF5733",
+        name="Test Group",
+        description="A test group",
+        colour="#FF5733",
         friend_ids=[friend.id],
     )
 
@@ -66,7 +66,7 @@ async def test_successful_fetch_all_groups_direct(
     assert response["success"] is True
     assert "data" in response
     assert len(response["data"]) == 1
-    assert response["data"][0]["group_name"] == "Test Group"
+    assert response["data"][0]["name"] == "Test Group"
 
 
 @pytest.mark.asyncio
@@ -108,15 +108,15 @@ async def test_fetch_groups_with_filter_direct(
 
     # Create two groups
     create_request1 = create_group.CreateGroupRequest(
-        group_name="Group 1",
-        group_description="First group",
-        group_colour="#FF0000",
+        name="Group 1",
+        description="First group",
+        colour="#FF0000",
         friend_ids=[friend1.id],
     )
     create_request2 = create_group.CreateGroupRequest(
-        group_name="Group 2",
-        group_description="Second group",
-        group_colour="#00FF00",
+        name="Group 2",
+        description="Second group",
+        colour="#00FF00",
         friend_ids=[friend2.id],
     )
 
@@ -135,7 +135,7 @@ async def test_fetch_groups_with_filter_direct(
 
     assert response["success"] is True
     assert len(response["data"]) == 1
-    assert response["data"][0]["group_name"] == "Group 1"
+    assert response["data"][0]["name"] == "Group 1"
 
 
 @pytest.mark.asyncio
@@ -188,9 +188,9 @@ async def test_fetch_multiple_groups_direct(
     # Create multiple groups
     for i in range(3):
         create_request = create_group.CreateGroupRequest(
-            group_name=f"Group {i + 1}",
-            group_description=f"Description {i + 1}",
-            group_colour=f"#{i}{i}{i}{i}{i}{i}",
+            name=f"Group {i + 1}",
+            description=f"Description {i + 1}",
+            colour=f"#{i}{i}{i}{i}{i}{i}",
             friend_ids=[friend.id],
         )
         with (

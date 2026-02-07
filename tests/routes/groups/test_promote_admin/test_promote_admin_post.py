@@ -48,9 +48,9 @@ async def test_successful_promote_to_admin(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -107,9 +107,9 @@ async def test_successful_demote_from_admin(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -185,9 +185,9 @@ async def test_promote_admin_not_admin(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
@@ -274,9 +274,9 @@ async def test_promote_admin_user_not_in_group(
             f"{settings.API_V1_STR}/group/create",
             headers=admin_headers,
             json={
-                "group_name": "Test Group",
-                "group_description": "A test group",
-                "group_colour": "#FF5733",
+                "name": "Test Group",
+                "description": "A test group",
+                "colour": "#FF5733",
                 "friend_ids": [friend1.id],
             },
         )
