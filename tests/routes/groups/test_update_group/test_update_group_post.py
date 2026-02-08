@@ -57,7 +57,7 @@ async def test_successful_update_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Update group
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
@@ -65,7 +65,7 @@ async def test_successful_update_group(
             f"{settings.API_V1_STR}/group/update",
             headers=admin_headers,
             json={
-                "group_id": group_id,
+                "chat_id": chat_id,
                 "name": "Updated Group Name",
                 "description": "Updated description",
                 "colour": "#0000FF",
@@ -123,14 +123,14 @@ async def test_update_group_not_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Try to update group as non-admin
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/update",
         headers=friend1_headers,
         json={
-            "group_id": group_id,
+            "chat_id": chat_id,
             "name": "Updated Group Name",
         },
     )
@@ -154,7 +154,7 @@ async def test_update_group_not_found(
         f"{settings.API_V1_STR}/group/update",
         headers=headers,
         json={
-            "group_id": 99999,
+            "chat_id": 99999,
             "name": "Updated Group Name",
         },
     )
@@ -189,7 +189,7 @@ async def test_update_group_partial_fields(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Update only group name
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
@@ -197,7 +197,7 @@ async def test_update_group_partial_fields(
             f"{settings.API_V1_STR}/group/update",
             headers=headers,
             json={
-                "group_id": group_id,
+                "chat_id": chat_id,
                 "name": "Updated Group Name",
             },
         )

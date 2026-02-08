@@ -21,7 +21,7 @@ from src.util.security import checked_auth_token
 class FetchGroupsRequest(BaseModel):
     """Request model for fetching groups with optional group ID filter."""
 
-    group_ids: Optional[List[int]] = None
+    chat_ids: Optional[List[int]] = None
 
 
 @api_router_v1.post("/group/all", status_code=200)
@@ -39,10 +39,10 @@ async def fetch_all_groups(
     # Get all groups for the user
     groups_statement: Select = select(Group).where(Group.user_id == user.id)
 
-    # If group_ids filter is provided, add it to the query
-    if fetch_groups_request.group_ids is not None:
+    # If chat_ids filter is provided, add it to the query
+    if fetch_groups_request.chat_ids is not None:
         groups_statement = groups_statement.where(  # type: ignore[attr-defined]
-            Group.group_id.in_(fetch_groups_request.group_ids)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=E1101
+            Group.chat_id.in_(fetch_groups_request.chat_ids)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=E1101
         ).options(selectinload(Group.chat))  # pyright: ignore[reportAttributeAccessIssue]
     else:
         groups_statement = groups_statement.options(selectinload(Group.chat))  # type: ignore

@@ -118,19 +118,19 @@ async def test_fetch_groups_with_filter(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Fetch specific group
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/all",
         headers=headers,
-        json={"group_ids": [group_id]},
+        json={"chat_ids": [chat_id]},
     )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["success"] is True
     assert len(response.json()["data"]) == 1
-    assert response.json()["data"][0]["group_id"] == group_id
+    assert response.json()["data"][0]["chat_id"] == chat_id
 
 
 @pytest.mark.asyncio

@@ -48,6 +48,7 @@ async def get_successful_login_response(
             {
                 "friend_id": friend.friend_id,
                 "friend_version": friend.friend_version,
+                "message_version": friend.message_version,
             }
         )
 
@@ -56,8 +57,9 @@ async def get_successful_login_response(
     for group in user.groups:
         groups_data.append(
             {
-                "group_id": group.group_id,
+                "chat_id": group.chat_id,
                 "group_version": group.group_version,
+                "message_version": group.message_version,
             }
         )
 
@@ -133,8 +135,8 @@ def get_user_room(user_id: int) -> str:
     return f"room_{user_id}"
 
 
-def get_group_room(group_id: int) -> str:
-    return f"group_{group_id}"
+def get_group_room(chat_id: int) -> str:
+    return f"group_{chat_id}"
 
 
 def get_random_colour() -> str:
@@ -192,7 +194,7 @@ def create_avatar_streaming_response(
 
 async def get_chat_and_verify_admin(
     db: AsyncSession,
-    group_id: int,
+    chat_id: int,
     user_id: int,
     require_admin: bool = True,
     permission_error_detail: str = "Only group admins can perform this action",
@@ -201,7 +203,7 @@ async def get_chat_and_verify_admin(
 
     Args:
         db: Database session
-        group_id: Group ID to check
+        chat_id: Group ID to check
         user_id: User ID to verify
         require_admin: Whether admin rights are required
         permission_error_detail: Custom error message for permission denial
@@ -213,7 +215,7 @@ async def get_chat_and_verify_admin(
         HTTPException: If group not found or user doesn't have required permissions
     """
     chat_statement: Select = (
-        select(Chat).where(Chat.id == group_id).options(selectinload(Chat.groups))  # type: ignore
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.groups))  # type: ignore
     )
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
 

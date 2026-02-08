@@ -55,7 +55,7 @@ async def test_successful_get_group_avatar(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Get group avatar
     with patch(
@@ -65,7 +65,7 @@ async def test_successful_get_group_avatar(
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/avatar",
             headers=headers,
-            json={"group_id": group_id, "get_default": False},
+            json={"chat_id": chat_id, "get_default": False},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -98,13 +98,13 @@ async def test_get_group_avatar_version(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Get group avatar version
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/avatar/version",
         headers=headers,
-        json={"group_id": group_id},
+        json={"chat_id": chat_id},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -126,7 +126,7 @@ async def test_get_group_avatar_version_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/avatar/version",
         headers=headers,
-        json={"group_id": 99999},
+        json={"chat_id": 99999},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -147,7 +147,7 @@ async def test_get_group_avatar_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/avatar",
         headers=headers,
-        json={"group_id": 99999, "get_default": False},
+        json={"chat_id": 99999, "get_default": False},
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -180,7 +180,7 @@ async def test_get_group_avatar_default(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Get default group avatar
     with patch(
@@ -190,7 +190,7 @@ async def test_get_group_avatar_default(
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/avatar",
             headers=headers,
-            json={"group_id": group_id, "get_default": True},
+            json={"chat_id": chat_id, "get_default": True},
         )
 
     assert response.status_code == status.HTTP_200_OK

@@ -94,7 +94,7 @@ async def create_group(
     for friend_id in friend_ids:
         group_entry = Group(
             user_id=friend_id,
-            group_id=new_chat.id,
+            chat_id=new_chat.id,
             unread_messages=0,
             mute=False,
             last_message_read_id=0,

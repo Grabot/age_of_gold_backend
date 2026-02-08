@@ -57,14 +57,14 @@ async def test_successful_leave_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Friend1 leaves group
     with patch("src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock):
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/leave",
             headers=friend1_headers,
-            json={"group_id": group_id},
+            json={"chat_id": chat_id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -85,7 +85,7 @@ async def test_leave_group_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/leave",
         headers=headers,
-        json={"group_id": 99999},
+        json={"chat_id": 99999},
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -118,14 +118,14 @@ async def test_leave_group_last_member_deletes_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Admin leaves group (last member)
     with patch("src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock):
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/leave",
             headers=headers,
-            json={"group_id": group_id},
+            json={"chat_id": chat_id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -179,14 +179,14 @@ async def test_leave_group_admin_removes_admin_status(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Admin leaves group
     with patch("src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock):
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/leave",
             headers=admin_headers,
-            json={"group_id": group_id},
+            json={"chat_id": chat_id},
         )
 
     assert response.status_code == status.HTTP_200_OK

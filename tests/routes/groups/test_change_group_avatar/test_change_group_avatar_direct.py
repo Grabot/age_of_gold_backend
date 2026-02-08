@@ -62,7 +62,7 @@ async def test_successful_change_group_avatar_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -83,7 +83,7 @@ async def test_successful_change_group_avatar_direct(
     ) as mock_emit:
         response = await change_group_avatar.change_group_avatar(
             request=mock_request,
-            group_id=group_id,
+            chat_id=chat_id,
             avatar=mock_avatar,
             user_and_token=admin_auth,
             db=test_db,
@@ -119,7 +119,7 @@ async def test_successful_remove_group_avatar_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -132,7 +132,7 @@ async def test_successful_remove_group_avatar_direct(
     ) as mock_emit:
         response = await change_group_avatar.change_group_avatar(
             request=mock_request,
-            group_id=group_id,
+            chat_id=chat_id,
             avatar=None,
             user_and_token=admin_auth,
             db=test_db,
@@ -189,7 +189,7 @@ async def test_change_group_avatar_not_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -206,7 +206,7 @@ async def test_change_group_avatar_not_admin_direct(
     with pytest.raises(Exception):  # scalar_one raises NoResultFound for non-admin
         await change_group_avatar.change_group_avatar(
             request=mock_request,
-            group_id=group_id,
+            chat_id=chat_id,
             avatar=mock_avatar,
             user_and_token=friend1_auth,
             db=test_db,
@@ -239,7 +239,7 @@ async def test_change_group_avatar_invalid_file_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -256,7 +256,7 @@ async def test_change_group_avatar_invalid_file_direct(
     with pytest.raises(HTTPException) as exc_info:
         await change_group_avatar.change_group_avatar(
             request=mock_request,
-            group_id=group_id,
+            chat_id=chat_id,
             avatar=mock_avatar,
             user_and_token=admin_auth,
             db=test_db,
@@ -292,7 +292,7 @@ async def test_change_group_avatar_too_large_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -309,7 +309,7 @@ async def test_change_group_avatar_too_large_direct(
     with pytest.raises(HTTPException) as exc_info:
         await change_group_avatar.change_group_avatar(
             request=mock_request,
-            group_id=group_id,
+            chat_id=chat_id,
             avatar=mock_avatar,
             user_and_token=admin_auth,
             db=test_db,

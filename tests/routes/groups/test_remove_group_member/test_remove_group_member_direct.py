@@ -62,11 +62,11 @@ async def test_successful_remove_member_by_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Remove friend1 from group
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend1.id
+        chat_id=chat_id, user_remove_id=friend1.id
     )
 
     with patch(
@@ -127,11 +127,11 @@ async def test_successful_self_removal_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Friend1 removes themselves from group
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend1.id
+        chat_id=chat_id, user_remove_id=friend1.id
     )
 
     with patch(
@@ -198,18 +198,18 @@ async def test_remove_member_not_admin_not_self_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Add friend2 to group
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=group_id, user_add_id=friend2.id
+        chat_id=chat_id, user_add_id=friend2.id
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         await add_group_member.add_group_member(add_member_request, admin_auth, test_db)
 
     # Try to remove friend2 as friend1 (non-admin, not self)
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend2.id
+        chat_id=chat_id, user_remove_id=friend2.id
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -233,7 +233,7 @@ async def test_remove_member_group_not_found_direct(
 
     # Try to remove member from non-existent group
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=99999, user_remove_id=1
+        chat_id=99999, user_remove_id=1
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -292,7 +292,7 @@ async def test_remove_member_not_in_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a user who is not in the group
     non_member = await add_user("nonmember", 1003, test_db)
@@ -300,7 +300,7 @@ async def test_remove_member_not_in_group_direct(
 
     # Try to remove non-member from group
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=non_member.id
+        chat_id=chat_id, user_remove_id=non_member.id
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -359,11 +359,11 @@ async def test_remove_admin_from_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Remove admin (friend1) from group
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend1.id
+        chat_id=chat_id, user_remove_id=friend1.id
     )
 
     with patch(

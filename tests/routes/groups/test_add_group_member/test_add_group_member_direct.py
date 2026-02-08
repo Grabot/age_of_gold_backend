@@ -65,11 +65,11 @@ async def test_successful_add_group_member_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Add new member to group
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=group_id, user_add_id=new_member.id
+        chat_id=chat_id, user_add_id=new_member.id
     )
 
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
@@ -135,11 +135,11 @@ async def test_add_member_not_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Try to add member as non-admin
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=group_id, user_add_id=9999
+        chat_id=chat_id, user_add_id=9999
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -197,11 +197,11 @@ async def test_add_member_already_in_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Try to add friend1 who is already in the group
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=group_id, user_add_id=friend1.id
+        chat_id=chat_id, user_add_id=friend1.id
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -223,7 +223,7 @@ async def test_add_member_group_not_found_direct(
 
     # Try to add member to non-existent group
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=99999, user_add_id=1
+        chat_id=99999, user_add_id=1
     )
 
     with pytest.raises(HTTPException) as exc_info:

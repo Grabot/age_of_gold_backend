@@ -32,14 +32,13 @@ class Chat(SQLModel, table=True):
     default_avatar: bool = Field(default=True)
     current_message_id: int
     last_message_read_id_chat: int = Field(default=1)
-    message_version: int = Field(default=1)  # TODO: Move to group?
     avatar_version: int = Field(default=1)
 
     groups: List["Group"] = Relationship(
         back_populates="chat",
         sa_relationship_kwargs={
             "uselist": True,
-            "primaryjoin": "Chat.id==Group.group_id",
+            "primaryjoin": "Chat.id==Group.chat_id",
         },
     )
     friends: List["Friend"] = Relationship(
@@ -123,12 +122,3 @@ class Chat(SQLModel, table=True):
             s3_client.delete_object(Bucket=settings.S3_BUCKET_NAME, Key=s3_key)
         except ClientError as e:
             logger.error("failed to remove group avatar: %s", str(e))
-
-    # TODO: Use this for group objects too?
-    @property
-    def serialize(self) -> Dict[str, Any]:
-        """Serialize the group data."""
-        data = {
-            "id": self.id,
-        }
-        return data

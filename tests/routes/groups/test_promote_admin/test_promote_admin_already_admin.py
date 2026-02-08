@@ -58,18 +58,18 @@ async def test_promote_admin_already_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Make friend1 an admin first
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=True
+        chat_id=chat_id, user_id=friend1.id, is_admin=True
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         await promote_admin.promote_admin(promote_request, admin_auth, test_db)
 
     # Try to promote friend1 again (already an admin)
     promote_request2 = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=True
+        chat_id=chat_id, user_id=friend1.id, is_admin=True
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
         response = await promote_admin.promote_admin(

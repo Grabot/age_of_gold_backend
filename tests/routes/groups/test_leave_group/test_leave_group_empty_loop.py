@@ -62,10 +62,10 @@ async def test_leave_group_empty_notification_loop_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Manually remove friend1 from the group first, leaving only admin
-    chat_statement: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
     assert chat_entry is not None
@@ -76,7 +76,7 @@ async def test_leave_group_empty_notification_loop_direct(
 
     # Also remove friend1 from group entries to maintain consistency
     group_statement: Select = select(Group).where(
-        Group.user_id == friend1.id, Group.group_id == group_id
+        Group.user_id == friend1.id, Group.chat_id == chat_id
     )
     group_result = await test_db.execute(group_statement)
     group_entry = group_result.first()
@@ -86,7 +86,7 @@ async def test_leave_group_empty_notification_loop_direct(
     await test_db.commit()
 
     # Admin leaves group (should trigger empty notification loop)
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with patch(
         "src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock

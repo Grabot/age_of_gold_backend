@@ -64,14 +64,14 @@ async def test_leave_group_chat_not_found_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Manually delete the chat to simulate chat not found
-    chat_statement: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
     # First delete the group entries that reference this chat
-    group_statement: Select = select(Group).where(Group.group_id == group_id)
+    group_statement: Select = select(Group).where(Group.chat_id == chat_id)
     group_result = await test_db.execute(group_statement)
     group_entries = group_result.scalars().all()
     for group_entry in group_entries:
@@ -85,7 +85,7 @@ async def test_leave_group_chat_not_found_direct(
     # where group entry exists but chat doesn't
     group_entry = Group(
         user_id=admin_user.id,
-        group_id=group_id,
+        chat_id=chat_id,
         unread_messages=0,
         mute=False,
         last_message_read_id=0,
@@ -94,7 +94,7 @@ async def test_leave_group_chat_not_found_direct(
     await test_db.commit()
 
     # Try to leave group - should fail with chat not found
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with pytest.raises(HTTPException) as exc_info:
         await leave_group.leave_group(leave_request, admin_auth, test_db)

@@ -58,14 +58,14 @@ async def test_successful_add_group_member(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Add new member
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/member/add",
             headers=admin_headers,
-            json={"group_id": group_id, "user_add_id": new_member.id},
+            json={"chat_id": chat_id, "user_add_id": new_member.id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -122,13 +122,13 @@ async def test_add_member_not_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Try to add member as non-admin
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/member/add",
         headers=regular_headers,
-        json={"group_id": group_id, "user_add_id": 9999},
+        json={"chat_id": chat_id, "user_add_id": 9999},
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -182,13 +182,13 @@ async def test_add_member_already_in_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Try to add friend1 who is already in the group
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/member/add",
         headers=admin_headers,
-        json={"group_id": group_id, "user_add_id": friend1.id},
+        json={"chat_id": chat_id, "user_add_id": friend1.id},
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST

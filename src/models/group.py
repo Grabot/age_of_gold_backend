@@ -18,18 +18,19 @@ class Group(SQLModel, table=True):
     __tablename__ = "Group"  # pyright: ignore[reportAssignmentType]
     id: int = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
-    group_id: int = Field(foreign_key="Chat.id")  # TODO: rename to chat_id?
+    chat_id: int = Field(foreign_key="Chat.id")
     unread_messages: int
     mute: bool = Field(default=False)
     mute_timestamp: Optional[datetime] = Field(default=None)
     last_message_read_id: int = Field(default=0)
     group_version: int = Field(default=1)
+    message_version: int = Field(default=1)
 
     chat: "Chat" = Relationship(
         back_populates="groups",
         sa_relationship_kwargs={
             "uselist": False,
-            "primaryjoin": "Chat.id==Group.group_id",
+            "primaryjoin": "Chat.id==Group.chat_id",
         },
     )
 
@@ -45,13 +46,13 @@ class Group(SQLModel, table=True):
     def serialize(self) -> Dict[str, Any]:
         """Serialize the group data."""
         data = {
-            "group_id": self.group_id,
+            "chat_id": self.chat_id,
             "user_id": self.user_id,
             "unread_messages": self.unread_messages,
             "mute": self.mute,
             "last_message_read_id": self.last_message_read_id,
             "group_version": self.group_version,
-            "message_version": self.chat.message_version,
+            "message_version": self.message_version,
             "avatar_version": self.chat.avatar_version,
             "user_ids": self.chat.user_ids,
             "admin_ids": self.chat.user_admin_ids,

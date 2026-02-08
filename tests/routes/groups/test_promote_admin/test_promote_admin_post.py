@@ -55,14 +55,14 @@ async def test_successful_promote_to_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Promote friend1 to admin
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/admin/promote",
             headers=admin_headers,
-            json={"group_id": group_id, "user_id": friend1.id, "is_admin": True},
+            json={"chat_id": chat_id, "user_id": friend1.id, "is_admin": True},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -114,14 +114,14 @@ async def test_successful_demote_from_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Promote friend1 to admin first
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         test_setup.post(
             f"{settings.API_V1_STR}/group/admin/promote",
             headers=admin_headers,
-            json={"group_id": group_id, "user_id": friend1.id, "is_admin": True},
+            json={"chat_id": chat_id, "user_id": friend1.id, "is_admin": True},
         )
 
     # Demote friend1 from admin
@@ -129,7 +129,7 @@ async def test_successful_demote_from_admin(
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/admin/promote",
             headers=admin_headers,
-            json={"group_id": group_id, "user_id": friend1.id, "is_admin": False},
+            json={"chat_id": chat_id, "user_id": friend1.id, "is_admin": False},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -192,21 +192,21 @@ async def test_promote_admin_not_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Add friend2 to group
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         test_setup.post(
             f"{settings.API_V1_STR}/group/member/add",
             headers=admin_headers,
-            json={"group_id": group_id, "user_id": friend2.id},
+            json={"chat_id": chat_id, "user_id": friend2.id},
         )
 
     # Try to promote friend2 as friend1 (non-admin)
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/admin/promote",
         headers=friend1_headers,
-        json={"group_id": group_id, "user_id": friend2.id, "is_admin": True},
+        json={"chat_id": chat_id, "user_id": friend2.id, "is_admin": True},
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -227,7 +227,7 @@ async def test_promote_admin_group_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/admin/promote",
         headers=headers,
-        json={"group_id": 99999, "user_id": 1, "is_admin": True},
+        json={"chat_id": 99999, "user_id": 1, "is_admin": True},
     )
 
     assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -281,7 +281,7 @@ async def test_promote_admin_user_not_in_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Create a user who is not in the group
     non_member = await add_user("nonmember", 1003, test_db)
@@ -290,7 +290,7 @@ async def test_promote_admin_user_not_in_group(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/admin/promote",
         headers=admin_headers,
-        json={"group_id": group_id, "user_id": non_member.id, "is_admin": True},
+        json={"chat_id": chat_id, "user_id": non_member.id, "is_admin": True},
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST

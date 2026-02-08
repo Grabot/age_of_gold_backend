@@ -58,11 +58,11 @@ async def test_update_group_no_changes_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Update group with all None values (no changes)
     update_request = update_group.UpdateGroupRequest(
-        group_id=group_id,
+        chat_id=chat_id,
         name=None,
         description=None,
         colour=None,

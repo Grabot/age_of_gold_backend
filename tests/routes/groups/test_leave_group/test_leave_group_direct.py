@@ -61,10 +61,10 @@ async def test_successful_leave_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Friend1 leaves group
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with patch(
         "src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock
@@ -86,7 +86,7 @@ async def test_leave_group_not_found_direct(
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     # Try to leave non-existent group
-    leave_request = leave_group.LeaveGroupRequest(group_id=99999)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=99999)
 
     with pytest.raises(HTTPException) as exc_info:
         await leave_group.leave_group(leave_request, auth, test_db)
@@ -121,10 +121,10 @@ async def test_leave_group_last_member_deletes_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Admin leaves group (last member)
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with patch("src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock):
         response = await leave_group.leave_group(leave_request, admin_auth, test_db)
@@ -179,10 +179,10 @@ async def test_leave_group_admin_removes_admin_status_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Admin leaves group
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with patch(
         "src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock

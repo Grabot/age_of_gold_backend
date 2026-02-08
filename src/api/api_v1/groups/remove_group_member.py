@@ -23,7 +23,7 @@ from src.util.util import get_group_room
 class RemoveGroupMemberRequest(BaseModel):
     """Request model for removing a member from a group."""
 
-    group_id: int
+    chat_id: int
     user_remove_id: int
 
 
@@ -39,11 +39,11 @@ async def remove_group_member(
     """Handle remove group member request."""
     me, _ = user_and_token
 
-    group_id = remove_group_member_request.group_id
+    chat_id = remove_group_member_request.chat_id
     user_to_remove_id = remove_group_member_request.user_remove_id
 
     # Check if the current user is an admin of the group or is removing themselves
-    chat_statement: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat_result = await db.execute(chat_statement)
     chat_entry = chat_result.first()
 
@@ -83,7 +83,7 @@ async def remove_group_member(
     ]
 
     group_statement: Select = select(Group).where(
-        Group.user_id == user_to_remove_id, Group.group_id == group_id
+        Group.user_id == user_to_remove_id, Group.chat_id == chat_id
     )
     group_result = await db.execute(group_statement)
     group_entry = group_result.first()
@@ -93,11 +93,11 @@ async def remove_group_member(
 
     await db.commit()
 
-    group_room = get_group_room(group_id)
+    group_room = get_group_room(chat_id)
     await sio.emit(
         "group_member_removed",
         {
-            "group_id": group_id,
+            "chat_id": chat_id,
             "user_id": user_to_remove_id,
         },
         room=group_room,

@@ -36,10 +36,10 @@ async def test_leave_group_no_other_users_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Admin leaves group (no other users to notify)
-    leave_request = leave_group.LeaveGroupRequest(group_id=group_id)
+    leave_request = leave_group.LeaveGroupRequest(chat_id=chat_id)
 
     with patch(
         "src.api.api_v1.groups.leave_group.sio.emit", new_callable=AsyncMock

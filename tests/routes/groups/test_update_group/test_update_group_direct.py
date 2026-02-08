@@ -62,11 +62,11 @@ async def test_successful_update_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Update group
     update_request = update_group.UpdateGroupRequest(
-        group_id=group_id,
+        chat_id=chat_id,
         name="Updated Group Name",
         description="Updated description",
         colour="#0000FF",
@@ -126,11 +126,11 @@ async def test_update_group_not_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Try to update group as non-admin
     update_request = update_group.UpdateGroupRequest(
-        group_id=group_id,
+        chat_id=chat_id,
         name="Updated Group Name",
     )
 
@@ -153,7 +153,7 @@ async def test_update_group_not_found_direct(
 
     # Try to update non-existent group
     update_request = update_group.UpdateGroupRequest(
-        group_id=99999,
+        chat_id=99999,
         name="Updated Group Name",
     )
 
@@ -187,11 +187,11 @@ async def test_update_group_partial_fields_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Update only group name
     update_request = update_group.UpdateGroupRequest(
-        group_id=group_id,
+        chat_id=chat_id,
         name="Updated Group Name",
     )
 

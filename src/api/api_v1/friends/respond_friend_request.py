@@ -1,6 +1,6 @@
 """Endpoint for responding to friend requests (accept/reject)."""
 
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 
 from fastapi import Depends, HTTPException, Security
 from pydantic import BaseModel
@@ -33,7 +33,7 @@ async def respond_friend_request(
         checked_auth_token, scopes=["user"]
     ),
     db: AsyncSession = Depends(get_db),
-) -> Dict[str, bool]:
+) -> Dict[str, Any]:
     """Handle friend request response (accept/reject)."""
     me, _ = user_and_token
 
@@ -102,6 +102,14 @@ async def respond_friend_request(
                 "chat_id": new_chat.id
             },
         )
+
+        await db.commit()
+
+        return {
+            "success": True,
+            "data": new_chat.id
+        }
+
     else:
         # Reject the friend request - remove both entries
         await db.delete(friend_request)
@@ -117,8 +125,8 @@ async def respond_friend_request(
             room=sender_room,
         )
 
-    await db.commit()
+        await db.commit()
 
-    return {
-        "success": True,
-    }
+        return {
+            "success": True,
+        }

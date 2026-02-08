@@ -56,11 +56,11 @@ async def test_promote_admin_demote_non_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Try to demote friend1 who is not an admin (should be no-op)
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=False
+        chat_id=chat_id, user_id=friend1.id, is_admin=False
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
         response = await promote_admin.promote_admin(

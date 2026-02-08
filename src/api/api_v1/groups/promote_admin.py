@@ -19,7 +19,7 @@ from src.util.rest_util import update_group_versions_and_notify
 class PromoteAdminRequest(BaseModel):
     """Request model for promoting/demoting a user to/from admin."""
 
-    group_id: int
+    chat_id: int
     user_id: int
     is_admin: bool
 
@@ -36,14 +36,14 @@ async def promote_admin(
     """Handle promote/demote admin request."""
     me, _ = user_and_token
 
-    group_id = promote_admin_request.group_id
+    chat_id = promote_admin_request.chat_id
     target_user_id = promote_admin_request.user_id
     is_admin = promote_admin_request.is_admin
 
     # Check if the current user is an admin of the group
     chat = await get_chat_and_verify_admin(
         db,
-        group_id,
+        chat_id,
         me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can change admin status",
     )
@@ -72,7 +72,7 @@ async def promote_admin(
         db,
         "group_admin_changed",
         {
-            "group_id": group_id,
+            "chat_id": chat_id,
             "user_id": target_user_id,
             "is_admin": is_admin,
         },

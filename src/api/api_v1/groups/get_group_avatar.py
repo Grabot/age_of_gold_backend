@@ -20,7 +20,7 @@ from src.util.util import create_avatar_streaming_response
 class GroupAvatarRequest(BaseModel):
     """Request model for getting group avatar."""
 
-    group_id: int
+    chat_id: int
     get_default: Optional[bool] = None
 
 
@@ -39,10 +39,10 @@ async def get_group_avatar(
     s3_client: Any = request.app.state.s3
     cipher: Any = request.app.state.cipher
 
-    target_group_id = group_avatar_request.group_id
+    target_chat_id = group_avatar_request.chat_id
     groups_statement = (
         select(Group)
-        .where(Group.user_id == user.id, Group.group_id == target_group_id)
+        .where(Group.user_id == user.id, Group.chat_id == target_chat_id)
         .options(selectinload(Group.chat))  # type: ignore
     )
     group_result = await db.execute(groups_statement)
@@ -76,7 +76,7 @@ async def get_group_avatar(
 class GroupAvatarVersionRequest(BaseModel):
     """Request model for getting avatar version."""
 
-    group_id: int
+    chat_id: int
 
 
 @api_router_v1.post("/group/avatar/version", status_code=200, response_model=dict)
@@ -90,7 +90,7 @@ async def get_group_avatar_version(
 ) -> Dict[str, bool | int]:
     """Handle get group avatar version request."""
     _, _ = user_and_token
-    got_chat = await db.get(Chat, group_avatar_version_request.group_id)
+    got_chat = await db.get(Chat, group_avatar_version_request.chat_id)
     if got_chat is None:
         return {"success": False}
 

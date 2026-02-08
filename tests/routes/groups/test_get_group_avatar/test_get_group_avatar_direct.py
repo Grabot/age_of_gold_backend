@@ -58,7 +58,7 @@ async def test_successful_get_group_avatar_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -67,7 +67,7 @@ async def test_successful_get_group_avatar_direct(
 
     # Get group avatar
     avatar_request = get_group_avatar.GroupAvatarRequest(
-        group_id=group_id, get_default=False
+        chat_id=chat_id, get_default=False
     )
 
     # Mock the download_image function to return fake data
@@ -109,10 +109,10 @@ async def test_get_group_avatar_version_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Get group avatar version
-    version_request = get_group_avatar.GroupAvatarVersionRequest(group_id=group_id)
+    version_request = get_group_avatar.GroupAvatarVersionRequest(chat_id=chat_id)
 
     response = await get_group_avatar.get_group_avatar_version(
         group_avatar_version_request=version_request,
@@ -135,7 +135,7 @@ async def test_get_group_avatar_version_not_found_direct(
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     # Get avatar version for non-existent group
-    version_request = get_group_avatar.GroupAvatarVersionRequest(group_id=99999)
+    version_request = get_group_avatar.GroupAvatarVersionRequest(chat_id=99999)
 
     response = await get_group_avatar.get_group_avatar_version(
         group_avatar_version_request=version_request,
@@ -163,7 +163,7 @@ async def test_get_group_avatar_not_found_direct(
 
     # Try to get avatar for non-existent group
     avatar_request = get_group_avatar.GroupAvatarRequest(
-        group_id=99999, get_default=False
+        chat_id=99999, get_default=False
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -202,7 +202,7 @@ async def test_get_group_avatar_default_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -211,7 +211,7 @@ async def test_get_group_avatar_default_direct(
 
     # Get default group avatar
     avatar_request = get_group_avatar.GroupAvatarRequest(
-        group_id=group_id, get_default=True
+        chat_id=chat_id, get_default=True
     )
 
     # Mock the download_image function to return fake data

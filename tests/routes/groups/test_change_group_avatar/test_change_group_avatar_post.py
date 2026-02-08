@@ -57,7 +57,7 @@ async def test_successful_change_group_avatar(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Change group avatar
     with patch(
@@ -66,7 +66,7 @@ async def test_successful_change_group_avatar(
         response = test_setup.patch(
             f"{settings.API_V1_STR}/group/avatar",
             headers=admin_headers,
-            data={"group_id": group_id},
+            data={"chat_id": chat_id},
             files={"avatar": ("avatar.png", b"fake_image_data", "image/png")},
         )
 
@@ -100,7 +100,7 @@ async def test_successful_remove_group_avatar(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Remove group avatar (no file)
     with patch(
@@ -109,7 +109,7 @@ async def test_successful_remove_group_avatar(
         response = test_setup.patch(
             f"{settings.API_V1_STR}/group/avatar",
             headers=admin_headers,
-            data={"group_id": group_id},
+            data={"chat_id": chat_id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -163,13 +163,13 @@ async def test_change_group_avatar_not_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Try to change avatar as non-admin
     response = test_setup.patch(
         f"{settings.API_V1_STR}/group/avatar",
         headers=friend1_headers,
-        data={"group_id": group_id},
+        data={"chat_id": chat_id},
         files={"avatar": ("avatar.png", b"fake_image_data", "image/png")},
     )
 
@@ -203,13 +203,13 @@ async def test_change_group_avatar_invalid_file(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Try to change avatar with invalid file type
     response = test_setup.patch(
         f"{settings.API_V1_STR}/group/avatar",
         headers=admin_headers,
-        data={"group_id": group_id},
+        data={"chat_id": chat_id},
         files={"avatar": ("avatar.gif", b"fake_image_data", "image/gif")},
     )
 
@@ -243,7 +243,7 @@ async def test_change_group_avatar_too_large(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Create large file data (>2MB)
     large_data = b"x" * (3 * 1024 * 1024)  # 3MB
@@ -252,7 +252,7 @@ async def test_change_group_avatar_too_large(
     response = test_setup.patch(
         f"{settings.API_V1_STR}/group/avatar",
         headers=admin_headers,
-        data={"group_id": group_id},
+        data={"chat_id": chat_id},
         files={"avatar": ("avatar.png", large_data, "image/png")},
     )
 

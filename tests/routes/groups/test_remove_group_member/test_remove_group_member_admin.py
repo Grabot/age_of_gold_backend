@@ -61,10 +61,10 @@ async def test_remove_group_member_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Make friend1 an admin
-    chat_statement_admin: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement_admin: Select = select(Chat).where(Chat.id == chat_id)
     chat_result_admin = await test_db.execute(chat_statement_admin)
     chat_entry_admin = chat_result_admin.first()
     assert chat_entry_admin is not None
@@ -75,7 +75,7 @@ async def test_remove_group_member_admin_direct(
 
     # Admin removes friend1 (who is also an admin)
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend1.id
+        chat_id=chat_id, user_remove_id=friend1.id
     )
 
     with patch(
@@ -89,7 +89,7 @@ async def test_remove_group_member_admin_direct(
     mock_emit.assert_awaited()
 
     # Verify friend1 is no longer an admin
-    chat_statement_verify: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement_verify: Select = select(Chat).where(Chat.id == chat_id)
     chat_result_verify = await test_db.execute(chat_statement_verify)
     chat_entry_verify = chat_result_verify.first()
     assert chat_entry_verify is not None

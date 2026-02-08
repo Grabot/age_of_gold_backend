@@ -138,7 +138,7 @@ async def test_handle_join_group() -> None:
         mock_sio.enter_room = AsyncMock()
         mock_sio.emit = AsyncMock()
 
-        data: Dict[str, Union[int, str]] = {"group_id": 1}
+        data: Dict[str, Union[int, str]] = {"chat_id": 1}
         await handle_join_group("test_sid", data)
 
         mock_sio.enter_room.assert_called_once_with("test_sid", "group_1")
@@ -156,7 +156,7 @@ async def test_handle_leave_group() -> None:
         mock_sio.leave_room = AsyncMock()
         mock_sio.emit = AsyncMock()
 
-        data: Dict[str, Union[int, str]] = {"group_id": 1}
+        data: Dict[str, Union[int, str]] = {"chat_id": 1}
         await handle_leave_group("test_sid", data)
 
         mock_sio.leave_room.assert_called_once_with("test_sid", "group_1")

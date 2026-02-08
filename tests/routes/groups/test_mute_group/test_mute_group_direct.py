@@ -59,11 +59,11 @@ async def test_successful_mute_group_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Mute group
     mute_request = mute_group.MuteGroupRequest(
-        group_id=group_id, mute=True, mute_duration_hours=24
+        chat_id=chat_id, mute=True, mute_duration_hours=24
     )
 
     response = await mute_group.mute_group(mute_request, auth, test_db)
@@ -95,16 +95,16 @@ async def test_successful_unmute_group_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Mute group first
     mute_request = mute_group.MuteGroupRequest(
-        group_id=group_id, mute=True, mute_duration_hours=24
+        chat_id=chat_id, mute=True, mute_duration_hours=24
     )
     await mute_group.mute_group(mute_request, auth, test_db)
 
     # Unmute group
-    unmute_request = mute_group.MuteGroupRequest(group_id=group_id, mute=False)
+    unmute_request = mute_group.MuteGroupRequest(chat_id=chat_id, mute=False)
 
     response = await mute_group.mute_group(unmute_request, auth, test_db)
 
@@ -135,10 +135,10 @@ async def test_mute_group_indefinitely_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Mute group indefinitely (no duration)
-    mute_request = mute_group.MuteGroupRequest(group_id=group_id, mute=True)
+    mute_request = mute_group.MuteGroupRequest(chat_id=chat_id, mute=True)
 
     response = await mute_group.mute_group(mute_request, auth, test_db)
 
@@ -156,7 +156,7 @@ async def test_mute_group_not_found_direct(
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     # Try to mute non-existent group
-    mute_request = mute_group.MuteGroupRequest(group_id=99999, mute=True)
+    mute_request = mute_group.MuteGroupRequest(chat_id=99999, mute=True)
 
     with pytest.raises(Exception):  # scalar_one raises NoResultFound
         await mute_group.mute_group(mute_request, auth, test_db)

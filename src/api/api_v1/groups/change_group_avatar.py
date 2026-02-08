@@ -21,7 +21,7 @@ MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
 @handle_db_errors("Changing group avatar failed")
 async def change_group_avatar(
     request: Request,
-    group_id: int = Form(...),  # Must match the field name in FormData
+    chat_id: int = Form(...),  # Must match the field name in FormData
     avatar: Optional[UploadFile] = None,
     user_and_token: Tuple[User, UserToken] = Security(
         checked_auth_token, scopes=["user"]
@@ -37,7 +37,7 @@ async def change_group_avatar(
     # Get chat and verify admin permissions
     chat = await get_chat_and_verify_admin(
         db,
-        group_id,
+        chat_id,
         me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can change group avatar",
     )
@@ -52,10 +52,10 @@ async def change_group_avatar(
         db.add(chat)
         await db.commit()
 
-        group_room = get_group_room(group_id)
+        group_room = get_group_room(chat_id)
         await sio.emit(
             "group_avatar_updated",
-            {"group_id": group_id, "avatar_version": chat.avatar_version},
+            {"chat_id": chat_id, "avatar_version": chat.avatar_version},
             room=group_room,
         )
 
@@ -82,10 +82,10 @@ async def change_group_avatar(
 
     await db.commit()
 
-    group_room = get_group_room(group_id)
+    group_room = get_group_room(chat_id)
     await sio.emit(
         "group_avatar_updated",
-        {"group_id": group_id, "avatar_version": chat.avatar_version},
+        {"chat_id": chat_id, "avatar_version": chat.avatar_version},
         room=group_room,
     )
 

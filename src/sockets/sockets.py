@@ -65,8 +65,8 @@ async def handle_join(sid: str, *args: Any, **kwargs: Any) -> None:
 async def handle_join_group(sid: str, *args: Any, **kwargs: Any) -> None:
     print("Received join_group")
     data: Dict[str, Union[int, str]] = args[0]
-    group_id: int = cast(int, data["group_id"])
-    group_room: str = get_group_room(group_id)
+    chat_id: int = cast(int, data["chat_id"])
+    group_room: str = get_group_room(chat_id)
     print(f"room: {group_room}")
     await sio.enter_room(sid, group_room)
     await sio.emit(
@@ -94,8 +94,8 @@ async def handle_leave(sid: str, *args: Any, **kwargs: Any) -> None:
 async def handle_leave_group(sid: str, *args: Any, **kwargs: Any) -> None:
     print("leave group")
     data: Dict[str, Union[int, str]] = args[0]
-    group_id: int = cast(int, data["group_id"])
-    group_room: str = get_group_room(group_id)
+    chat_id: int = cast(int, data["chat_id"])
+    group_room: str = get_group_room(chat_id)
     print(f"room: {group_room}")
     await sio.leave_room(sid, group_room)
     await sio.emit(

@@ -23,7 +23,7 @@ from src.util.util import get_user_room
 class LeaveGroupRequest(BaseModel):
     """Request model for leaving a group."""
 
-    group_id: int
+    chat_id: int
 
 
 @api_router_v1.post("/group/leave", status_code=200)
@@ -38,11 +38,11 @@ async def leave_group(
     """Handle leave group request."""
     me, _ = user_and_token
 
-    group_id = leave_group_request.group_id
+    chat_id = leave_group_request.chat_id
 
     # Get the group entry for this user
     group_statement: Select = select(Group).where(
-        Group.user_id == me.id, Group.group_id == group_id
+        Group.user_id == me.id, Group.chat_id == chat_id
     )
     group_result = await db.execute(group_statement)
     group_entry = group_result.first()
@@ -53,7 +53,7 @@ async def leave_group(
             detail="Group not found",
         )
 
-    chat_statement: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     # Remove user from admin list if they are an admin
@@ -80,7 +80,7 @@ async def leave_group(
         await sio.emit(
             "group_member_left",
             {
-                "group_id": group_id,
+                "chat_id": chat_id,
                 "user_id": me.id,
             },
             room=recipient_room,

@@ -20,7 +20,7 @@ from src.util.security import checked_auth_token
 class MuteGroupRequest(BaseModel):
     """Request model for muting/unmuting a group."""
 
-    group_id: int
+    chat_id: int
     mute: bool
     mute_duration_hours: int | None = None
 
@@ -37,13 +37,13 @@ async def mute_group(
     """Handle mute/unmute group request."""
     me, _ = user_and_token
 
-    group_id = mute_group_request.group_id
+    chat_id = mute_group_request.chat_id
     mute = mute_group_request.mute
     mute_duration_hours = mute_group_request.mute_duration_hours
 
     group: Group = (
         await db.execute(
-            select(Group).where(Group.user_id == me.id, Group.group_id == group_id)
+            select(Group).where(Group.user_id == me.id, Group.chat_id == chat_id)
         )
     ).scalar_one()
 

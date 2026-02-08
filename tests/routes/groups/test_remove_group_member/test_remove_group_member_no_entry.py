@@ -61,11 +61,11 @@ async def test_remove_group_member_no_entry_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Manually delete the group entry for friend1 to simulate missing entry
     group_statement: Select = select(Group).where(
-        Group.user_id == friend1.id, Group.group_id == group_id
+        Group.user_id == friend1.id, Group.chat_id == chat_id
     )
     group_result = await test_db.execute(group_statement)
     group_entry = group_result.first()
@@ -74,7 +74,7 @@ async def test_remove_group_member_no_entry_direct(
 
     # Admin tries to remove friend1 (group entry doesn't exist)
     remove_request = remove_group_member.RemoveGroupMemberRequest(
-        group_id=group_id, user_remove_id=friend1.id
+        chat_id=chat_id, user_remove_id=friend1.id
     )
 
     with patch(

@@ -59,7 +59,7 @@ async def test_change_group_avatar_invalid_file_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create mock request with invalid avatar
     mock_request = MagicMock()
@@ -74,7 +74,7 @@ async def test_change_group_avatar_invalid_file_direct(
     # Try to change avatar with invalid file
     with pytest.raises(HTTPException) as exc_info:
         await change_group_avatar.change_group_avatar(
-            mock_request, group_id, mock_avatar, admin_auth, test_db
+            mock_request, chat_id, mock_avatar, admin_auth, test_db
         )
 
     assert exc_info.value.status_code == 400

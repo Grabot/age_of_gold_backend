@@ -61,10 +61,10 @@ async def test_change_group_avatar_not_default_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Manually set default_avatar to False
-    chat_statement: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat_result = await test_db.execute(chat_statement)
     chat_entry = chat_result.first()
     assert chat_entry is not None
@@ -92,14 +92,14 @@ async def test_change_group_avatar_not_default_direct(
         "src.api.api_v1.groups.change_group_avatar.sio.emit", new_callable=AsyncMock
     ) as mock_emit:
         response = await change_group_avatar.change_group_avatar(
-            mock_request, group_id, mock_avatar, admin_auth, test_db
+            mock_request, chat_id, mock_avatar, admin_auth, test_db
         )
 
     assert response["success"] is True
     mock_emit.assert_awaited()
 
     # Verify default_avatar is still False
-    chat_statement_verify: Select = select(Chat).where(Chat.id == group_id)
+    chat_statement_verify: Select = select(Chat).where(Chat.id == chat_id)
     chat_result_verify = await test_db.execute(chat_statement_verify)
     chat_entry_verify = chat_result_verify.first()
     assert chat_entry_verify is not None

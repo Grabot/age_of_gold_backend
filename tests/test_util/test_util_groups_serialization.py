@@ -20,7 +20,7 @@ async def test_get_successful_login_response_with_groups(
     # Add some groups to the user
     group1 = Group(
         user_id=user.id,
-        group_id=1,
+        chat_id=1,
         unread_messages=0,
         mute=False,
         last_message_read_id=0,
@@ -28,7 +28,7 @@ async def test_get_successful_login_response_with_groups(
     )
     group2 = Group(
         user_id=user.id,
-        group_id=2,
+        chat_id=2,
         unread_messages=5,
         mute=True,
         last_message_read_id=10,
@@ -55,12 +55,12 @@ async def test_get_successful_login_response_with_groups(
 
     # Check group data structure
     for group in groups:
-        assert "group_id" in group
+        assert "chat_id" in group
         assert "group_version" in group
-        assert isinstance(group["group_id"], int)
+        assert isinstance(group["chat_id"], int)
         assert isinstance(group["group_version"], int)
 
     # Check that specific group data is present
-    group_ids = [group["group_id"] for group in groups]
-    assert 1 in group_ids
-    assert 2 in group_ids
+    chat_ids = [group["chat_id"] for group in groups]
+    assert 1 in chat_ids
+    assert 2 in chat_ids

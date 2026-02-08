@@ -60,7 +60,7 @@ async def test_successful_fetch_all_groups_direct(
         await create_group.create_group(create_request, auth, test_db)
 
     # Fetch all groups
-    fetch_request = fetch_groups.FetchGroupsRequest(group_ids=None)
+    fetch_request = fetch_groups.FetchGroupsRequest(chat_ids=None)
     response = await fetch_groups.fetch_all_groups(fetch_request, auth, test_db)
 
     assert response["success"] is True
@@ -130,7 +130,7 @@ async def test_fetch_groups_with_filter_direct(
     group1_id = response1["data"]
 
     # Fetch only group 1
-    fetch_request = fetch_groups.FetchGroupsRequest(group_ids=[group1_id])
+    fetch_request = fetch_groups.FetchGroupsRequest(chat_ids=[group1_id])
     response = await fetch_groups.fetch_all_groups(fetch_request, auth, test_db)
 
     assert response["success"] is True
@@ -147,7 +147,7 @@ async def test_fetch_groups_empty_direct(
     auth: Tuple[User, UserToken] = (test_user, test_user_token)
 
     # Fetch groups (should be empty)
-    fetch_request = fetch_groups.FetchGroupsRequest(group_ids=None)
+    fetch_request = fetch_groups.FetchGroupsRequest(chat_ids=None)
     response = await fetch_groups.fetch_all_groups(fetch_request, auth, test_db)
 
     assert response["success"] is True
@@ -202,7 +202,7 @@ async def test_fetch_multiple_groups_direct(
             await create_group.create_group(create_request, auth, test_db)
 
     # Fetch all groups
-    fetch_request = fetch_groups.FetchGroupsRequest(group_ids=None)
+    fetch_request = fetch_groups.FetchGroupsRequest(chat_ids=None)
     response = await fetch_groups.fetch_all_groups(fetch_request, auth, test_db)
 
     assert response["success"] is True

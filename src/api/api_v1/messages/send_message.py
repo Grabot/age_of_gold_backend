@@ -1,10 +1,11 @@
 """Endpoints for sending and fetching messages."""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.selectable import Select
 from sqlmodel import select
 
@@ -17,7 +18,7 @@ from src.models.user_token import UserToken
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
 from src.util.security import checked_auth_token
-from src.util.util import get_group_room, get_user_room
+from src.util.util import get_group_room
 
 
 class SendMessageRequest(BaseModel):
@@ -53,14 +54,10 @@ async def send_message(
     sender_id = user.id
 
     # Verify user is in the chat
-    chat_statement: Select = select(Chat).where(Chat.id == chat_id)
-    chat_result = await db.execute(chat_statement)
-    chat = chat_result.scalar_one_or_none()
-
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-        )
+    chat_statement: Select = (
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.groups))  # type: ignore
+    )
+    chat: Chat = (await db.execute(chat_statement)).scalar_one()
 
     if sender_id not in chat.user_ids:
         raise HTTPException(
@@ -80,7 +77,9 @@ async def send_message(
     await db.refresh(message)
 
     # Increment chat message version
-    chat.message_version += 1
+    for group in chat.groups:
+        group.group_version += 1
+        db.add(group)
     chat.current_message_id = message.id
     await db.commit()
 

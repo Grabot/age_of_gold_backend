@@ -23,7 +23,7 @@ from src.util.rest_util import update_group_versions_and_notify, emit_group_resp
 class AddGroupMemberRequest(BaseModel):
     """Request model for adding a member to a group."""
 
-    group_id: int
+    chat_id: int
     user_add_id: int
 
 
@@ -39,13 +39,13 @@ async def add_group_member(
     """Handle add group member request."""
     me, _ = user_and_token
 
-    group_id = add_group_member_request.group_id
+    chat_id = add_group_member_request.chat_id
     new_user_id = add_group_member_request.user_add_id
 
     # Check if the current user is an admin of the group
     chat = await get_chat_and_verify_admin(
         db,
-        group_id,
+        chat_id,
         me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can add members",
     )
@@ -67,7 +67,7 @@ async def add_group_member(
     # Create a group entry for the new user
     group_entry = Group(
         user_id=new_user_id,
-        group_id=group_id,
+        chat_id=chat_id,
         unread_messages=0,
         mute=False,
         last_message_read_id=0,
@@ -82,7 +82,7 @@ async def add_group_member(
         db,
         "group_member_added",
         {
-            "group_id": group_id,
+            "chat_id": chat_id,
             "user_id": new_user_id,
         },
     )

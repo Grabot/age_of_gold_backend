@@ -20,6 +20,7 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     friend_id: int = Field(foreign_key="User.id")
     accepted: Optional[bool] = Field(default=None)
     friend_version: int = Field(default=1)
+    message_version: int = Field(default=1)
     chat_id: Optional[int] = Field(foreign_key="Chat.id")
 
     friend: "User" = Relationship(

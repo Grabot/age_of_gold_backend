@@ -59,5 +59,5 @@ async def test_create_group_skip_self_in_friend_validation_direct(
         )
 
     assert create_response["success"] is True
-    group_id = create_response["data"]
-    assert isinstance(group_id, int)
+    chat_id = create_response["data"]
+    assert isinstance(chat_id, int)

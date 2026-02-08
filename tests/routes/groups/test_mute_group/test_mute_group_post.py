@@ -57,13 +57,13 @@ async def test_successful_mute_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Mute group
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/mute",
         headers=headers,
-        json={"group_id": group_id, "mute": True, "mute_duration_hours": 24},
+        json={"chat_id": chat_id, "mute": True, "mute_duration_hours": 24},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -96,20 +96,20 @@ async def test_successful_unmute_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Mute group first
     test_setup.post(
         f"{settings.API_V1_STR}/group/mute",
         headers=headers,
-        json={"group_id": group_id, "mute": True, "mute_duration_hours": 24},
+        json={"chat_id": chat_id, "mute": True, "mute_duration_hours": 24},
     )
 
     # Unmute group
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/mute",
         headers=headers,
-        json={"group_id": group_id, "mute": False},
+        json={"chat_id": chat_id, "mute": False},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -142,13 +142,13 @@ async def test_mute_group_indefinitely(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Mute group indefinitely (no duration)
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/mute",
         headers=headers,
-        json={"group_id": group_id, "mute": True},
+        json={"chat_id": chat_id, "mute": True},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -169,7 +169,7 @@ async def test_mute_group_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/mute",
         headers=headers,
-        json={"group_id": 99999, "mute": True},
+        json={"chat_id": 99999, "mute": True},
     )
 
     # scalar_one raises NoResultFound which gets handled as 500 or similar

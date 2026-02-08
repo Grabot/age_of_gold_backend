@@ -19,7 +19,7 @@ from src.util.rest_util import emit_group_response
 class UpdateGroupRequest(BaseModel):
     """Request model for updating group details."""
 
-    group_id: int
+    chat_id: int
     name: str | None = None
     description: str | None = None
     colour: str | None = None
@@ -37,12 +37,12 @@ async def update_group(
     """Handle update group request."""
     me, _ = user_and_token
 
-    group_id = update_group_request.group_id
+    chat_id = update_group_request.chat_id
 
     # Get chat and verify admin permissions
     chat = await get_chat_and_verify_admin(
         db,
-        group_id,
+        chat_id,
         me.id,  # type: ignore[arg-type]
         permission_error_detail="Only group admins can update group details",
     )
@@ -63,7 +63,7 @@ async def update_group(
     await db.commit()
 
     # TODO: Only send what is changed?
-    group_room: str = get_group_room(group_id)
+    group_room: str = get_group_room(chat_id)
     await emit_group_response("group_updated", chat, group_room)
 
     return {

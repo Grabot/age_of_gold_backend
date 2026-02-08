@@ -36,7 +36,7 @@ async def test_get_group_avatar_client_error_no_such_key_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -45,7 +45,7 @@ async def test_get_group_avatar_client_error_no_such_key_direct(
 
     # Get group avatar
     avatar_request = get_group_avatar.GroupAvatarRequest(
-        group_id=group_id, get_default=False
+        chat_id=chat_id, get_default=False
     )
 
     # Mock the download_image function to raise ClientError with NoSuchKey
@@ -96,7 +96,7 @@ async def test_get_group_avatar_client_error_other_direct(
     ):
         create_response = await create_group.create_group(create_request, auth, test_db)
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a mock request with app state
     mock_request = MagicMock()
@@ -105,7 +105,7 @@ async def test_get_group_avatar_client_error_other_direct(
 
     # Get group avatar
     avatar_request = get_group_avatar.GroupAvatarRequest(
-        group_id=group_id, get_default=False
+        chat_id=chat_id, get_default=False
     )
 
     # Mock the download_image function to raise other ClientError

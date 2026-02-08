@@ -133,7 +133,7 @@ async def emit_group_response(
     additional_data: dict[str, Any] | None = None,
 ) -> None:
     response_data: dict[str, Any] = {
-        "group_id": chat.id,
+        "chat_id": chat.id,
         "name": chat.name,
         "description": chat.description,
         "colour": chat.colour,

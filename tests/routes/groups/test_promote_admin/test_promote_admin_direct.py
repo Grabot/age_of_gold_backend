@@ -60,11 +60,11 @@ async def test_successful_promote_to_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Promote friend1 to admin
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=True
+        chat_id=chat_id, user_id=friend1.id, is_admin=True
     )
 
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
@@ -121,18 +121,18 @@ async def test_successful_demote_from_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Promote friend1 to admin first
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=True
+        chat_id=chat_id, user_id=friend1.id, is_admin=True
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         await promote_admin.promote_admin(promote_request, admin_auth, test_db)
 
     # Demote friend1 from admin
     demote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend1.id, is_admin=False
+        chat_id=chat_id, user_id=friend1.id, is_admin=False
     )
 
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock) as mock_emit:
@@ -197,18 +197,18 @@ async def test_promote_admin_not_admin_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Add friend2 to group
     add_member_request = add_group_member.AddGroupMemberRequest(
-        group_id=group_id, user_add_id=friend2.id
+        chat_id=chat_id, user_add_id=friend2.id
     )
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         await add_group_member.add_group_member(add_member_request, admin_auth, test_db)
 
     # Try to promote friend2 as friend1 (non-admin)
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=friend2.id, is_admin=True
+        chat_id=chat_id, user_id=friend2.id, is_admin=True
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -230,7 +230,7 @@ async def test_promote_admin_group_not_found_direct(
 
     # Try to promote admin in non-existent group
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=99999, user_id=1, is_admin=True
+        chat_id=99999, user_id=1, is_admin=True
     )
 
     with pytest.raises(HTTPException) as exc_info:
@@ -287,7 +287,7 @@ async def test_promote_admin_user_not_in_group_direct(
             create_request, admin_auth, test_db
         )
 
-    group_id = create_response["data"]
+    chat_id = create_response["data"]
 
     # Create a user who is not in the group
     non_member = await add_user("nonmember", 1003, test_db)
@@ -295,7 +295,7 @@ async def test_promote_admin_user_not_in_group_direct(
 
     # Try to promote non-member to admin
     promote_request = promote_admin.PromoteAdminRequest(
-        group_id=group_id, user_id=non_member.id, is_admin=True
+        chat_id=chat_id, user_id=non_member.id, is_admin=True
     )
 
     with pytest.raises(HTTPException) as exc_info:

@@ -57,7 +57,7 @@ async def test_successful_remove_member_by_admin(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Remove friend1 from group
     with patch(
@@ -66,7 +66,7 @@ async def test_successful_remove_member_by_admin(
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/member/remove",
             headers=admin_headers,
-            json={"group_id": group_id, "user_remove_id": friend1.id},
+            json={"chat_id": chat_id, "user_remove_id": friend1.id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -120,7 +120,7 @@ async def test_successful_self_removal(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Friend1 removes themselves from group
     with patch(
@@ -129,7 +129,7 @@ async def test_successful_self_removal(
         response = test_setup.post(
             f"{settings.API_V1_STR}/group/member/remove",
             headers=friend1_headers,
-            json={"group_id": group_id, "user_remove_id": friend1.id},
+            json={"chat_id": chat_id, "user_remove_id": friend1.id},
         )
 
     assert response.status_code == status.HTTP_200_OK
@@ -192,21 +192,21 @@ async def test_remove_member_not_admin_not_self(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Add friend2 to group
     with patch("src.util.rest_util.sio.emit", new_callable=AsyncMock):
         test_setup.post(
             f"{settings.API_V1_STR}/group/member/add",
             headers=admin_headers,
-            json={"group_id": group_id, "user_add_id": friend2.id},
+            json={"chat_id": chat_id, "user_add_id": friend2.id},
         )
 
     # Try to remove friend2 as friend1 (non-admin, not self)
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/member/remove",
         headers=friend1_headers,
-        json={"group_id": group_id, "user_remove_id": friend2.id},
+        json={"chat_id": chat_id, "user_remove_id": friend2.id},
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -227,7 +227,7 @@ async def test_remove_member_group_not_found(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/member/remove",
         headers=admin_headers,
-        json={"group_id": 99999, "user_remove_id": 1},
+        json={"chat_id": 99999, "user_remove_id": 1},
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -281,7 +281,7 @@ async def test_remove_member_not_in_group(
             },
         )
 
-    group_id = create_response.json()["data"]
+    chat_id = create_response.json()["data"]
 
     # Create a user who is not in the group
     non_member = await add_user("nonmember", 1003, test_db)
@@ -290,7 +290,7 @@ async def test_remove_member_not_in_group(
     response = test_setup.post(
         f"{settings.API_V1_STR}/group/member/remove",
         headers=admin_headers,
-        json={"group_id": group_id, "user_remove_id": non_member.id},
+        json={"chat_id": chat_id, "user_remove_id": non_member.id},
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST

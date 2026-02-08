@@ -21,7 +21,7 @@ class Message(SQLModel, table=True):
     content: str
     created_at: datetime = Field(default=datetime.now(pytz.utc).replace(tzinfo=None))
     message_type: int = Field(default=0)
-    replied_to: Optional[int]
+    replied_to: Optional[int] = Field(default=None)
     receive_remaining: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
     deleted: bool = Field(default=False)
 
