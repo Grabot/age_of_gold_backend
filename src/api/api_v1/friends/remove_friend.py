@@ -21,6 +21,7 @@ class RemoveFriendRequest(BaseModel):
     """Request model for removing friends."""
 
     friend_id: int
+    chat_id: int
 
 
 @api_router_v1.post("/friend/remove", status_code=200, response_model=Dict)
@@ -36,11 +37,13 @@ async def remove_friend(
     me, _ = user_and_token
 
     friend_id = remove_request.friend_id
+    chat_id = remove_request.chat_id
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
         db,
         me.id,  # type: ignore[arg-type]
         friend_id,
+        chat_id
     )
 
     # Only allow removal if the friendship is accepted

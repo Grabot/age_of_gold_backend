@@ -46,9 +46,9 @@ async def get_successful_login_response(
     for friend in user.friends:
         friends_data.append(
             {
-                "friend_id": friend.friend_id,
+                "chat_id": friend.chat_id,
                 "friend_version": friend.friend_version,
-                "message_version": friend.message_version,
+                "unread_messages": friend.unread_messages,
             }
         )
 
@@ -59,7 +59,7 @@ async def get_successful_login_response(
             {
                 "chat_id": group.chat_id,
                 "group_version": group.group_version,
-                "message_version": group.message_version,
+                "unread_messages": group.unread_messages,
             }
         )
 

@@ -68,9 +68,6 @@ async def add_group_member(
     group_entry = Group(
         user_id=new_user_id,
         chat_id=chat_id,
-        unread_messages=0,
-        mute=False,
-        last_message_read_id=0,
     )
     db.add(group_entry)
 

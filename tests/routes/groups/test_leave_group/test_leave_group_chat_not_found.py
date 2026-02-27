@@ -86,9 +86,6 @@ async def test_leave_group_chat_not_found_direct(
     group_entry = Group(
         user_id=admin_user.id,
         chat_id=chat_id,
-        unread_messages=0,
-        mute=False,
-        last_message_read_id=0,
     )
     test_db.add(group_entry)
     await test_db.commit()

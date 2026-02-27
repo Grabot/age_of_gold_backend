@@ -118,6 +118,8 @@ class Settings(BaseSettings):
     S3_ENCRYPTION_KEY: str
     PROJECT_NAME: str
 
+    MESSAGE_REMOVE_TIME: int = 7  # Days
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )

@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException, Security, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
-from sqlmodel import select
+from sqlmodel import select, asc
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
@@ -44,7 +44,9 @@ async def fetch_messages(
     from_message_id = fetch_messages_request.from_message_id
 
     if user.id is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User ID not found")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User ID not found"
+        )
 
     user_id = user.id
 
@@ -62,10 +64,13 @@ async def fetch_messages(
 
     # If from_message_id is provided, fetch messages from that ID onwards
     if from_message_id is not None:
-        messages_statement = messages_statement.where(Message.id >= from_message_id)
+        messages_statement = messages_statement.where(
+            Message.message_id > from_message_id
+        )
+    print(f"fetching messages from {from_message_id}")
 
     # Order by id (chronological order) and limit results
-    messages_statement = messages_statement.order_by(Message.id)
+    messages_statement = messages_statement.order_by(asc(Message.message_id))
 
     messages_result = await db.execute(messages_statement)
     messages = messages_result.scalars().all()
@@ -73,11 +78,11 @@ async def fetch_messages(
     # Serialize messages
     messages_data: List[Dict[str, Any]] = [
         {
-            "id": msg.id,
+            "id": msg.message_id,
             "chat_id": msg.chat_id,
             "sender_id": msg.sender_id,
             "content": msg.content,
-            "created_at": msg.created_at.isoformat() if msg.created_at else None,
+            "created_at": msg.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "message_type": msg.message_type,
         }
         for msg in messages
@@ -86,8 +91,6 @@ async def fetch_messages(
     return {
         "success": True,
         "data": {
-            "chat_id": chat_id,
             "messages": messages_data,
         },
     }
-

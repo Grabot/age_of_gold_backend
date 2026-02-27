@@ -1,8 +1,9 @@
 from typing import Any, Tuple
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.selectable import Select
-from sqlmodel import or_, select
+from sqlmodel import select
 
 from src.models import Friend, User, Chat
 from src.sockets.sockets import sio
@@ -10,24 +11,26 @@ from src.util.util import get_group_room, get_user_room
 
 
 async def get_friend_request_pair(
-    db: AsyncSession, me_id: int, friend_id: int
+    db: AsyncSession, me_id: int, friend_id: int, chat_id: int
 ) -> Tuple[Friend, Friend]:
     """Get both friend request entries for a friendship.
 
     Returns the friend request from the current user's perspective and the reciprocal.
     Raises HTTPException if the friendship is not properly set up.
     """
-    from fastapi import HTTPException
 
     statement: Select = select(Friend).where(
-        or_(
-            (Friend.user_id == me_id) & (Friend.friend_id == friend_id),
-            (Friend.user_id == friend_id) & (Friend.friend_id == me_id),
-        )
+        Friend.chat_id == chat_id
     )
     result = await db.execute(statement)
     friends = result.scalars().all()
 
+    if len(friends) != 2:
+        raise HTTPException(
+            status_code=404,
+            detail="Friend request not found",
+        )
+    
     friend_request: Friend | None = next(
         (f for f in friends if f.user_id == me_id), None
     )
@@ -35,7 +38,7 @@ async def get_friend_request_pair(
         (f for f in friends if f.user_id == friend_id), None
     )
 
-    if len(friends) != 2 or friend_request is None or reciprocal_friend is None:
+    if friend_request is None or reciprocal_friend is None:
         raise HTTPException(
             status_code=404,
             detail="Friend request not found",
@@ -98,6 +101,7 @@ async def emit_friend_response(
     event_name: str,
     user: User,
     recipient_room: str,
+    chat_id: int,
     additional_data: dict[str, Any] | None = None,
 ) -> None:
     """.
@@ -114,6 +118,7 @@ async def emit_friend_response(
         "avatar_version": user.avatar_version,
         "profile_version": user.profile_version,
         "colour": user.colour,
+        "chat_id": chat_id
     }
 
     if additional_data:

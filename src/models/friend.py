@@ -1,5 +1,6 @@
 """Friend model"""
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -17,11 +18,14 @@ class Friend(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     __tablename__ = "Friend"  # pyright: ignore[reportAssignmentType]
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="User.id")
-    friend_id: int = Field(foreign_key="User.id")
     accepted: Optional[bool] = Field(default=None)
     friend_version: int = Field(default=1)
-    message_version: int = Field(default=1)
-    chat_id: Optional[int] = Field(foreign_key="Chat.id")
+    friend_id: int = Field(foreign_key="User.id")
+    unread_messages: int = Field(default=0)
+    mute: bool = Field(default=False)
+    mute_timestamp: Optional[datetime] = Field(default=None)
+    last_message_read_id: int = Field(default=0)
+    chat_id: int = Field(foreign_key="Chat.id")
 
     friend: "User" = Relationship(
         back_populates="friends",

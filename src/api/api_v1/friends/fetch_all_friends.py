@@ -21,7 +21,7 @@ from src.util.security import checked_auth_token
 class FetchFriendsRequest(BaseModel):
     """Request model for fetching friends with optional user ID filter."""
 
-    user_ids: Optional[List[int]] = None
+    chat_ids: Optional[List[int]] = None
 
 
 @api_router_v1.post("/friend/all", status_code=200)
@@ -39,9 +39,9 @@ async def fetch_all_friends(
     friends_statement: Select = select(Friend).where(Friend.user_id == user.id)
 
     # If user_ids filter is provided, add it to the query
-    if fetch_friends_request.user_ids is not None:
+    if fetch_friends_request.chat_ids is not None:
         friends_statement = friends_statement.where(
-            Friend.friend_id.in_(fetch_friends_request.user_ids)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]  # pylint: disable=E1101
+            Friend.chat_id.in_(fetch_friends_request.chat_ids) # pyright: ignore[reportAttributeAccessIssue]
         )
     friends_statement = friends_statement.options(selectinload(Friend.chat)) # type: ignore
 

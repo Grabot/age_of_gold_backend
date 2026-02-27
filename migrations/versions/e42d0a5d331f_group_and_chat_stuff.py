@@ -1,8 +1,8 @@
 """group and chat stuff
 
-Revision ID: af0068b9f43f
+Revision ID: e42d0a5d331f
 Revises: 97bc978ba8ff
-Create Date: 2026-02-08 08:28:40.891379
+Create Date: 2026-02-20 13:23:12.151792
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "af0068b9f43f"
+revision: str = "e42d0a5d331f"
 down_revision: Union[str, Sequence[str], None] = "97bc978ba8ff"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -47,7 +47,6 @@ def upgrade() -> None:
         sa.Column("mute_timestamp", sa.DateTime(), nullable=True),
         sa.Column("last_message_read_id", sa.Integer(), nullable=False),
         sa.Column("group_version", sa.Integer(), nullable=False),
-        sa.Column("message_version", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["chat_id"], ["Chat.id"], name=op.f("fk_Group_chat_id_Chat")
         ),
@@ -59,6 +58,7 @@ def upgrade() -> None:
     op.create_table(
         "Message",
         sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("message_id", sa.Integer(), nullable=False),
         sa.Column("chat_id", sa.Integer(), nullable=False),
         sa.Column("sender_id", sa.Integer(), nullable=False),
         sa.Column("content", sqlmodel.sql.sqltypes.AutoString(), nullable=False),  # type: ignore[attr-defined]
@@ -66,14 +66,20 @@ def upgrade() -> None:
         sa.Column("message_type", sa.Integer(), nullable=False),
         sa.Column("replied_to", sa.Integer(), nullable=True),
         sa.Column("receive_remaining", sa.ARRAY(sa.Integer()), nullable=True),
-        sa.Column("deleted", sa.Boolean(), nullable=False),
+        sa.Column("remove_at", sa.DateTime(), nullable=True),
+        sa.Column("deleted", sa.Integer(), nullable=True),
         sa.ForeignKeyConstraint(
             ["chat_id"], ["Chat.id"], name=op.f("fk_Message_chat_id_Chat")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_Message")),
     )
-    op.add_column("Friend", sa.Column("message_version", sa.Integer(), nullable=False))
-    op.add_column("Friend", sa.Column("chat_id", sa.Integer(), nullable=True))
+    op.add_column("Friend", sa.Column("unread_messages", sa.Integer(), nullable=False))
+    op.add_column("Friend", sa.Column("mute", sa.Boolean(), nullable=False))
+    op.add_column("Friend", sa.Column("mute_timestamp", sa.DateTime(), nullable=True))
+    op.add_column(
+        "Friend", sa.Column("last_message_read_id", sa.Integer(), nullable=False)
+    )
+    op.add_column("Friend", sa.Column("chat_id", sa.Integer(), nullable=False))
     op.create_foreign_key(
         op.f("fk_Friend_chat_id_Chat"), "Friend", "Chat", ["chat_id"], ["id"]
     )
@@ -90,7 +96,10 @@ def downgrade() -> None:
     op.drop_column("User", "colour")
     op.drop_constraint(op.f("fk_Friend_chat_id_Chat"), "Friend", type_="foreignkey")
     op.drop_column("Friend", "chat_id")
-    op.drop_column("Friend", "message_version")
+    op.drop_column("Friend", "last_message_read_id")
+    op.drop_column("Friend", "mute_timestamp")
+    op.drop_column("Friend", "mute")
+    op.drop_column("Friend", "unread_messages")
     op.drop_table("Message")
     op.drop_table("Group")
     op.drop_table("Chat")

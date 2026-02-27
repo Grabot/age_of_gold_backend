@@ -1,7 +1,7 @@
 """Chat model."""
 
 from hashlib import md5
-from typing import TYPE_CHECKING, Any, List, Optional, Dict
+from typing import TYPE_CHECKING, Any, List, Optional
 
 from botocore.exceptions import ClientError
 from cryptography.fernet import Fernet
@@ -54,7 +54,7 @@ class Chat(SQLModel, table=True):
         sa_relationship_kwargs={
             "uselist": True,
             "primaryjoin": "Chat.id==Message.chat_id",
-            "order_by": "Message.created_at",
+            "order_by": "Message.message_id",
         },
     )
 

@@ -1,6 +1,6 @@
 """Endpoint for getting user avatar."""
 
-from typing import Dict, Tuple, Any, Optional
+from typing import Tuple, Any, Optional
 from pydantic import BaseModel
 
 from fastapi import Depends, HTTPException, Security, Request
@@ -63,26 +63,3 @@ async def get_avatar(
         s3_client, cipher, s3_key, file_name, encrypted
     )
 
-
-class AvatarVersionRequest(BaseModel):
-    """Request model for getting avatar version."""
-
-    user_id: int
-
-
-@api_router_v1.post("/user/avatar/version", status_code=200, response_model=dict)
-@handle_db_errors("Get user avatar version failed")
-async def get_avatar_version(
-    avatar_version_request: AvatarVersionRequest,
-    user_and_token: Tuple[User, UserToken] = Security(
-        checked_auth_token, scopes=["user"]
-    ),
-    db: AsyncSession = Depends(get_db),
-) -> Dict[str, bool | int]:
-    """Handle get user detail request."""
-    _, _ = user_and_token
-    got_user = await get_user_from_db(db, avatar_version_request.user_id)
-    if got_user is None:
-        return {"success": False}
-
-    return {"success": True, "data": got_user.avatar_version}

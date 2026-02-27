@@ -45,13 +45,7 @@ async def leave_group(
         Group.user_id == me.id, Group.chat_id == chat_id
     )
     group_result = await db.execute(group_statement)
-    group_entry = group_result.first()
-
-    if not group_entry:
-        raise HTTPException(
-            status_code=404,
-            detail="Group not found",
-        )
+    group_entry = group_result.scalar_one()
 
     chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
@@ -66,7 +60,7 @@ async def leave_group(
     chat.user_ids = [user_id for user_id in chat.user_ids if user_id != me.id]
 
     # Delete the group entry for this user
-    await db.delete(group_entry.Group)
+    await db.delete(group_entry)
 
     # If this was the last user in the group, delete the chat too
     if len(chat.user_ids) == 0:

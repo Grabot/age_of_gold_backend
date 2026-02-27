@@ -1,27 +1,28 @@
 """Endpoint for responding to friend requests (accept/reject)."""
 
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Tuple
 
 from fastapi import Depends, HTTPException, Security
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.selectable import Select
+from sqlmodel import select
 
 from src.api.api_v1.router import api_router_v1
 from src.database import get_db
-from src.models.chat import Chat
-from src.models.user import User
-from src.models.user_token import UserToken
+from src.models import Chat, User, UserToken
 from src.sockets.sockets import sio
 from src.util.decorators import handle_db_errors
+from src.util.rest_util import emit_friend_response, get_friend_request_pair
 from src.util.security import checked_auth_token
 from src.util.util import get_user_room
-from src.util.rest_util import get_friend_request_pair, emit_friend_response
 
 
 class RespondFriendRequest(BaseModel):
     """Request model for responding to friend requests."""
 
     friend_id: int
+    chat_id: int
     accept: bool
 
 
@@ -38,12 +39,14 @@ async def respond_friend_request(
     me, _ = user_and_token
 
     friend_id = respond_request.friend_id
+    chat_id = respond_request.chat_id
     accept = respond_request.accept
 
     friend_request, reciprocal_friend = await get_friend_request_pair(
         db,
         me.id,  # type: ignore[arg-type]
         friend_id,
+        chat_id
     )
 
     if friend_request.accepted is True:
@@ -61,27 +64,6 @@ async def respond_friend_request(
 
     if accept:
         # Accept the friend request
-        user_ids = [me.id, friend_id]
-        user_ids.sort()
-        new_chat = Chat(
-            user_ids=user_ids,
-            user_admin_ids=user_ids,
-            private=True,
-            name=None,
-            description=None,
-            colour=None,
-            default_avatar=True,
-            current_message_id=1,
-            last_message_read_id_chat=1,
-        )
-        db.add(new_chat)
-        await db.commit()
-        await db.refresh(new_chat)
-        print(f"friend accepted, chat created {new_chat.id}")
-        
-        friend_request.chat_id = new_chat.id
-        reciprocal_friend.chat_id = new_chat.id
-
         friend_request.accepted = True
         friend_request.friend_version += 1
         db.add(friend_request)
@@ -96,10 +78,10 @@ async def respond_friend_request(
             "friend_request_accepted",
             me,
             sender_room,
+            reciprocal_friend.chat_id,
             additional_data={
                 "accepted": True,
                 "friend_version": friend_request.friend_version,
-                "chat_id": new_chat.id
             },
         )
 
@@ -107,13 +89,15 @@ async def respond_friend_request(
 
         return {
             "success": True,
-            "data": new_chat.id
         }
 
     else:
-        # Reject the friend request - remove both entries
+        # Reject the friend request - remove both entries and the chat.
+        chat_statement: Select = select(Chat).where(Chat.id == chat_id)
+        chat: Chat = (await db.execute(chat_statement)).scalar_one()
         await db.delete(friend_request)
         await db.delete(reciprocal_friend)
+        await db.delete(chat)
 
         # Notify the sender that their request was rejected
         sender_room = get_user_room(friend_id)

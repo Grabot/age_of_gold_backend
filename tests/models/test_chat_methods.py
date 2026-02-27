@@ -21,7 +21,6 @@ def test_chat() -> Chat:
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,
-        message_version=1,
         avatar_version=1,
     )
 
@@ -53,7 +52,6 @@ def test_chat_add_user_empty_list() -> None:
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,
-        message_version=1,
         avatar_version=1,
     )
     empty_chat.add_user(1)
@@ -88,7 +86,6 @@ def test_chat_remove_user_empty_list() -> None:
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,
-        message_version=1,
         avatar_version=1,
     )
     empty_chat.remove_user(1)
@@ -122,7 +119,6 @@ def test_chat_add_admin_empty_list() -> None:
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,
-        message_version=1,
         avatar_version=1,
     )
     empty_chat.add_admin(1)
@@ -156,7 +152,6 @@ def test_chat_remove_admin_empty_list() -> None:
         default_avatar=True,
         current_message_id=1,
         last_message_read_id_chat=1,
-        message_version=1,
         avatar_version=1,
     )
     empty_chat.remove_admin(1)

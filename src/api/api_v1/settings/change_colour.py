@@ -36,7 +36,7 @@ async def change_colour(
 
     me.colour = change_colour_request.new_colour
     await update_user_field(
-        db, me, "username", change_colour_request.new_colour, "colour_updated"
+        db, me, "new_colour", change_colour_request.new_colour, "colour_updated"
     )
 
     logger.info("User %s changed their colour", me.username)
