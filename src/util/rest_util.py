@@ -30,7 +30,7 @@ async def get_friend_request_pair(
             status_code=404,
             detail="Friend request not found",
         )
-    
+
     friend_request: Friend | None = next(
         (f for f in friends if f.user_id == me_id), None
     )

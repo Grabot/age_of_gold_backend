@@ -70,9 +70,9 @@ async def test_successful_get_group_avatar_direct(
         chat_id=chat_id, get_default=False
     )
 
-    # Mock the download_image function to return fake data
+    # Mock the download_media function to return fake data
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         return_value=b"fake_avatar_data",
     ):
         response = await get_group_avatar.get_group_avatar(
@@ -214,9 +214,9 @@ async def test_get_group_avatar_default_direct(
         chat_id=chat_id, get_default=True
     )
 
-    # Mock the download_image function to return fake data
+    # Mock the download_media function to return fake data
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         return_value=b"fake_default_avatar_data",
     ):
         response = await get_group_avatar.get_group_avatar(

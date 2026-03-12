@@ -56,7 +56,7 @@ async def cancel_friend_request(
 
     chat_statement: Select = select(Chat).where(Chat.id == chat_id)
     chat: Chat = (await db.execute(chat_statement)).scalar_one()
-    
+
     # Remove both friend entries
     await db.delete(friend_request)
     await db.delete(reciprocal_friend)

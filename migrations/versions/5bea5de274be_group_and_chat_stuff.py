@@ -1,8 +1,8 @@
 """group and chat stuff
 
-Revision ID: e42d0a5d331f
+Revision ID: 5bea5de274be
 Revises: 97bc978ba8ff
-Create Date: 2026-02-20 13:23:12.151792
+Create Date: 2026-03-04 11:45:58.398046
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "e42d0a5d331f"
+revision: str = "5bea5de274be"
 down_revision: Union[str, Sequence[str], None] = "97bc978ba8ff"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -42,11 +42,11 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("chat_id", sa.Integer(), nullable=False),
+        sa.Column("group_version", sa.Integer(), nullable=False),
         sa.Column("unread_messages", sa.Integer(), nullable=False),
         sa.Column("mute", sa.Boolean(), nullable=False),
         sa.Column("mute_timestamp", sa.DateTime(), nullable=True),
         sa.Column("last_message_read_id", sa.Integer(), nullable=False),
-        sa.Column("group_version", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
             ["chat_id"], ["Chat.id"], name=op.f("fk_Group_chat_id_Chat")
         ),
@@ -68,6 +68,7 @@ def upgrade() -> None:
         sa.Column("receive_remaining", sa.ARRAY(sa.Integer()), nullable=True),
         sa.Column("remove_at", sa.DateTime(), nullable=True),
         sa.Column("deleted", sa.Integer(), nullable=True),
+        sa.Column("message_data", sqlmodel.sql.sqltypes.AutoString(), nullable=True),  # type: ignore[attr-defined]
         sa.ForeignKeyConstraint(
             ["chat_id"], ["Chat.id"], name=op.f("fk_Message_chat_id_Chat")
         ),

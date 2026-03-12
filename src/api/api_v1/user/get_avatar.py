@@ -62,4 +62,3 @@ async def get_avatar(
     return create_avatar_streaming_response(
         s3_client, cipher, s3_key, file_name, encrypted
     )
-

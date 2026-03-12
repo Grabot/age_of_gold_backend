@@ -52,7 +52,7 @@ async def mute_group(
 
     if mute and mute_duration_hours:
         # Set mute timestamp if muting with duration
-        group.mute_timestamp = datetime.now(timezone.utc) + timedelta(
+        group.mute_timestamp = datetime.now() + timedelta(
             hours=mute_duration_hours
         )
     else:

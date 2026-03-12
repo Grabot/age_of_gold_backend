@@ -1,9 +1,12 @@
 """Message model."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Optional, List
 from src.config.config import settings
-from sqlmodel import Field, SQLModel, Column, ARRAY, Integer, Relationship
+from sqlmodel import Field, SQLModel, Column, Relationship
+
+from src.models.model_util.zwaar_array import ZwaarArray
+from src.util.storage_util import media_s3_key, download_media
 
 if TYPE_CHECKING:
     from src.models import Chat
@@ -23,9 +26,10 @@ class Message(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
     message_type: int = Field(default=0)
     replied_to: Optional[int] = Field(default=None)
-    receive_remaining: List[int] = Field(default=[], sa_column=Column(ARRAY(Integer())))
+    receive_remaining: List[int] = Field(default=[], sa_column=Column(ZwaarArray()))
     remove_at: Optional[datetime] = Field(default_factory=None) # Indicates when to remove from the backend
     deleted: Optional[int] = Field(default=None) # Indicates which message_id has been removed.
+    message_data: Optional[str] = Field(default=None)
 
     # Chat relationship
     chat: "Chat" = Relationship(
@@ -50,7 +54,16 @@ class Message(SQLModel, table=True):
     def set_for_deletion(self):
         self.remove_at = datetime.now() + timedelta(days=settings.MESSAGE_REMOVE_TIME)
 
-    @property
+
+    def get_message_data(self, s3_client, cipher) -> bytes | None:
+        if not self.message_data:
+            print("No message data available")
+            return None
+        s3_key = media_s3_key(f"{self.message_data}")
+        print(f"Downloading file {s3_key}")
+        return download_media(s3_client, cipher, settings.S3_BUCKET_NAME, s3_key)
+
+
     def serialize(self) -> dict:
         """Serialize the message data."""
         created_at_str = self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")

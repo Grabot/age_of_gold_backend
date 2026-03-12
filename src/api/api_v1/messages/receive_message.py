@@ -55,13 +55,13 @@ async def message_received_single(
     print(f"Message found: {message}")
 
     message.received_message(user.id)
-    db.add(message)
     if message.received_by_all():
         print("Message received by all, setting for deletion")
         message.set_for_deletion()
-        db.add(message)
-    await db.commit()
 
+    db.add(message)
+    await db.commit()
+    print("endpoint success")
     return {"success": True}
 
 

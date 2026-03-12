@@ -14,7 +14,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from src.config.config import settings
 from src.config.jwt_key import jwt_private_key
-from src.util.storage_util import upload_image
+from src.util.storage_util import upload_media
 from src.util.gold_logging import logger
 
 ph = PasswordHasher()
@@ -84,7 +84,7 @@ class User(SQLModel, table=True):  # type: ignore[call-arg, unused-ignore]
     ) -> None:
         """Upload an avatar for the user to S3."""
         s3_key = self.avatar_s3_key(self.avatar_filename())
-        upload_image(s3_client, cipher, avatar_bytes, settings.S3_BUCKET_NAME, s3_key)
+        upload_media(s3_client, cipher, avatar_bytes, settings.S3_BUCKET_NAME, s3_key)
 
     def avatar_s3_key(self, file_name: str) -> str:
         """Generate the full S3 key for the avatar."""

@@ -1,9 +1,10 @@
 from io import BytesIO
 from typing import Any
 from cryptography.fernet import Fernet
+from src.config.config import settings
 
 
-def download_image(
+def download_media(
     s3_client: Any, cipher: Fernet, bucket: str, key: str, encrypted: bool = True
 ) -> bytes:
     """Download an image from S3."""
@@ -18,10 +19,11 @@ def download_image(
         return buffer.read()
 
 
-def upload_image(
+def upload_media(
     s3_client: Any, cipher: Fernet, avatar_bytes: bytes, bucket: str, s3_key: str
 ) -> None:
     """Upload an image to S3."""
+    print(f"uploading media! {s3_key}")
     buffer = BytesIO()
     encrypted_data = cipher.encrypt(avatar_bytes)
     buffer.write(encrypted_data)
@@ -36,3 +38,8 @@ def upload_image(
 def decrypt_image(encrypted_data: bytes, cipher: Fernet) -> bytes:
     """Decrypt an image."""
     return cipher.decrypt(encrypted_data)
+
+
+def media_s3_key(file_name: str) -> str:
+    """Generate the full S3 key for the avatar."""
+    return f"{settings.PROJECT_NAME}/chat_media/{file_name}"

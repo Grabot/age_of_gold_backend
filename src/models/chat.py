@@ -10,7 +10,7 @@ from sqlmodel import Column, Field, Relationship, SQLModel
 from src.config.config import settings
 from src.models.model_util.zwaar_array import ZwaarArray
 from src.util.gold_logging import logger
-from src.util.storage_util import upload_image
+from src.util.storage_util import upload_media
 
 if TYPE_CHECKING:
     from src.models import Group, Message, Friend
@@ -101,7 +101,7 @@ class Chat(SQLModel, table=True):
     ) -> None:
         """Upload an avatar for the group to S3."""
         s3_key = self.group_avatar_s3_key(self.group_avatar_filename())
-        upload_image(s3_client, cipher, avatar_bytes, settings.S3_BUCKET_NAME, s3_key)
+        upload_media(s3_client, cipher, avatar_bytes, settings.S3_BUCKET_NAME, s3_key)
 
     def group_avatar_s3_key(self, file_name: str) -> str:
         """Generate the full S3 key for the group avatar."""

@@ -8,8 +8,8 @@ from PIL import Image
 import numpy as np
 
 from src.util.storage_util import (
-    download_image,
-    upload_image,
+    download_media,
+    upload_media,
     decrypt_image,
 )
 
@@ -47,16 +47,16 @@ def test_decrypt_image(image_bytes_mock: bytes, cipher_mock: Fernet) -> None:
     assert decrypted_data == image_bytes_mock
 
 
-def test_upload_image(
+def test_upload_media(
     s3_mock: MagicMock, cipher_mock: Fernet, image_bytes_mock: bytes
 ) -> None:
-    """Test that upload_image calls S3 upload_fileobj with encrypted data."""
+    """Test that upload_media calls S3 upload_fileobj with encrypted data."""
     buffer: BytesIO = BytesIO()
     encrypted_data: bytes = cipher_mock.encrypt(image_bytes_mock)
     buffer.write(encrypted_data)
     buffer.seek(0)
 
-    upload_image(s3_mock, cipher_mock, image_bytes_mock, "test-bucket", "test-key")
+    upload_media(s3_mock, cipher_mock, image_bytes_mock, "test-bucket", "test-key")
 
     s3_mock.upload_fileobj.assert_called_once()
     args, kwargs = s3_mock.upload_fileobj.call_args
@@ -65,29 +65,29 @@ def test_upload_image(
     assert kwargs["ExtraArgs"]["ContentType"] == "application/octet-stream"
 
 
-def test_download_image_encrypted(
+def test_download_media_encrypted(
     s3_mock: MagicMock, cipher_mock: Fernet, image_bytes_mock: bytes
 ) -> None:
-    """Test that download_image returns decrypted data when encrypted=True."""
+    """Test that download_media returns decrypted data when encrypted=True."""
     s3_mock.download_fileobj.side_effect = lambda bucket, key, buffer: buffer.write(
         cipher_mock.encrypt(image_bytes_mock)
     )
 
-    result = download_image(
+    result = download_media(
         s3_mock, cipher_mock, "test-bucket", "test-key", encrypted=True
     )
     assert result == image_bytes_mock
 
 
-def test_download_image_not_encrypted(
+def test_download_media_not_encrypted(
     s3_mock: MagicMock, cipher_mock: Fernet, image_bytes_mock: bytes
 ) -> None:
-    """Test that download_image returns raw data when encrypted=False."""
+    """Test that download_media returns raw data when encrypted=False."""
     s3_mock.download_fileobj.side_effect = lambda bucket, key, buffer: buffer.write(
         image_bytes_mock
     )
 
-    result = download_image(
+    result = download_media(
         s3_mock, cipher_mock, "test-bucket", "test-key", encrypted=False
     )
     assert result == image_bytes_mock
@@ -99,17 +99,17 @@ def test_decrypt_image_invalid_data(cipher_mock: Fernet) -> None:
         decrypt_image(b"invalid_data", cipher_mock)
 
 
-def test_upload_image_empty_data(s3_mock: MagicMock, cipher_mock: Fernet) -> None:
-    """Test that upload_image handles empty data."""
-    upload_image(s3_mock, cipher_mock, b"", "test-bucket", "test-key")
+def test_upload_media_empty_data(s3_mock: MagicMock, cipher_mock: Fernet) -> None:
+    """Test that upload_media handles empty data."""
+    upload_media(s3_mock, cipher_mock, b"", "test-bucket", "test-key")
     s3_mock.upload_fileobj.assert_called_once()
 
 
-def test_download_image_empty_data(s3_mock: MagicMock, cipher_mock: Fernet) -> None:
-    """Test that download_image handles empty data."""
+def test_download_media_empty_data(s3_mock: MagicMock, cipher_mock: Fernet) -> None:
+    """Test that download_media handles empty data."""
     s3_mock.download_fileobj.side_effect = lambda bucket, key, buffer: buffer.write(b"")
 
-    result = download_image(
+    result = download_media(
         s3_mock, cipher_mock, "test-bucket", "test-key", encrypted=False
     )
     assert result == b""

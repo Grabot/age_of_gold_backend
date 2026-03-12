@@ -12,11 +12,11 @@ from PIL import Image
 
 
 @patch("age_of_gold_worker.age_of_gold_worker.tasks.avatar.generate_avatar")
-@patch("age_of_gold_worker.age_of_gold_worker.util.util.worker_upload_image")
+@patch("age_of_gold_worker.age_of_gold_worker.util.util.worker_upload_media")
 @patch("age_of_gold_worker.age_of_gold_worker.tasks.worker_settings")
 def test_task_generate_avatar(
     mock_worker_settings: MagicMock,
-    mock_upload_image: MagicMock,
+    mock_upload_media: MagicMock,
     mock_generate_avatar: MagicMock,
 ) -> None:
     """Test the task_generate_avatar function."""
@@ -39,7 +39,7 @@ def test_task_generate_avatar(
     result = task_generate_avatar("avatar.png", s3_key, 1)
 
     mock_generate_avatar.assert_called_once_with("avatar.png")
-    mock_upload_image.assert_called_once_with(
+    mock_upload_media.assert_called_once_with(
         processed_bytes_test_image, "test-bucket", s3_key
     )
     assert result == {"success": True}

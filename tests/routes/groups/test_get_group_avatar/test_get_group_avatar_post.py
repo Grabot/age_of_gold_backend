@@ -59,7 +59,7 @@ async def test_successful_get_group_avatar(
 
     # Get group avatar
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         return_value=b"fake_avatar_data",
     ):
         response = test_setup.post(
@@ -184,7 +184,7 @@ async def test_get_group_avatar_default(
 
     # Get default group avatar
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         return_value=b"fake_default_avatar_data",
     ):
         response = test_setup.post(

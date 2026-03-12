@@ -39,7 +39,7 @@ def task_generate_avatar(
     buffer = BytesIO()
     avatar_image.save(buffer, format="PNG")
     processed_bytes = buffer.getvalue()
-    util.worker_upload_image(processed_bytes, worker_settings.S3_BUCKET_NAME, s3_key)
+    util.worker_upload_media(processed_bytes, worker_settings.S3_BUCKET_NAME, s3_key)
 
     return {"success": True}
 

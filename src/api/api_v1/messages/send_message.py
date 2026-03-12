@@ -27,7 +27,8 @@ class SendMessageRequest(BaseModel):
     chat_id: int
     content: str
     private: bool
-    message_type: int = 0
+    # TODO: Remove? For regular text always 0
+    message_type: int
 
 
 @api_router_v1.post("/message/send", status_code=200)

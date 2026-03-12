@@ -15,7 +15,7 @@ from sqlmodel import select
 from src.config.config import settings
 from src.models import Chat, User, UserToken
 from src.util.gold_logging import logger
-from src.util.storage_util import download_image
+from src.util.storage_util import media_s3_key, download_media, upload_media
 
 ph = PasswordHasher()
 
@@ -175,7 +175,7 @@ def create_avatar_streaming_response(
         HTTPException: If avatar is not found or download fails
     """
     try:
-        decrypted_data: bytes = download_image(
+        decrypted_data: bytes = download_media(
             s3_client, cipher, settings.S3_BUCKET_NAME, s3_key, encrypted
         )
         decrypted_buffer: BytesIO = BytesIO(decrypted_data)
@@ -227,3 +227,18 @@ async def get_chat_and_verify_admin(
         )
 
     return chat
+
+
+def save_attachment(attachment_bytes: bytes, file_name: str, s3_client, cipher):
+    """Save an attachment to S3 storage.
+    
+    Args:
+        attachment_bytes: Binary data of the attachment
+        file_name: Name of the file to save
+        s3_client: S3 client instance
+        cipher: Encryption cipher instance
+    """
+    # Determine file extension and data type from filename
+    s3_key = media_s3_key(file_name)
+    upload_media(s3_client, cipher, attachment_bytes, settings.S3_BUCKET_NAME, s3_key)
+

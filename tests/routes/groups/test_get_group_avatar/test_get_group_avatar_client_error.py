@@ -48,7 +48,7 @@ async def test_get_group_avatar_client_error_no_such_key_direct(
         chat_id=chat_id, get_default=False
     )
 
-    # Mock the download_image function to raise ClientError with NoSuchKey
+    # Mock the download_media function to raise ClientError with NoSuchKey
     from botocore.exceptions import ClientError
 
     mock_client_error = ClientError(
@@ -57,7 +57,7 @@ async def test_get_group_avatar_client_error_no_such_key_direct(
     )
 
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         side_effect=mock_client_error,
     ):
         with pytest.raises(HTTPException) as exc_info:
@@ -108,7 +108,7 @@ async def test_get_group_avatar_client_error_other_direct(
         chat_id=chat_id, get_default=False
     )
 
-    # Mock the download_image function to raise other ClientError
+    # Mock the download_media function to raise other ClientError
     from botocore.exceptions import ClientError
 
     mock_client_error = ClientError(
@@ -117,7 +117,7 @@ async def test_get_group_avatar_client_error_other_direct(
     )
 
     with patch(
-        "src.util.util.download_image",
+        "src.util.util.download_media",
         side_effect=mock_client_error,
     ):
         with pytest.raises(HTTPException) as exc_info:
